@@ -1,0 +1,22 @@
+const express = require('express');
+const router = express.Router();
+
+const authRoutes = require('./auth');
+const listingRoutes = require('./listings');
+const enquiryRoutes = require('./enquiries');
+const uploadRoutes = require('./uploadRoutes');
+const floorplanRoutes = require('./floorplans');
+const facadeRoutes = require('./facades');
+
+router.get('/', (req, res) => {
+    res.json({ message: 'Welcome to the Mimosa Homes API' });
+});
+
+router.use('/auth', authRoutes);
+router.use('/listings', listingRoutes);
+router.use('/enquiries', enquiryRoutes);
+router.use('/upload', uploadRoutes);
+router.use('/floorplans', floorplanRoutes);
+router.use('/facades', facadeRoutes);
+
+module.exports = router;
