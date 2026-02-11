@@ -86,7 +86,7 @@ export default function EditFacadePage() {
 
         setUploading(true);
         try {
-            const data = await api.uploadFile(file);
+            const data = await api.uploadFile(file, "facades");
             setFormData(prev => ({ ...prev, image_url: data.url }));
         } catch (err) {
             showAlert("Upload Failed", "There was an error uploading your file.", "error");

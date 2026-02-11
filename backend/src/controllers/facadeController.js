@@ -2,15 +2,27 @@ const { Facade, FloorPlan } = require('../models');
 
 exports.getAllFacades = async (req, res, next) => {
     try {
-        const facades = await Facade.findAll({
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        const { count, rows: facades } = await Facade.findAndCountAll({
             include: [{
                 model: FloorPlan,
                 as: 'floorplans',
                 through: { attributes: [] }
             }],
-            order: [['created_at', 'DESC']]
+            order: [['created_at', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            distinct: true
         });
-        res.json(facades);
+
+        res.json({
+            data: facades,
+            total: count,
+            page: parseInt(page),
+            totalPages: Math.ceil(count / limit)
+        });
     } catch (error) {
         next(error);
     }

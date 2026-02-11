@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
@@ -47,10 +48,14 @@ export default function AdminLayout({
             {/* Sidebar */}
             <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-gray-100 z-50 hidden lg:flex flex-col">
                 {/* Logo */}
-                <div className="p-8 border-b border-gray-100 bg-mimosa-dark">
-                    <h1 className="text-2xl font-black tracking-tighter text-white">
-                        MIMOSA<span className="text-gray-400 font-extralight ml-1">ADMIN</span>
-                    </h1>
+                <div className="p-8 border-b border-gray-100 bg-mimosa-dark flex justify-center">
+                    <div className="relative h-16 w-64">
+                        <img
+                            src="/logo.png?v=1.1"
+                            alt="Mitra Admin"
+                            className="object-contain w-full h-full brightness-0 invert"
+                        />
+                    </div>
                 </div>
 
                 {/* Nav */}

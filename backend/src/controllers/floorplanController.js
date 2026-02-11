@@ -2,10 +2,21 @@ const { FloorPlan } = require('../models');
 
 exports.getAllFloorPlans = async (req, res, next) => {
     try {
-        const floorplans = await FloorPlan.findAll({
-            order: [['created_at', 'DESC']]
+        const { page = 1, limit = 10 } = req.query;
+        const offset = (page - 1) * limit;
+
+        const { count, rows: floorplans } = await FloorPlan.findAndCountAll({
+            order: [['created_at', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset)
         });
-        res.json(floorplans);
+
+        res.json({
+            data: floorplans,
+            total: count,
+            page: parseInt(page),
+            totalPages: Math.ceil(count / limit)
+        });
     } catch (error) {
         next(error);
     }

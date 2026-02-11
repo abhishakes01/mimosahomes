@@ -5,7 +5,12 @@ const fs = require('fs');
 // Configure storage
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
-        const uploadDir = path.join(__dirname, '../../public/uploads');
+        let folder = req.body.folder || req.query.folder || 'misc';
+
+        // Sanitize folder path to prevent directory traversal
+        folder = folder.replace(/[^a-zA-Z0-9_\-\/]/g, '');
+
+        const uploadDir = path.join(__dirname, '../../public/uploads', folder);
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
         }
@@ -37,6 +42,10 @@ exports.handleUpload = (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
     }
-    const fileUrl = `/uploads/${req.file.filename}`;
+
+    // Get folder from destination path relative to public/uploads
+    const relativePath = path.relative(path.join(__dirname, '../../public'), req.file.path);
+    const fileUrl = `/${relativePath.replace(/\\/g, '/')}`; // Ensure forward slashes for URL
+
     res.json({ url: fileUrl });
 };

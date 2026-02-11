@@ -5,20 +5,30 @@ import Link from "next/link";
 import { api, getFullUrl } from "@/services/api";
 import { Plus, Search, Edit, Trash2, Image as ImageIcon, DollarSign, Ruler, Car } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import Pagination from "@/components/Pagination";
 
 export default function FloorPlansPage() {
     const [floorplans, setFloorplans] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState("");
 
-    useEffect(() => {
-        loadFloorPlans();
-    }, []);
+    // Pagination state
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
+    const [totalItems, setTotalItems] = useState(0);
+    const [limit] = useState(9);
 
-    const loadFloorPlans = async () => {
+    useEffect(() => {
+        loadFloorPlans(currentPage);
+    }, [currentPage]);
+
+    const loadFloorPlans = async (page: number) => {
+        setLoading(true);
         try {
-            const data: any = await api.getFloorPlans();
-            setFloorplans(data);
+            const response: any = await api.getFloorPlans({ page, limit });
+            setFloorplans(response.data || []);
+            setTotalItems(response.total || 0);
+            setTotalPages(response.totalPages || 1);
         } catch (err) {
             console.error(err);
         } finally {
@@ -31,7 +41,7 @@ export default function FloorPlansPage() {
 
         try {
             await api.deleteFloorPlan(id, "mock-token");
-            loadFloorPlans();
+            loadFloorPlans(currentPage);
         } catch (err) {
             alert("Failed to delete");
         }
@@ -61,7 +71,7 @@ export default function FloorPlansPage() {
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                 <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
                     <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Total Floor Plans</p>
-                    <h2 className="text-4xl font-bold text-gray-900">{floorplans.length}</h2>
+                    <h2 className="text-4xl font-bold text-gray-900">{totalItems}</h2>
                 </div>
                 <div className="md:col-span-3 bg-white p-4 rounded-3xl border border-gray-100 shadow-sm">
                     <div className="relative w-full">
@@ -84,84 +94,93 @@ export default function FloorPlansPage() {
                     <div className="h-4 w-48 bg-gray-200 rounded-full" />
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <AnimatePresence>
-                        {filteredFloorPlans.map((fp, idx) => (
-                            <motion.div
-                                key={fp.id}
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: 20 }}
-                                transition={{ delay: idx * 0.05 }}
-                                className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all group"
-                            >
-                                {/* Image */}
-                                <div className="relative aspect-[4/3] bg-gray-100">
-                                    {fp.image_url ? (
-                                        <img
-                                            src={getFullUrl(fp.image_url)}
-                                            alt={fp.title}
-                                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                            <ImageIcon size={48} />
-                                        </div>
-                                    )}
-                                </div>
-
-                                {/* Content */}
-                                <div className="p-6">
-                                    <h3 className="text-xl font-bold text-gray-900 mb-3">{fp.title}</h3>
-
-                                    <div className="grid grid-cols-2 gap-3 mb-4">
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Ruler size={16} className="text-gray-400" />
-                                            <span>{fp.total_area || 'N/A'} sq</span>
-                                        </div>
-                                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                                            <Car size={16} className="text-gray-400" />
-                                            <span>{fp.car_spaces || 0} cars</span>
-                                        </div>
-                                        {fp.price && (
-                                            <div className="flex items-center gap-2 text-sm text-gray-600 col-span-2">
-                                                <DollarSign size={16} className="text-gray-400" />
-                                                <span className="font-bold">${Number(fp.price).toLocaleString()}</span>
+                <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <AnimatePresence mode="popLayout">
+                            {filteredFloorPlans.map((fp, idx) => (
+                                <motion.div
+                                    key={fp.id}
+                                    layout
+                                    initial={{ opacity: 0, scale: 0.9 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 0.9 }}
+                                    transition={{ duration: 0.2 }}
+                                    className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-xl transition-all group"
+                                >
+                                    {/* Image */}
+                                    <div className="relative aspect-[4/3] bg-gray-100">
+                                        {fp.image_url ? (
+                                            <img
+                                                src={getFullUrl(fp.image_url)}
+                                                alt={fp.title}
+                                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                                <ImageIcon size={48} />
                                             </div>
                                         )}
                                     </div>
 
-                                    {/* Actions */}
-                                    <div className="flex gap-2 pt-4 border-t border-gray-100">
-                                        <Link
-                                            href={`/admin/floor-plans/${fp.id}`}
-                                            className="flex-1 px-4 py-2 bg-gray-50 hover:bg-mimosa-dark hover:text-white text-gray-700 rounded-xl font-bold text-center transition-all"
-                                        >
-                                            <Edit size={16} className="inline mr-2" />
-                                            Edit
-                                        </Link>
-                                        <button
-                                            onClick={() => handleDelete(fp.id)}
-                                            className="px-4 py-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 rounded-xl font-bold transition-all"
-                                        >
-                                            <Trash2 size={16} />
-                                        </button>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
+                                    {/* Content */}
+                                    <div className="p-6">
+                                        <h3 className="text-xl font-bold text-gray-900 mb-3">{fp.title}</h3>
 
-                    {filteredFloorPlans.length === 0 && (
-                        <div className="col-span-full flex flex-col items-center py-20">
-                            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                                <Search size={32} className="text-gray-200" />
+                                        <div className="grid grid-cols-2 gap-3 mb-4">
+                                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                <Ruler size={16} className="text-gray-400" />
+                                                <span>{fp.total_area || 'N/A'} sq</span>
+                                            </div>
+                                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                                                <Car size={16} className="text-gray-400" />
+                                                <span>{fp.car_spaces || 0} cars</span>
+                                            </div>
+                                            {fp.price && (
+                                                <div className="flex items-center gap-2 text-sm text-gray-600 col-span-2">
+                                                    <DollarSign size={16} className="text-gray-400" />
+                                                    <span className="font-bold">${Number(fp.price).toLocaleString()}</span>
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex gap-2 pt-4 border-t border-gray-100">
+                                            <Link
+                                                href={`/admin/floor-plans/${fp.id}`}
+                                                className="flex-1 px-4 py-2 bg-gray-50 hover:bg-mimosa-dark hover:text-white text-gray-700 rounded-xl font-bold text-center transition-all"
+                                            >
+                                                <Edit size={16} className="inline mr-2" />
+                                                Edit
+                                            </Link>
+                                            <button
+                                                onClick={() => handleDelete(fp.id)}
+                                                className="px-4 py-2 bg-red-50 hover:bg-red-500 hover:text-white text-red-600 rounded-xl font-bold transition-all"
+                                            >
+                                                <Trash2 size={16} />
+                                            </button>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+
+                        {filteredFloorPlans.length === 0 && (
+                            <div className="col-span-full flex flex-col items-center py-20">
+                                <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+                                    <Search size={32} className="text-gray-200" />
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 mb-1">No floor plans found</h3>
+                                <p className="text-gray-400">Create your first floor plan to get started</p>
                             </div>
-                            <h3 className="text-lg font-bold text-gray-900 mb-1">No floor plans found</h3>
-                            <p className="text-gray-400">Create your first floor plan to get started</p>
-                        </div>
-                    )}
-                </div>
+                        )}
+                    </div>
+
+                    <Pagination
+                        currentPage={currentPage}
+                        totalPages={totalPages}
+                        onPageChange={setCurrentPage}
+                    />
+                </>
             )}
         </div>
     );

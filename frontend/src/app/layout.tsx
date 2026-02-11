@@ -13,8 +13,8 @@ const outfit = Outfit({
 });
 
 export const metadata: Metadata = {
-  title: "Mimosa Homes | Premium Home Builder Melbourne",
-  description: "Build your dream home with Mimosa Homes. Architecturally designed homes, flexible floorplans, and affordable house and land packages.",
+  title: "Mitra Homes | Premium Home Builder Mitra",
+  description: "Build your dream home with Mitra Homes. Architecturally designed homes, flexible floorplans, and affordable house and land packages.",
 };
 
 import { UIProvider } from "@/context/UIContext";

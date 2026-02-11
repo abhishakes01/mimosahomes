@@ -109,7 +109,7 @@ export default function CreateListingPage() {
         try {
             const uploadedUrls: string[] = [];
             for (let i = 0; i < files.length; i++) {
-                const data = await api.uploadFile(files[i]);
+                const data = await api.uploadFile(files[i], "listings");
                 uploadedUrls.push(data.url);
             }
             setFormData(prev => ({

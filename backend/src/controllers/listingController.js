@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 
 exports.getAllListings = async (req, res, next) => {
     try {
-        const { type, collection, min_price, max_price, beds } = req.query;
+        const { type, collection, min_price, max_price, beds, page = 1, limit = 10 } = req.query;
         const where = {};
         const floorPlanWhere = {};
 
@@ -20,7 +20,9 @@ exports.getAllListings = async (req, res, next) => {
             floorPlanWhere.bedrooms = { [Op.gte]: beds };
         }
 
-        const listings = await Listing.findAll({
+        const offset = (page - 1) * limit;
+
+        const { count, rows: listings } = await Listing.findAndCountAll({
             where,
             include: [{
                 model: require('../models').Facade,
@@ -35,9 +37,18 @@ exports.getAllListings = async (req, res, next) => {
                 as: 'floorplan',
                 where: Object.keys(floorPlanWhere).length > 0 ? floorPlanWhere : undefined
             }],
-            order: [['created_at', 'DESC']]
+            order: [['created_at', 'DESC']],
+            limit: parseInt(limit),
+            offset: parseInt(offset),
+            distinct: true
         });
-        res.json(listings);
+
+        res.json({
+            data: listings,
+            total: count,
+            page: parseInt(page),
+            totalPages: Math.ceil(count / limit)
+        });
     } catch (error) {
         next(error);
     }

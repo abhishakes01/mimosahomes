@@ -80,7 +80,7 @@ export default function Hero() {
                         Quality Meets Affordability
                     </span>
                     <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 tracking-tight leading-tight shadow-black drop-shadow-2xl">
-                        Melbourne's Premier <br />
+                        Mitra's Premier <br />
                         <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-300 to-gray-500">
                             New Home Builder
                         </span>

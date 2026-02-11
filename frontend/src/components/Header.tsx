@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Search, Menu, X, Phone, Calculator } from "lucide-react";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -22,7 +23,7 @@ export default function Header() {
             className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? "bg-white/95 backdrop-blur-sm shadow-md py-2" : "bg-gradient-to-b from-black/80 to-transparent py-4"
                 }`}
         >
-            <div className="container mx-auto px-6">
+            <div className="w-full px-4 lg:px-8">
                 {/* Top Bar (Hidden on Mobile) */}
                 <div className={`hidden lg:flex justify-end items-center gap-6 mb-2 text-sm font-medium transition-opacity ${isScrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 text-white/90"}`}>
                     <a href="#" className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
@@ -36,40 +37,46 @@ export default function Header() {
                 <div className="flex items-center justify-between">
                     {/* Logo */}
                     <Link href="/" className="flex items-center gap-2">
-                        <div className={`text-2xl font-black tracking-tighter uppercase ${isScrolled ? "text-mimosa-dark" : "text-white"}`}>
-                            MIMOSA<span className="text-mimosa-gold font-light ml-1">HOMES</span>
+                        <div className="relative h-24 w-80 transition-all duration-300">
+                            <img
+                                src="/logo.png?v=1.1"
+                                alt="Mimosa Homes"
+                                className={`object-contain w-full h-full transition-all duration-300 ${!isScrolled ? "brightness-0 invert" : ""}`}
+                            />
                         </div>
                     </Link>
 
-                    {/* Desktop Navigation */}
-                    <nav className="hidden lg:flex items-center gap-8">
-                        {["New Home Designs", "Display Homes", "House & Land", "Promotions", "Facades"].map((item) => (
-                            <Link
-                                key={item}
-                                href="#"
-                                className={`text-sm font-medium hover:text-mimosa-gold transition-colors uppercase tracking-wide ${isScrolled ? "text-gray-800" : "text-white"
+                    {/* Right Side: Navigation and Actions */}
+                    <div className="hidden lg:flex items-center gap-12 ml-auto">
+                        <nav className="flex items-center gap-8">
+                            {["New Home Designs", "Display Homes", "House & Land", "Promotions", "Facades"].map((item) => (
+                                <Link
+                                    key={item}
+                                    href="#"
+                                    className={`text-sm font-medium hover:text-mimosa-gold transition-colors uppercase tracking-wide ${isScrolled ? "text-gray-800" : "text-white"
+                                        }`}
+                                >
+                                    {item}
+                                </Link>
+                            ))}
+                        </nav>
+
+                        {/* Actions */}
+                        <div className="flex items-center gap-4">
+                            <button className={`p-2 transition-colors ${isScrolled ? "text-gray-800 hover:text-mimosa-gold" : "text-white hover:text-mimosa-gold"}`}>
+                                <Search size={20} />
+                            </button>
+                            <a
+                                href="tel:1300646672"
+                                className={`flex items-center gap-2 px-5 py-2 font-bold rounded-full transition-all tracking-tight uppercase text-xs ${isScrolled
+                                    ? "bg-mimosa-dark text-white hover:bg-black shadow-lg"
+                                    : "bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20"
                                     }`}
                             >
-                                {item}
-                            </Link>
-                        ))}
-                    </nav>
-
-                    {/* Actions */}
-                    <div className="hidden lg:flex items-center gap-4">
-                        <button className={`p-2 transition-colors ${isScrolled ? "text-gray-800 hover:text-mimosa-gold" : "text-white hover:text-mimosa-gold"}`}>
-                            <Search size={20} />
-                        </button>
-                        <a
-                            href="tel:1300646672"
-                            className={`flex items-center gap-2 px-5 py-2 font-bold rounded-full transition-all tracking-tight uppercase text-xs ${isScrolled
-                                ? "bg-mimosa-dark text-white hover:bg-black shadow-lg"
-                                : "bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20"
-                                }`}
-                        >
-                            <Phone size={14} />
-                            <span>1300 MIMOSA</span>
-                        </a>
+                                <Phone size={14} />
+                                <span>1300 MIMOSA</span>
+                            </a>
+                        </div>
                     </div>
 
                     {/* Mobile Menu Button */}
@@ -93,8 +100,12 @@ export default function Header() {
                         className="fixed inset-0 bg-white z-50 flex flex-col"
                     >
                         <div className="flex items-center justify-between p-6 border-b">
-                            <div className="text-2xl font-black text-mimosa-dark uppercase tracking-tighter">
-                                MIMOSA<span className="text-mimosa-gold font-light ml-1">HOMES</span>
+                            <div className="relative h-16 w-64">
+                                <img
+                                    src="/logo.png?v=1.1"
+                                    alt="Mimosa Homes"
+                                    className="object-contain w-full h-full"
+                                />
                             </div>
                             <button
                                 onClick={() => setMobileMenuOpen(false)}

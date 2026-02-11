@@ -49,9 +49,11 @@ export const api = {
     createListing: (data: any, token: string) => fetchAPI('/listings', { method: 'POST', body: JSON.stringify(data), token }),
     updateListing: (id: string, data: any, token: string) => fetchAPI(`/listings/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
     deleteListing: (id: string, token: string) => fetchAPI(`/listings/${id}`, { method: 'DELETE', token }),
-    uploadFile: async (file: File) => {
+    uploadFile: async (file: File, folder: string = 'misc') => {
         const formData = new FormData();
         formData.append('file', file);
+        formData.append('folder', folder);
+
         const response = await fetch(`${API_URL}/upload`, {
             method: 'POST',
             body: formData,
@@ -66,14 +68,20 @@ export const api = {
     updateEnquiryStatus: (id: string, status: string, token: string) => fetchAPI(`/enquiries/${id}/status`, { method: 'PATCH', body: JSON.stringify({ status }), token }),
 
     // Floor Plans
-    getFloorPlans: () => fetchAPI('/floorplans'),
+    getFloorPlans: (query?: any) => {
+        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        return fetchAPI(`/floorplans${queryString}`);
+    },
     getFloorPlan: (id: string) => fetchAPI(`/floorplans/${id}`),
     createFloorPlan: (data: any, token: string) => fetchAPI('/floorplans', { method: 'POST', body: JSON.stringify(data), token }),
     updateFloorPlan: (id: string, data: any, token: string) => fetchAPI(`/floorplans/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
     deleteFloorPlan: (id: string, token: string) => fetchAPI(`/floorplans/${id}`, { method: 'DELETE', token }),
 
     // Facades
-    getFacades: () => fetchAPI('/facades'),
+    getFacades: (query?: any) => {
+        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        return fetchAPI(`/facades${queryString}`);
+    },
     getFacade: (id: string) => fetchAPI(`/facades/${id}`),
     createFacade: (data: any, token: string) => fetchAPI('/facades', { method: 'POST', body: JSON.stringify(data), token }),
     updateFacade: (id: string, data: any, token: string) => fetchAPI(`/facades/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
