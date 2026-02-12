@@ -6,7 +6,8 @@ import { api, getFullUrl } from "@/services/api";
 import { motion } from "framer-motion";
 import { MapPin, Save, CheckCircle2, Search, Home, Upload, X } from "lucide-react";
 import { mapService } from "@/services/mapService";
-import MapPicker from "@/components/admin/MapPicker";
+import dynamic from 'next/dynamic';
+const MapPicker = dynamic(() => import("@/components/admin/MapPicker"), { ssr: false });
 import { useUI } from "@/context/UIContext";
 import { useRef } from "react";
 

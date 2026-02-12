@@ -1,7 +1,7 @@
 module.exports = {
     apps: [
         {
-            name: "backend",
+            name: "mitra-backend",
             cwd: "./backend",
             script: "src/app.js",
             env: {
@@ -10,7 +10,7 @@ module.exports = {
             },
         },
         {
-            name: "frontend",
+            name: "mitra-frontend",
             cwd: "./frontend",
             script: "npm",
             args: "start",
