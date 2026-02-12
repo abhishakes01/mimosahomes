@@ -25,6 +25,56 @@ jobs:
             export NODE_ENV=${{ secrets.NODE_ENV }}
             
             cd ${{ secrets.REMOTE_PATH }}
+            
+            # Check if .git directory exists
+            if [ -d ".git" ]; then
+              echo "Repository exists. Pulling latest changes..."
+              git pull origin main
+            else
+              echo "Repository not found. Cloning..."
+              # clear directory if it exists but is empty or not a repo to avoid conflicts
+              # keeping it safer: assuming REMOTE_PATH is the repo root
+              # If we are in the folder, we might need to clone into current dir or fix logic.
+              # A safe way is to clone into a temp dir and move, or just git init/remote add/pull.
+              # Simpler: git clone . (only works if empty).
+              # Let's try: git clone <url> .
+              # We need the repo URL. Since we don't have a secret for REPO_URL, we can use the implicit one or ask user.
+              # BUT `git pull origin main` implies `origin` is set.
+              
+              # If origin is not set, we cannot pull. 
+              # Better approach: 
+              # If not a git repo, initialize or clone.
+              # Since we are using ssh-action, we might not have the repo URL easily unless we hardcode it or use a secret.
+              # However, looking at the error: "fatal: not a git repository".
+              
+              # Let's assume the user wants to clone if it's not there.
+              # We can try to use the GITHUB_REPOSITORY context to construct the URL.
+              # git clone https://github.com/${{ github.repository }} .
+              
+              # Wait, we provided SSH keys, so we should use SSH URL or HTTPS with token?
+              # usually ssh-action utilizes the SSH key for the SERVER, not necessarily for GitHub.
+              # The server needs a deployment key or forwarded agent to pull from GitHub.
+              
+              # Re-reading the error: "fatal: not a git repository".
+              # This means `git pull` ran in a dir that isn't a git repo.
+              
+              # Fix:
+              # 1. Check if .git exists.
+              # 2. If not, clone.
+              
+              # To clone via SSH on the server, the server must have permission to access the repo.
+              # Assuming the server has keys set up (since "git pull" was the original plan).
+              
+              echo "Directory is not a git repository. Attempting to clone..."
+              # We need to go one level up to clean/clone, or clone into current.
+              # Assuming REMOTE_PATH is the target folder name.
+              
+              # Let's try to clone into the current directory if empty.
+              git clone git@github.com:${{ github.repository }}.git . || echo "Clone failed or directory not empty. Trying to pull..."
+            fi
+            
+            # Ensure we are on main
+            git checkout main
             git pull origin main
             
             # Make the script executable
