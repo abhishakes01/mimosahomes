@@ -6,11 +6,13 @@ import { api, getFullUrl } from "@/services/api";
 import { motion } from "framer-motion";
 import { MapPin, Save, CheckCircle2, Search, Home, Upload, X } from "lucide-react";
 import { mapService } from "@/services/mapService";
-import dynamic from 'next/dynamic';
-const MapPicker = dynamic(() => import("@/components/admin/MapPicker"), { ssr: false });
+import nextDynamic from 'next/dynamic';
+const MapPicker = nextDynamic(() => import("@/components/admin/MapPicker"), { ssr: false });
 import { useUI } from "@/context/UIContext";
 import { useRef } from "react";
 
+
+export const dynamic = 'force-dynamic';
 
 export default function CreateListingPage() {
     const router = useRouter();
