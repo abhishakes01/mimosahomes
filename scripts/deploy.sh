@@ -1,0 +1,56 @@
+#!/bin/bash
+
+# Configuration
+# Force immediate exit on error
+set -e
+
+echo "🚀 Starting Deployment..."
+
+# 1. Pull Latest Code
+echo "📥 Pulling latest code..."
+git pull origin main
+
+# 2. Backend Setup
+echo "🔧 Setting up Backend..."
+cd backend
+
+if [ ! -f ".env" ]; then
+    echo "❌ Error: backend/.env file not found."
+    exit 1
+fi
+
+echo "📦 Installing Backend Dependencies..."
+npm install
+
+echo "🗄️ Running Migrations..."
+npm run migrate
+
+# 3. Frontend Setup
+echo "🎨 Setting up Frontend..."
+cd ../frontend
+
+if [ ! -f ".env" ]; then
+    echo "❌ Error: frontend/.env file not found."
+    exit 1
+fi
+
+echo "📦 Installing Frontend Dependencies..."
+npm install
+
+echo "🏗️ Building Frontend..."
+npm run build
+
+# 4. Restart Services with PM2
+cd ..
+if command -v pm2 &> /dev/null
+then
+    echo "🔄 Restarting Services with PM2..."
+    # Using ecosystem.config.js to manage processes
+    pm2 reload ecosystem.config.js --env production
+    pm2 save
+else
+    echo "❌ Error: PM2 is not installed."
+    exit 1
+fi
+
+echo "✅ Deployment Successful!"
