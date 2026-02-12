@@ -38,6 +38,16 @@ module.exports = (sequelize, DataTypes) => {
         image_url: {
             type: DataTypes.STRING,
             allowNull: true
+        },
+        is_active: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+            allowNull: false
+        },
+        stories: {
+            type: DataTypes.INTEGER,
+            defaultValue: 1,
+            allowNull: false
         }
     }, {
         sequelize,

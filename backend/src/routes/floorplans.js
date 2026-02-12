@@ -3,6 +3,7 @@ const router = express.Router();
 const floorplanController = require('../controllers/floorplanController');
 
 router.get('/', floorplanController.getAllFloorPlans);
+router.get('/filters', floorplanController.getFloorPlanFilters); // Must be before /:id
 router.get('/:id', floorplanController.getFloorPlanById);
 router.post('/', floorplanController.createFloorPlan);
 router.put('/:id', floorplanController.updateFloorPlan);

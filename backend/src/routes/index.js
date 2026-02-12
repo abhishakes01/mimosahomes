@@ -18,5 +18,7 @@ router.use('/enquiries', enquiryRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/floorplans', floorplanRoutes);
 router.use('/facades', facadeRoutes);
+const serviceAreaRoutes = require('./serviceAreas');
+router.use('/service-areas', serviceAreaRoutes);
 
 module.exports = router;

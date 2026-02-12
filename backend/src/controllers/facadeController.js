@@ -2,15 +2,19 @@ const { Facade, FloorPlan } = require('../models');
 
 exports.getAllFacades = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, is_active, stories } = req.query;
         const offset = (page - 1) * limit;
 
+        const where = {};
+        if (is_active !== undefined) {
+            where.is_active = is_active === 'true' || is_active === true;
+        }
+        if (stories !== undefined) {
+            where.stories = parseInt(stories);
+        }
+
         const { count, rows: facades } = await Facade.findAndCountAll({
-            include: [{
-                model: FloorPlan,
-                as: 'floorplans',
-                through: { attributes: [] }
-            }],
+            where,
             order: [['created_at', 'DESC']],
             limit: parseInt(limit),
             offset: parseInt(offset),

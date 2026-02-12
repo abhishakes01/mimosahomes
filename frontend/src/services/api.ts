@@ -32,8 +32,14 @@ async function fetchAPI<T>(endpoint: string, options: RequestOptions = {}): Prom
 export const getFullUrl = (url: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
-    const serverRoot = API_URL.replace('/api', '');
-    return `${serverRoot}${url}`;
+
+    // Remove trailing slash from server root if exists
+    const serverRoot = API_URL.replace(/\/api\/?$/, '');
+
+    // Ensure url has leading slash
+    const cleanUrl = url.startsWith('/') ? url : `/${url}`;
+
+    return `${serverRoot}${cleanUrl}`;
 };
 
 export const api = {
@@ -86,4 +92,14 @@ export const api = {
     createFacade: (data: any, token: string) => fetchAPI('/facades', { method: 'POST', body: JSON.stringify(data), token }),
     updateFacade: (id: string, data: any, token: string) => fetchAPI(`/facades/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
     deleteFacade: (id: string, token: string) => fetchAPI(`/facades/${id}`, { method: 'DELETE', token }),
+
+    // Service Areas
+    getServiceAreas: () => fetchAPI('/service-areas'),
+    getServiceArea: (id: string) => fetchAPI(`/service-areas/${id}`),
+    createServiceArea: (data: any, token: string) => fetchAPI('/service-areas', { method: 'POST', body: JSON.stringify(data), token }),
+    updateServiceArea: (id: string, data: any, token: string) => fetchAPI(`/service-areas/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
+    deleteServiceArea: (id: string, token: string) => fetchAPI(`/service-areas/${id}`, { method: 'DELETE', token }),
+
+    // Floor Plan Filters
+    getFloorPlanFilters: () => fetchAPI('/floorplans/filters'),
 };

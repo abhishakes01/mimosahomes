@@ -64,3 +64,36 @@ exports.deleteFloorPlan = async (req, res, next) => {
         next(error);
     }
 };
+
+exports.getFloorPlanFilters = async (req, res, next) => {
+    try {
+        const { sequelize } = require('../models');
+
+        // Fetch distinct values for dropdowns
+        const [widths, depths, storeys] = await Promise.all([
+            FloorPlan.findAll({
+                attributes: [[sequelize.fn('DISTINCT', sequelize.col('min_frontage')), 'value']],
+                order: [[sequelize.col('min_frontage'), 'ASC']],
+                raw: true
+            }),
+            FloorPlan.findAll({
+                attributes: [[sequelize.fn('DISTINCT', sequelize.col('min_depth')), 'value']],
+                order: [[sequelize.col('min_depth'), 'ASC']],
+                raw: true
+            }),
+            FloorPlan.findAll({
+                attributes: [[sequelize.fn('DISTINCT', sequelize.col('stories')), 'value']],
+                order: [[sequelize.col('stories'), 'ASC']],
+                raw: true
+            })
+        ]);
+
+        res.json({
+            widths: widths.map(w => w.value).filter(v => v != null),
+            depths: depths.map(d => d.value).filter(v => v != null),
+            storeys: storeys.map(s => s.value).filter(v => v != null)
+        });
+    } catch (error) {
+        next(error);
+    }
+};

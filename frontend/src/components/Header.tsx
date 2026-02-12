@@ -26,9 +26,9 @@ export default function Header() {
             <div className="w-full px-4 lg:px-8">
                 {/* Top Bar (Hidden on Mobile) */}
                 <div className={`hidden lg:flex justify-end items-center gap-6 mb-2 text-sm font-medium transition-opacity ${isScrolled ? "opacity-0 h-0 overflow-hidden" : "opacity-100 text-white/90"}`}>
-                    <a href="#" className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
+                    <Link href="/quote/create" className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
                         <Calculator size={14} /> Build a Quote
-                    </a>
+                    </Link>
                     <a href="tel:1300646672" className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
                         <Phone size={14} /> 1300 646 672
                     </a>
@@ -36,14 +36,17 @@ export default function Header() {
 
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link href="/" className="flex items-center gap-2">
-                        <div className="relative h-24 w-80 transition-all duration-300">
+                    <Link href="/" className="flex items-center gap-4 group ">
+                        <div className={`relative transition-all duration-300 flex items-center justify-center ${isScrolled ? "h-12 w-12" : "h-16 w-16"}`}>
                             <img
                                 src="/logo.png?v=1.1"
-                                alt="Mimosa Homes"
+                                alt="Mitra Home"
                                 className={`object-contain w-full h-full transition-all duration-300 ${!isScrolled ? "brightness-0 invert" : ""}`}
                             />
                         </div>
+                        <span className={`font-bold transition-all duration-300 tracking-tight uppercase -mt-2 leading-none ${isScrolled ? "text-xl text-gray-900" : "text-2xl text-white"}`}>
+                            Mitra Home
+                        </span>
                     </Link>
 
                     {/* Right Side: Navigation and Actions */}
@@ -100,12 +103,13 @@ export default function Header() {
                         className="fixed inset-0 bg-white z-50 flex flex-col"
                     >
                         <div className="flex items-center justify-between p-6 border-b">
-                            <div className="relative h-16 w-64">
+                            <div className="flex items-center gap-3">
                                 <img
                                     src="/logo.png?v=1.1"
-                                    alt="Mimosa Homes"
-                                    className="object-contain w-full h-full"
+                                    alt="Mitra Home"
+                                    className="h-10 w-10 object-contain"
                                 />
+                                <span className="text-xl font-bold text-gray-900 tracking-tight uppercase">Mitra Home</span>
                             </div>
                             <button
                                 onClick={() => setMobileMenuOpen(false)}

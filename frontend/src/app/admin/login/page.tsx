@@ -42,7 +42,10 @@ export default function AdminLogin() {
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-black via-black/50 to-transparent" />
                 <div className="absolute bottom-20 left-20 text-white z-10">
-                    <h1 className="text-6xl font-bold mb-4">Mimosa<span className="text-mimosa-gold">Homes</span>.</h1>
+                    <h1 className="text-6xl font-bold mb-4 flex items-center gap-3">
+                        <img src="/logo.png" alt="Logo" className="w-16 h-16 object-contain brightness-0 invert" />
+                        Mitra <span className="text-mimosa-gold">Home</span>
+                    </h1>
                     <p className="text-xl text-gray-300 max-w-md font-light leading-relaxed">
                         Manage your premium property portfolio and customer enquiries with elegance.
                     </p>

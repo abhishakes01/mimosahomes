@@ -128,7 +128,12 @@ export default function FacadesPage() {
                                     </div>
 
                                     <div className="p-6">
-                                        <h3 className="text-xl font-bold text-gray-900 mb-2">{facade.title}</h3>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <h3 className="text-xl font-bold text-gray-900">{facade.title}</h3>
+                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${facade.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                                {facade.is_active ? 'Active' : 'Inactive'}
+                                            </span>
+                                        </div>
                                         <p className="text-sm text-gray-500 mb-4">
                                             Width: {facade.width || 'N/A'}m | {facade.floorplans?.length || 0} floor plans
                                         </p>

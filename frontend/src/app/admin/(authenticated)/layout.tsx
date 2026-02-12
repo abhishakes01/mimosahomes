@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard,
     Home,
@@ -15,9 +16,11 @@ import {
     Bell,
     Search,
     Layers,
-    Ruler
+    Ruler,
+    Menu,
+    X
 } from "lucide-react";
-import { motion } from "framer-motion";
+
 
 export default function AdminLayout({
     children,
@@ -25,6 +28,21 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+
+    // Responsive initial state
+    useEffect(() => {
+        if (window.innerWidth >= 1024) {
+            setIsSidebarOpen(true);
+        }
+    }, []);
+
+    // Close sidebar on small screens when route changes
+    useEffect(() => {
+        if (window.innerWidth < 1024) {
+            setIsSidebarOpen(false);
+        }
+    }, [pathname]);
 
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
@@ -34,6 +52,7 @@ export default function AdminLayout({
         // { icon: Map, label: "House & Land", href: "/admin/packages" },
         // { icon: BadgePercent, label: "Promotions", href: "/admin/promotions" },
         { icon: Users, label: "Enquiries", href: "/admin/enquiries" },
+        { icon: Map, label: "Service Areas", href: "/admin/service-areas" },
         { icon: FileText, label: "Content Pages", href: "/admin/pages" },
         { icon: Settings, label: "Settings", href: "/admin/settings" },
     ];
@@ -44,18 +63,33 @@ export default function AdminLayout({
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex font-inter text-gray-900">
+        <div className="min-h-screen bg-gray-50 flex font-inter text-gray-900 overflow-x-hidden">
+            {/* Overlay for mobile sidebar */}
+            <AnimatePresence>
+                {isSidebarOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setIsSidebarOpen(false)}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[55] lg:hidden"
+                    />
+                )}
+            </AnimatePresence>
+
             {/* Sidebar */}
-            <aside className="fixed left-0 top-0 h-screen w-72 bg-white border-r border-gray-100 z-50 hidden lg:flex flex-col">
+            <aside className={`fixed left-0 top-0 h-screen w-72 bg-white border-r border-gray-100 z-[60] flex flex-col transition-transform duration-300 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+                }`}>
                 {/* Logo */}
-                <div className="p-8 border-b border-gray-100 bg-mimosa-dark flex justify-center">
-                    <div className="relative h-16 w-64">
+                <div className="p-8 border-b border-gray-100 bg-mimosa-dark flex items-center justify-start gap-3">
+                    <div className="relative h-10 w-10">
                         <img
                             src="/logo.png?v=1.1"
                             alt="Mitra Admin"
                             className="object-contain w-full h-full brightness-0 invert"
                         />
                     </div>
+                    <span className="text-white font-bold text-xl -mt-2 tracking-tight">Mitra Home</span>
                 </div>
 
                 {/* Nav */}
@@ -94,9 +128,16 @@ export default function AdminLayout({
             </aside>
 
             {/* Main Content */}
-            <main className="flex-1 lg:ml-72 bg-gray-50 min-h-screen">
-                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-8 sticky top-0 z-40">
-                    <div className="flex items-center gap-8">
+            <main className={`flex-1 transition-all duration-300 bg-gray-50 min-h-screen ${isSidebarOpen ? "lg:ml-72" : "lg:ml-0"}`}>
+                <header className="h-20 bg-white/80 backdrop-blur-md border-b border-gray-100 flex items-center justify-between px-4 lg:px-8 sticky top-0 z-40">
+                    <div className="flex items-center gap-4 lg:gap-8">
+                        {/* Burger Button - Always visible now */}
+                        <button
+                            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+                        >
+                            <Menu size={24} />
+                        </button>
                         <h2 className="text-xl font-bold text-gray-900 tracking-tight">{getPageTitle()}</h2>
                         <div className="hidden md:flex items-center bg-gray-50 border border-gray-100 rounded-xl px-4 py-2 w-80">
                             <Search size={16} className="text-gray-400 mr-2" />
@@ -115,7 +156,7 @@ export default function AdminLayout({
                     </div>
                 </header>
 
-                <div className="p-8 max-w-7xl mx-auto">
+                <div className="py-8 px-2 lg:px-4 w-full">
                     {children}
                 </div>
             </main>

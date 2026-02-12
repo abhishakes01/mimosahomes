@@ -25,6 +25,8 @@ export default function EditFacadePage() {
         title: "",
         width: "",
         image_url: "",
+        is_active: false,
+        stories: 1,
         floorplan_ids: [] as string[]
     });
 
@@ -47,6 +49,8 @@ export default function EditFacadePage() {
                         title: facadeData.title || "",
                         width: facadeData.width || "",
                         image_url: facadeData.image_url || "",
+                        is_active: !!facadeData.is_active,
+                        stories: facadeData.stories || 1,
                         // @ts-ignore
                         floorplan_ids: Array.isArray(facadeData.floorplans)
                             ? facadeData.floorplans.map((fp: any) => fp.id)
@@ -198,6 +202,35 @@ export default function EditFacadePage() {
                             onChange={handleChange}
                             className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
                         />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Stories</label>
+                        <select
+                            name="stories"
+                            value={formData.stories}
+                            onChange={(e) => setFormData(prev => ({ ...prev, stories: parseInt(e.target.value) }))}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        >
+                            <option value={1}>Single Story</option>
+                            <option value={2}>Double Story</option>
+                        </select>
+                    </div>
+
+                    <div className="flex items-center gap-3 bg-gray-50 p-4 rounded-2xl border border-transparent hover:border-mimosa-dark/20 transition-all">
+                        <label className="relative inline-flex items-center cursor-pointer">
+                            <input
+                                type="checkbox"
+                                className="sr-only peer"
+                                checked={formData.is_active}
+                                onChange={(e) => setFormData(prev => ({ ...prev, is_active: e.target.checked }))}
+                            />
+                            <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-mimosa-dark"></div>
+                        </label>
+                        <div className="flex flex-col">
+                            <span className="text-sm font-bold text-gray-900">Show in Quote Builder</span>
+                            <span className="text-[10px] text-gray-400 font-medium">Enable to show in client flow</span>
+                        </div>
                     </div>
 
                     <div className="md:col-span-2">
