@@ -14,7 +14,7 @@ module.exports = {
             // but my model users.js didn't specify UUID. I should check user migration.
             // I'll create a user migration first to match the model.
             username: 'admin',
-            email: 'admin@mimosahomes.com.au',
+            email: 'admin@mitrahomes.com.au',
             password: hashedPassword,
             role: 'admin',
             created_at: new Date(),
@@ -23,6 +23,6 @@ module.exports = {
     },
 
     down: async (queryInterface, Sequelize) => {
-        return queryInterface.bulkDelete('users', { email: 'admin@mimosahomes.com.au' }, {});
+        return queryInterface.bulkDelete('users', { email: 'admin@mitrahomes.com.au' }, {});
     }
 };
