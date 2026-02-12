@@ -5,8 +5,8 @@ console.log(`[database.js] Loaded for environment: '${process.env.NODE_ENV?.trim
 const config = {
     development: {
         username: process.env.DB_USER || 'postgres',
-        password: process.env.DB_PASSWORD || 'admin',
-        database: process.env.DB_NAME || 'mimosahomes_db',
+        password: process.env.DB_PASSWORD || 'Manish@123#',
+        database: process.env.DB_NAME || 'mitra',
         host: process.env.DB_HOST || '127.0.0.1',
         dialect: 'postgres',
         logging: false
