@@ -7,8 +7,9 @@ set -e
 echo "🚀 Starting Deployment..."
 
 # 1. Pull Latest Code
-echo "📥 Pulling latest code..."
-git pull origin main
+echo "📥 Ensuring code is up to date..."
+git fetch origin main
+git reset --hard origin/main
 
 # 2. Backend Setup
 echo "🔧 Setting up Backend..."
