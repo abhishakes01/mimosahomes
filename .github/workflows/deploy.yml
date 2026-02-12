@@ -24,6 +24,9 @@ jobs:
             export NEXT_ENV=${{ secrets.NEXT_ENV }}
             export NODE_ENV=${{ secrets.NODE_ENV }}
             
+            # Fix for dubious ownership error
+            git config --global --add safe.directory ${{ secrets.REMOTE_PATH }}
+            
             cd ${{ secrets.REMOTE_PATH }}
             
             # Check if .git directory exists
