@@ -18,7 +18,7 @@ export const mapService = {
                 {
                     headers: {
                         'Accept-Language': 'en-US,en;q=0.5',
-                        'User-Agent': 'MimosaHomesApp/1.0' // Recommended by Nominatim policy
+                        'User-Agent': 'MitrahomesApp/1.0' // Recommended by Nominatim policy
                     }
                 }
             );
