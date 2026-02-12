@@ -1,6 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect } from "react";
+// Removed useEffect to avoid potential hook issues during initial render/build in strict environments
+export const dynamic = 'force-dynamic';
 
 export default function GlobalError({
     error,
@@ -9,29 +10,26 @@ export default function GlobalError({
     error: Error & { digest?: string };
     reset: () => void;
 }) {
-    useEffect(() => {
-        console.error(error);
-    }, [error]);
-
     return (
         <html>
             <body>
-                <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
-                    <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-                        <h2 className="text-2xl font-bold text-gray-900 mb-4">Something went wrong!</h2>
-                        <p className="text-gray-500 mb-6">
-                            A critical error occurred. Please try refreshing the page.
-                        </p>
-                        <div className="bg-red-50 text-red-600 p-4 rounded-xl text-sm font-mono text-left mb-6 overflow-auto max-h-40">
-                            {error.message || "Unknown error"}
-                        </div>
-                        <button
-                            onClick={() => reset()}
-                            className="px-6 py-3 bg-black text-white rounded-xl font-bold hover:bg-gray-800 transition-colors"
-                        >
-                            Try again
-                        </button>
-                    </div>
+                <div style={{ padding: '2rem', textAlign: 'center', fontFamily: 'system-ui, sans-serif' }}>
+                    <h2>Something went wrong!</h2>
+                    <p>A critical error occurred.</p>
+                    <button
+                        onClick={() => reset()}
+                        style={{
+                            marginTop: '1rem',
+                            padding: '0.5rem 1rem',
+                            cursor: 'pointer',
+                            backgroundColor: '#000',
+                            color: '#fff',
+                            border: 'none',
+                            borderRadius: '4px'
+                        }}
+                    >
+                        Try again
+                    </button>
                 </div>
             </body>
         </html>
