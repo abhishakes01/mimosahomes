@@ -4,6 +4,10 @@
 # Force immediate exit on error
 set -e
 
+# Sanitize NODE_ENV (remove whitespace/newlines)
+export NODE_ENV=$(echo "$NODE_ENV" | tr -d '[:space:]')
+echo "Environment: '$NODE_ENV'"
+
 echo "🚀 Starting Deployment..."
 
 # 1. Pull Latest Code
