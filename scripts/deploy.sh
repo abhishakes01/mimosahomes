@@ -28,7 +28,7 @@ echo "📦 Installing Backend Dependencies..."
 npm install
 
 echo "🗄️ Running Migrations..."
-npm run migrate
+npm run migrate -- --env $NODE_ENV
 
 # 3. Frontend Setup
 echo "🎨 Setting up Frontend..."
