@@ -114,15 +114,16 @@ export default function RegionSelector({ onSelect }: RegionSelectorProps) {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
             <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[600px] relative">
 
-                {/* Left Panel: Welcome Message */}
-                <div className="w-full md:w-1/3 p-8 md:p-12 flex flex-col justify-center bg-white z-10 relative">
-                    <h2 className="text-4xl font-extrabold text-gray-900 mb-6 tracking-tight">WELCOME</h2>
-                    <p className="text-gray-600 mb-8 leading-relaxed">
-                        Start building your dream home with Mimosa Homes today. Explore our V-Collection and customize your house to suit your needs. Create a personalized quote and let us help you bring your dream home to life.
+                <div className="w-full md:w-1/3 p-8 md:p-14 flex flex-col justify-center bg-white z-10 relative">
+                    <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4 italic">Welcome</h2>
+                    <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight uppercase italic mb-8">
+                        Select <span className="text-gray-300">Your</span> <br />
+                        Build Region
+                    </h1>
+                    <p className="text-gray-500 font-medium mb-8 leading-relaxed text-sm">
+                        Start building your dream home with Mimosa Homes today. Explore our collection and customize your house to suit your needs.
                     </p>
-                    <p className="text-gray-900 font-bold text-sm uppercase tracking-wider">
-                        Begin by choosing your preferred build region
-                    </p>
+                    <div className="w-12 h-1 bg-black mb-6" />
                 </div>
 
                 {/* Right Panel: Map */}
@@ -153,9 +154,9 @@ export default function RegionSelector({ onSelect }: RegionSelectorProps) {
                                     key={area.id}
                                     positions={normalizedPositions}
                                     pathOptions={{
-                                        color: '#18181b', // zinc-900 (black-ish)
-                                        fillColor: '#c2c2e9ff',
-                                        fillOpacity: 0.4,
+                                        color: '#0796b1',
+                                        fillColor: '#0796b1',
+                                        fillOpacity: 0.3,
                                         weight: 2
                                     }}
                                     eventHandlers={{
@@ -178,10 +179,9 @@ export default function RegionSelector({ onSelect }: RegionSelectorProps) {
                         })}
                     </MapContainer>
 
-                    {/* Loading Overlay */}
                     {loading && (
                         <div className="absolute inset-0 bg-white/80 flex items-center justify-center z-[1000]">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500"></div>
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#0796b1]"></div>
                         </div>
                     )}
                 </div>

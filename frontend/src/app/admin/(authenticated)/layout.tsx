@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation"; // Added useRouter
 import { motion, AnimatePresence } from "framer-motion";
 import {
     LayoutDashboard,
@@ -28,7 +28,21 @@ export default function AdminLayout({
     children: React.ReactNode;
 }) {
     const pathname = usePathname();
+    const router = useRouter(); // Initialize router
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [isAuthorized, setIsAuthorized] = useState(false); // Auth state
+    const [isLoading, setIsLoading] = useState(true); // Loading state
+
+    // Auth Check
+    useEffect(() => {
+        const user = localStorage.getItem('user');
+        if (!user) {
+            router.replace('/admin/login');
+        } else {
+            setIsAuthorized(true);
+        }
+        setIsLoading(false);
+    }, [pathname, router]);
 
     // Responsive initial state
     useEffect(() => {
@@ -44,11 +58,17 @@ export default function AdminLayout({
         }
     }, [pathname]);
 
+    const handleLogout = () => {
+        localStorage.removeItem('user');
+        router.push('/admin/login');
+    };
+
     const menuItems = [
         { icon: LayoutDashboard, label: "Dashboard", href: "/admin/dashboard" },
         { icon: Ruler, label: "Floor Plans", href: "/admin/floor-plans" },
         { icon: Layers, label: "Facades", href: "/admin/facades" },
         { icon: Home, label: "House Designs", href: "/admin/designs" },
+        { icon: BadgePercent, label: "Upgrades", href: "/admin/upgrades" },
         // { icon: Map, label: "House & Land", href: "/admin/packages" },
         // { icon: BadgePercent, label: "Promotions", href: "/admin/promotions" },
         { icon: Users, label: "Enquiries", href: "/admin/enquiries" },
@@ -61,6 +81,18 @@ export default function AdminLayout({
         const item = menuItems.find(item => pathname.startsWith(item.href));
         return item ? item.label : "Dashboard";
     };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+                <div className="w-12 h-12 border-4 border-mimosa-dark border-t-transparent rounded-full animate-spin" />
+            </div>
+        );
+    }
+
+    if (!isAuthorized) {
+        return null; // Don't render anything while redirecting
+    }
 
     return (
         <div className="min-h-screen bg-gray-50 flex font-inter text-gray-900 overflow-x-hidden">
@@ -121,7 +153,10 @@ export default function AdminLayout({
                         <h4 className="text-sm font-bold text-gray-900 truncate">Admin User</h4>
                         <p className="text-[10px] text-gray-500 truncate">admin@mimosahomes.com.au</p>
                     </div>
-                    <button className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-lg">
+                    <button
+                        onClick={handleLogout}
+                        className="text-gray-400 hover:text-red-500 transition-colors p-2 hover:bg-red-50 rounded-lg"
+                    >
                         <LogOut size={18} />
                     </button>
                 </div>

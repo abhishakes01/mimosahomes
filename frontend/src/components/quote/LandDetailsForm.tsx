@@ -1,8 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Upload, X } from "lucide-react";
+import { Upload, X, Check, MapPin, Home, User, Scaling, ChevronRight, HelpCircle, Info } from "lucide-react";
 import { api } from "@/services/api";
+import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
 
 interface FilterOptions {
     widths: number[];
@@ -16,13 +18,14 @@ interface LandDetailsFormProps {
 }
 
 export default function LandDetailsForm({ onNext, onBack }: LandDetailsFormProps) {
-    const [hasLand, setHasLand] = useState<boolean | null>(false);
+    const [hasLand, setHasLand] = useState<boolean | null>(true);
     const [files, setFiles] = useState<File[]>([]);
     const [filters, setFilters] = useState<FilterOptions>({ widths: [], depths: [], storeys: [] });
     const [loadingFilters, setLoadingFilters] = useState(true);
 
     // Form State
     const [formData, setFormData] = useState({
+        name: "",
         lotNumber: "",
         estateName: "",
         suburb: "",
@@ -58,173 +61,234 @@ export default function LandDetailsForm({ onNext, onBack }: LandDetailsFormProps
     };
 
     const handleNext = () => {
-        // Validation: "Any" (empty string) is now a valid option, so we allow proceeding.
-        // If we needed to enforce a specific selection, we would check here.
-
-        console.log("Proceeding with:", formData);
         if (onNext) {
             onNext(formData);
         }
     };
 
-    const renderDropdowns = () => (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
-            <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase">Land Width <span className="text-red-500">*</span></label>
-                <select
-                    value={formData.landWidth}
-                    onChange={(e) => handleChange("landWidth", e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors appearance-none"
-                >
-                    <option value="">Any</option>
-                    {filters.widths.map(w => <option key={w} value={w}>{w}m+</option>)}
-                </select>
-            </div>
-            <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase">Land Depth <span className="text-red-500">*</span></label>
-                <select
-                    value={formData.landDepth}
-                    onChange={(e) => handleChange("landDepth", e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors appearance-none"
-                >
-                    <option value="">Any</option>
-                    {filters.depths.map(d => <option key={d} value={d}>{d}m+</option>)}
-                </select>
-            </div>
-            <div className="space-y-2">
-                <label className="text-xs font-bold text-gray-500 uppercase">Storeys <span className="text-red-500">*</span></label>
-                <select
-                    value={formData.storeys}
-                    onChange={(e) => handleChange("storeys", e.target.value)}
-                    className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors appearance-none"
-                >
-                    <option value="">Any</option>
-                    {filters.storeys.map(s => <option key={s} value={s}>{s === 1 ? "Single" : "Double"} Storey</option>)}
-                </select>
-            </div>
-        </div>
-    );
-
     return (
-        <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 max-w-4xl mx-auto">
-            {/* Step 1: Do you have land? */}
-            <div className="mb-8">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 uppercase tracking-tight">Do you have land?</h3>
-                <div className="flex gap-4">
+        <div className="flex flex-col gap-10">
+            {/* Main Layout Area */}
+            <div className="flex flex-col lg:flex-row gap-8 items-start">
+                {/* Left Side: Form Card */}
+                <div className="flex-grow lg:w-[65%] bg-white rounded-2xl shadow-sm border border-gray-100 p-8 lg:p-12">
+                    <div className="space-y-10">
+                        {/* Land Question */}
+                        <div className="space-y-4">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Do you have land?</h2>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setHasLand(true)}
+                                    className={`px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-all ${hasLand === true
+                                        ? "bg-[#0796b1] text-white shadow-lg shadow-cyan-900/20"
+                                        : "bg-gray-200 text-gray-500 hover:bg-gray-300"
+                                        }`}
+                                >
+                                    Yes
+                                </button>
+                                <button
+                                    onClick={() => setHasLand(false)}
+                                    className={`px-8 py-3 rounded-xl font-black uppercase text-xs tracking-widest transition-all ${hasLand === false
+                                        ? "bg-[#0796b1] text-white shadow-lg shadow-cyan-900/20"
+                                        : "bg-gray-200 text-gray-400 hover:bg-gray-300"
+                                        }`}
+                                >
+                                    No
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Title Section */}
+                        <div className="pt-4">
+                            <h3 className="text-xs font-black text-[#0796b1] uppercase tracking-[0.2em] mb-8">
+                                {hasLand ? "Build Your Quote" : "Continue to Build Your Quote"}
+                            </h3>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {hasLand ? (
+                                    <>
+                                        {/* Lot Number */}
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Lot Number</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Type Lot Number"
+                                                value={formData.lotNumber}
+                                                onChange={(e) => handleChange("lotNumber", e.target.value)}
+                                                className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all"
+                                            />
+                                        </div>
+                                        {/* Estate Name */}
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Estate Name</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Type Estate Name"
+                                                value={formData.estateName}
+                                                onChange={(e) => handleChange("estateName", e.target.value)}
+                                                className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all"
+                                            />
+                                        </div>
+                                        {/* Suburb */}
+                                        <div className="space-y-3">
+                                            <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Suburb</label>
+                                            <input
+                                                type="text"
+                                                placeholder="Type Suburb"
+                                                value={formData.suburb}
+                                                onChange={(e) => handleChange("suburb", e.target.value)}
+                                                className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all"
+                                            />
+                                        </div>
+                                    </>
+                                ) : (
+                                    /* Preferred Build Location */
+                                    <div className="space-y-3 md:col-span-3">
+                                        <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Preferred Build Location</label>
+                                        <input
+                                            type="text"
+                                            placeholder="Type Estate/Suburb"
+                                            value={formData.preferredLocation}
+                                            onChange={(e) => handleChange("preferredLocation", e.target.value)}
+                                            className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all"
+                                        />
+                                    </div>
+                                )}
+
+                                {/* Width Dropdown */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Land Width</label>
+                                    <div className="relative">
+                                        <select
+                                            value={formData.landWidth}
+                                            onChange={(e) => handleChange("landWidth", e.target.value)}
+                                            className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="">Any</option>
+                                            {filters.widths.map(w => <option key={w} value={w}>{w}m+</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <ChevronRight size={16} className="rotate-90" />
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Depth Dropdown */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Land Depth</label>
+                                    <div className="relative">
+                                        <select
+                                            value={formData.landDepth}
+                                            onChange={(e) => handleChange("landDepth", e.target.value)}
+                                            className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="">Any</option>
+                                            {filters.depths.map(d => <option key={d} value={d}>{d}m+</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <ChevronRight size={16} className="rotate-90" />
+                                        </div>
+                                    </div>
+                                </div>
+                                {/* Storeys Dropdown */}
+                                <div className="space-y-3">
+                                    <label className="text-[10px] font-black text-gray-900 uppercase tracking-widest">Storeys</label>
+                                    <div className="relative">
+                                        <select
+                                            value={formData.storeys}
+                                            onChange={(e) => handleChange("storeys", e.target.value)}
+                                            className="w-full bg-white border border-gray-200 rounded-xl p-4 text-sm focus:outline-none focus:border-[#0796b1] transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="">Any</option>
+                                            {filters.storeys.map(s => <option key={s} value={s}>{s}</option>)}
+                                        </select>
+                                        <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-gray-400">
+                                            <ChevronRight size={16} className="rotate-90" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* File Upload Section - Only for YES land */}
+                        {hasLand && (
+                            <div className="pt-4 border-t border-gray-50 flex flex-col gap-4">
+                                <div className="flex items-center gap-2">
+                                    <h4 className="text-[11px] font-black text-gray-900 uppercase tracking-widest">Please provide any relevant land documentation</h4>
+                                    <div className="text-[#0796b1] cursor-help transition-transform hover:scale-110">
+                                        <Info size={16} />
+                                    </div>
+                                </div>
+
+                                <div className="flex items-center gap-6">
+                                    <label className="cursor-pointer bg-white border-2 border-gray-900 text-gray-900 px-10 py-4 rounded-xl font-black text-[11px] uppercase tracking-widest hover:bg-gray-900 hover:text-white transition-all shadow-sm">
+                                        Upload Files
+                                        <input type="file" multiple className="hidden" onChange={handleFileChange} />
+                                    </label>
+                                    <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
+                                        {files.length > 0 ? `${files.length} Files Attached` : "No files currently uploaded"}
+                                    </span>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                {/* Right Side: Welcome Card */}
+                <div className="lg:w-[35%] w-full space-y-6">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 relative overflow-hidden flex flex-col min-h-[400px]">
+                        {/* <div className="flex justify-between items-start">
+                            <div className="space-y-1">
+                                <span className="text-sm font-bold text-gray-900 uppercase tracking-widest block opacity-70">Welcome,</span>
+                                <h3 className="text-4xl font-black text-gray-900 uppercase tracking-tighter italic leading-none">{formData.name || "Guest"}</h3>
+                            </div>
+                            <div className="flex flex-col items-center">
+                                <div className="w-16 h-16 rounded-full border-2 border-gray-100 flex items-center justify-center text-gray-300">
+                                    <User size={32} />
+                                </div>
+                                <button className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mt-2 hover:text-[#0796b1] hover:underline underline-offset-4">
+                                    Edit Details
+                                </button>
+                            </div>
+                        </div> */}
+
+                        {/* <div className="mt-12 space-y-4">
+                            <h4 className="text-[11px] font-black text-[#0796b1] uppercase tracking-[0.3em]">Saved Quotes</h4>
+                            <div className="p-8 border border-dashed border-gray-100 rounded-[32px] flex flex-col items-center justify-center opacity-40">
+                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">No Saved Quotes</span>
+                            </div>
+                        </div> */}
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Navigation */}
+            <div className="flex flex-col items-center gap-6 pb-12">
+                <button
+                    onClick={handleNext}
+                    className="bg-gray-900 text-white px-16 py-6 rounded-2xl font-black uppercase text-sm tracking-[0.2em] flex items-center gap-4 hover:bg-black transition-all shadow-2xl shadow-gray-900/20 active:scale-95"
+                >
+                    Next Step <ChevronRight size={20} />
+                </button>
+
+                <div className="w-full flex justify-end px-4">
                     <button
-                        onClick={() => setHasLand(true)}
-                        className={`px-8 py-3 rounded-md font-bold text-sm transition-all uppercase ${hasLand === true
-                            ? "bg-black text-white shadow-lg shadow-gray-500/30"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            }`}
+                        onClick={() => window.location.reload()}
+                        className="bg-[#0796b1] text-white px-8 py-3 rounded-xl font-black uppercase text-[10px] tracking-widest hover:bg-cyan-700 transition-all shadow-lg shadow-cyan-900/20"
                     >
-                        Yes
-                    </button>
-                    <button
-                        onClick={() => setHasLand(false)}
-                        className={`px-8 py-3 rounded-md font-bold text-sm transition-all uppercase ${hasLand === false
-                            ? "bg-black text-white shadow-lg shadow-gray-500/30"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
-                            }`}
-                    >
-                        No
+                        Restart Quote
                     </button>
                 </div>
             </div>
 
-            {/* Step 2: Form Fields */}
-            {hasLand === true && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <h4 className="text-gray-900 font-bold uppercase tracking-wider text-sm mb-6">Build Your Quote</h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Lot Number</label>
-                            <input
-                                type="text"
-                                placeholder="Type Lot Number"
-                                value={formData.lotNumber}
-                                onChange={(e) => handleChange("lotNumber", e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Estate Name</label>
-                            <input
-                                type="text"
-                                placeholder="Type Estate Name"
-                                value={formData.estateName}
-                                onChange={(e) => handleChange("estateName", e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <label className="text-xs font-bold text-gray-500 uppercase">Suburb</label>
-                            <input
-                                type="text"
-                                placeholder="Type Suburb"
-                                value={formData.suburb}
-                                onChange={(e) => handleChange("suburb", e.target.value)}
-                                className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                            />
-                        </div>
-                    </div>
-
-                    {renderDropdowns()}
-
-                    <div className="mt-8">
-                        <label className="text-xs font-bold text-gray-500 uppercase flex items-center gap-2 mb-2">
-                            Please provide any relevant land documentation
-                            <span className="text-black cursor-help" title="Upload distinct plans, engineering, etc.">ⓘ</span>
-                        </label>
-                        <div className="flex items-center gap-4">
-                            <label className="cursor-pointer bg-white border border-gray-900 text-gray-900 px-8 py-3 rounded-lg font-bold text-sm uppercase hover:bg-gray-50 transition-colors">
-                                Upload Files
-                                <input type="file" multiple className="hidden" onChange={handleFileChange} />
-                            </label>
-                            <span className="text-gray-400 text-sm italic">
-                                {files.length > 0 ? `${files.length} file(s) selected` : "No files currently uploaded"}
-                            </span>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {hasLand === false && (
-                <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-500">
-                    <h4 className="text-gray-900 font-bold uppercase tracking-wider text-sm mb-6">Continue to Build Your Quote</h4>
-
-                    <div className="space-y-2">
-                        <label className="text-xs font-bold text-gray-500 uppercase">Preferred Build Location</label>
-                        <input
-                            type="text"
-                            placeholder="Type Estate/Suburb"
-                            value={formData.preferredLocation}
-                            onChange={(e) => handleChange("preferredLocation", e.target.value)}
-                            className="w-full p-4 bg-gray-50 border border-gray-200 rounded-xl focus:outline-none focus:border-black transition-colors"
-                        />
-                    </div>
-
-                    {renderDropdowns()}
-                </div>
-            )}
-
-            {(hasLand === true || hasLand === false) && (
-                <div className="mt-12 flex justify-between items-center">
-                    <button
-                        onClick={onBack}
-                        className="text-gray-400 font-bold uppercase text-[10px] tracking-widest hover:text-black transition-colors"
-                    >
-                        ‹ Previous Step
-                    </button>
-                    <button
-                        onClick={handleNext}
-                        className="bg-gray-900 text-white px-8 py-3 rounded-lg font-bold uppercase flex items-center gap-2 hover:bg-black transition-colors"
-                    >
-                        Next Step <span className="text-white">›</span>
-                    </button>
-                </div>
-            )}
+            <style jsx global>{`
+                .no-scrollbar::-webkit-scrollbar {
+                    display: none;
+                }
+                .no-scrollbar {
+                    -ms-overflow-style: none;
+                    scrollbar-width: none;
+                }
+            `}</style>
         </div>
     );
 }

@@ -17,35 +17,30 @@ interface ProgressStepsProps {
 
 export default function ProgressSteps({ currentStep }: ProgressStepsProps) {
     return (
-        <div className="w-full bg-white border-b border-gray-200 py-4 shadow-sm mb-8">
-            <div className="max-w-7xl mx-auto px-4 flex items-center justify-between overflow-x-auto scrollbar-hide">
+        <div className="w-full bg-white py-6 border-b border-gray-100">
+            <div className="max-w-7xl mx-auto px-4 flex items-center justify-center gap-4 md:gap-8 overflow-x-auto no-scrollbar">
                 {steps.map((step, idx) => {
                     const isActive = step.number === currentStep;
                     const isCompleted = step.number < currentStep;
 
                     return (
-                        <div key={step.number} className="flex items-center gap-2 min-w-fit px-4">
+                        <div key={step.number} className="flex items-center gap-3 min-w-fit">
                             <div
-                                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors border-2 ${isActive
-                                    ? "bg-black border-black text-white"
-                                    : isCompleted
-                                        ? "bg-green-500 border-green-500 text-white"
-                                        : "bg-white border-gray-300 text-gray-400"
+                                className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all border-2 ${isActive
+                                        ? "bg-[#0796b1] border-[#0796b1] text-white shadow-lg shadow-cyan-900/20"
+                                        : isCompleted
+                                            ? "bg-[#0796b1] border-[#0796b1] text-white"
+                                            : "bg-white border-gray-200 text-gray-400"
                                     }`}
                             >
-                                {isCompleted ? <Check size={16} /> : step.number}
+                                {isCompleted ? <Check size={18} strokeWidth={3} /> : step.number}
                             </div>
                             <span
-                                className={`text-sm font-bold uppercase tracking-wide whitespace-nowrap ${isActive ? "text-gray-900" : "text-gray-400"
+                                className={`text-[11px] font-black uppercase tracking-widest whitespace-nowrap ${isActive ? "text-gray-900" : "text-gray-400"
                                     }`}
                             >
                                 {step.label}
                             </span>
-
-                            {/* Connector line (optional, simplified) */}
-                            {/* {idx < steps.length - 1 && (
-                                <div className="hidden md:block w-12 h-[2px] bg-gray-200 ml-4" />
-                            )} */}
                         </div>
                     );
                 })}

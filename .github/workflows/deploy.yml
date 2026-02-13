@@ -28,10 +28,6 @@ jobs:
             echo "${{ secrets.BACKEND_ENV }}" > ${{ secrets.REMOTE_PATH }}/backend/.env
             echo "${{ secrets.FRONTEND_ENV }}" > ${{ secrets.REMOTE_PATH }}/frontend/.env
             
-            # Create/Rewrite .env files from secrets
-            echo "${{ secrets.BACKEND_ENV }}" > ${{ secrets.REMOTE_PATH }}/backend/.env
-            echo "${{ secrets.FRONTEND_ENV }}" > ${{ secrets.REMOTE_PATH }}/frontend/.env
-            
             # Fix for dubious ownership error
             git config --global --add safe.directory ${{ secrets.REMOTE_PATH }}
             

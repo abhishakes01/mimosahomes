@@ -3,15 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { api, getFullUrl } from "@/services/api";
-import { ArrowLeft, ArrowRight, ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, X, ZoomIn, Search, Info } from "lucide-react";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, EffectCoverflow } from 'swiper/modules';
+import { Navigation, Pagination, Mousewheel } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 import { motion, AnimatePresence } from "framer-motion";
 
 import 'swiper/css';
 import 'swiper/css/navigation';
-import 'swiper/css/effect-coverflow';
+import 'swiper/css/pagination';
 
 interface FacadeSelectorProps {
     selectedFloorPlan: any;
@@ -35,24 +35,22 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
     const loadData = async () => {
         try {
             setLoading(true);
-            // Fetch facades for this floorplan based on stories
             const data: any = await api.getFacades({
                 limit: 100,
-                is_active: true, // Only show active facades in the quote builder
-                stories: selectedFloorPlan.stories // Filter by selected floorplan's stories
+                is_active: true,
+                stories: selectedFloorPlan.stories
             });
+            const facadeList = data.data || [];
+            setFacades(facadeList);
 
-            // Set facades (data.data is the array from our controller)
-            setFacades(data.data || []);
+            if (facadeList.length > 0) {
+                setSelectedFacade(facadeList[0]);
+            }
         } catch (error) {
             console.error("Failed to load facades", error);
         } finally {
             setLoading(false);
         }
-    };
-
-    const handleSelect = (facade: any) => {
-        setSelectedFacade(facade);
     };
 
     const handleNext = () => {
@@ -62,227 +60,212 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column: Facades Slider */}
-            <div className="flex-grow lg:w-2/3 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[500px]">
+        <div className="flex flex-col gap-10">
+            {/* Main Selection Area */}
+            <div className="flex flex-col lg:flex-row gap-8 items-stretch">
 
-                {/* Header */}
-                <div className="flex items-end justify-between gap-4 mb-8 pb-4 border-b border-gray-100">
-                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight uppercase">Facades</h2>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest px-4 py-1.5 bg-gray-50 rounded-full border border-gray-100">
-                        Compatible with {selectedFloorPlan.title}
-                    </p>
-                </div>
+                {/* Left Column: Facades Browser */}
+                <div className="flex-grow lg:w-[68%] bg-white rounded-[40px] border border-gray-100 p-8 lg:p-12 flex flex-col min-h-[750px] shadow-sm overflow-hidden">
+                    <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-4">FACADES</h2>
 
-                {/* Slider */}
-                {loading ? (
-                    <div className="flex justify-center items-center h-[350px]">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                    </div>
-                ) : facades.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-[350px] text-gray-400">
-                        <X size={48} className="mb-4 opacity-10" />
-                        <p className="font-bold uppercase tracking-widest text-[10px]">No compatible facades found.</p>
-                        <button
-                            onClick={onBack}
-                            className="mt-4 text-black underline font-black text-[10px] uppercase tracking-[0.2em]"
-                        >
-                            Change Floorplan
-                        </button>
-                    </div>
-                ) : (
-                    <div className="relative px-8 group mt-8">
-                        {/* Swiper Active Slide Styling */}
-                        <style jsx global>{`
-                            .facade-swiper .swiper-slide {
-                                transition: all 0.5s ease;
-                                transform: scale(0.85);
-                                opacity: 0.3 !important;
-                                filter: grayscale(1);
-                            }
-                            .facade-swiper .swiper-slide-active {
-                                transform: scale(1.05);
-                                opacity: 1 !important;
-                                filter: grayscale(0);
-                            }
-                        `}</style>
-
-                        {/* Custom Navigation Buttons */}
-                        <div
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-black text-white rounded-full cursor-pointer hover:bg-gray-800 transition-colors shadow-lg"
-                            onClick={() => swiperRef.current?.slidePrev()}
-                        >
-                            <ChevronLeft size={20} />
-                        </div>
-                        <div
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-black text-white rounded-full cursor-pointer hover:bg-gray-800 transition-colors shadow-lg"
-                            onClick={() => swiperRef.current?.slideNext()}
-                        >
-                            <ChevronRight size={20} />
-                        </div>
-
-                        <Swiper
-                            onSwiper={(swiper) => {
-                                swiperRef.current = swiper;
-                            }}
-                            modules={[Navigation, EffectCoverflow]}
-                            effect={'coverflow'}
-                            grabCursor={true}
-                            centeredSlides={true}
-                            slidesPerView={'auto'}
-                            coverflowEffect={{
-                                rotate: 0,
-                                stretch: 0,
-                                depth: 150,
-                                modifier: 1.5,
-                                slideShadows: false,
-                            }}
-                            initialSlide={0}
-                            className="pb-4 facade-swiper"
-                        >
-                            {facades.map(facade => (
-                                <SwiperSlide key={facade.id} className="w-[200px] sm:w-[240px]">
-                                    <div className={`bg-white rounded-xl overflow-hidden h-full flex flex-col relative transition-all duration-300 border-2 ${selectedFacade?.id === facade.id ? 'border-black shadow-xl' : 'border-gray-100 shadow-sm'}`}>
-
-                                        {/* Select Indicator */}
-                                        {selectedFacade?.id === facade.id && (
-                                            <div className="absolute top-0 inset-x-0 h-1 bg-black z-20"></div>
-                                        )}
-
-                                        {/* Action Button Top Right */}
-                                        <div className="absolute top-2 right-2 z-10">
-                                            <button
-                                                onClick={() => handleSelect(facade)}
-                                                className={`text-[8px] font-bold px-2 py-1 rounded-full uppercase transition-all ${selectedFacade?.id === facade.id ? 'bg-black text-white' : 'bg-white text-black border border-gray-100 hover:bg-gray-50 shadow-sm'}`}
-                                            >
-                                                {selectedFacade?.id === facade.id ? 'Selected' : 'Select'}
-                                            </button>
-                                        </div>
-
-                                        {/* Zoom/Fancy Icon */}
-                                        <div className="absolute top-2 left-2 z-10">
-                                            <button
-                                                onClick={() => setViewingImage(getFullUrl(facade.image_url))}
-                                                className="bg-white/90 backdrop-blur-sm text-black p-1 rounded-full hover:bg-white shadow-sm transition-all"
-                                                title="View Large"
-                                            >
-                                                <ZoomIn size={12} />
-                                            </button>
-                                        </div>
-
-                                        {/* Image Area */}
-                                        <div className="relative h-48 bg-white p-3 pt-10">
-                                            <div className="relative w-full h-full">
-                                                {facade.image_url ? (
-                                                    <Image
-                                                        src={getFullUrl(facade.image_url)}
-                                                        alt={facade.title}
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-full text-gray-300">No Image</div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Content Area */}
-                                        <div className="flex flex-col items-center text-center p-4 flex-grow">
-                                            <h3 className="text-base font-black text-gray-900 uppercase mb-0.5 tracking-tight">{facade.title}</h3>
-                                            <button
-                                                onClick={() => setViewingImage(getFullUrl(facade.image_url))}
-                                                className="text-gray-500 text-[8px] font-bold underline uppercase mb-3 hover:text-black tracking-widest"
-                                            >
-                                                View Facade
-                                            </button>
-
-                                            <button className="bg-gray-100 text-gray-900 text-[8px] font-black px-4 py-1.5 rounded-full mb-4 hover:bg-gray-200 uppercase tracking-widest transition-colors">
-                                                Inclusions
-                                            </button>
-
-                                            <div className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-auto">
-                                                Included in Price
-                                            </div>
-                                        </div>
-
-                                        {/* Footer / Status */}
-                                        <div className="bg-gray-900 text-white py-2.5 text-center text-[10px] font-black mt-auto tracking-widest uppercase">
-                                            {selectedFacade?.id === facade.id ? 'Slected' : 'Available'}
-                                        </div>
-                                    </div>
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    </div>
-                )}
-            </div>
-
-            {/* Right Column: Quote Summary */}
-            <div className="lg:w-1/3 flex flex-col gap-6">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col min-h-[400px]">
-                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-widest mb-8 border-b border-gray-100 pb-4">Quote Summary</h3>
-
-                    <div className="flex-grow space-y-8">
-                        {/* Floorplan Info */}
-                        <div className="flex justify-between items-start">
-                            <div className="flex flex-col">
-                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Floorplan</span>
-                                <span className="text-sm font-black text-gray-900 uppercase">{selectedFloorPlan.title}</span>
+                    <div className="relative flex-grow flex items-center justify-center">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0796b1]"></div>
                             </div>
-                            <span className="font-black text-gray-900 text-sm">${(selectedFloorPlan.price || 232596).toLocaleString()}</span>
-                        </div>
-
-                        {/* Facade Info */}
-                        {selectedFacade ? (
-                            <motion.div
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="flex justify-between items-start border-t border-gray-50 pt-6"
-                            >
-                                <div className="flex flex-col">
-                                    <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Facade</span>
-                                    <span className="text-sm font-black text-gray-900 uppercase">{selectedFacade.title}</span>
-                                </div>
-                                <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Included</span>
-                            </motion.div>
                         ) : (
-                            <div className="text-gray-400 italic text-[11px] text-center mt-12 bg-gray-50 p-6 rounded-2xl border border-dashed border-gray-200">
-                                Select a facade to update your summary
+                            <div className="relative w-full flex items-center justify-center">
+                                {/* Navigation Arrows */}
+                                <button
+                                    onClick={() => swiperRef.current?.slidePrev()}
+                                    className="absolute left-2 z-[30] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                >
+                                    <ChevronLeft size={24} strokeWidth={3} />
+                                </button>
+
+                                <Swiper
+                                    onSwiper={(swiper) => { swiperRef.current = swiper; }}
+                                    modules={[Navigation, Mousewheel]}
+                                    mousewheel={true}
+                                    centeredSlides={true}
+                                    slidesPerView={1}
+                                    spaceBetween={20}
+                                    className="w-full py-10"
+                                >
+                                    {facades.map(facade => {
+                                        const isSelected = selectedFacade?.id === facade.id;
+                                        return (
+                                            <SwiperSlide key={facade.id}>
+                                                <div
+                                                    onClick={() => setSelectedFacade(facade)}
+                                                    className={`relative bg-white border-2 rounded-[32px] transition-all duration-500 cursor-pointer overflow-hidden flex flex-col group ${isSelected
+                                                        ? 'border-[#0796b1] shadow-[0_30px_60px_-12px_rgba(7,150,177,0.25)]'
+                                                        : 'border-gray-100 hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    {/* Facade Image Container */}
+                                                    <div className="relative w-full h-[450px]">
+                                                        <Image
+                                                            src={getFullUrl(facade.image_url)}
+                                                            alt={facade.title}
+                                                            fill
+                                                            className="object-cover"
+                                                            priority
+                                                        />
+
+                                                        {/* Top UI Elements */}
+                                                        <div className="absolute top-6 left-6 z-10">
+                                                            <button
+                                                                className="w-10 h-10 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                                                                onClick={(e) => { e.stopPropagation(); setViewingImage(getFullUrl(facade.image_url)); }}
+                                                            >
+                                                                <ZoomIn size={20} />
+                                                            </button>
+                                                        </div>
+
+                                                        {isSelected && (
+                                                            <div className="absolute top-6 right-6 z-10">
+                                                                <button
+                                                                    className="bg-[#0796b1] text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg"
+                                                                    onClick={(e) => { e.stopPropagation(); }}
+                                                                >
+                                                                    UNSELECT
+                                                                </button>
+                                                            </div>
+                                                        )}
+
+                                                        {/* Bottom Info Bar */}
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-[#0796b1] text-white flex justify-between items-center px-10 py-7 transform transition-transform group-hover:scale-[1.01]">
+                                                            <h3 className="text-3xl font-black uppercase tracking-tighter leading-none">{facade.title}</h3>
+                                                            <span className="text-2xl font-black italic tracking-tighter leading-none opacity-90">
+                                                                {facade.price === 0 || !facade.price ? "Included" : `+$${facade.price.toLocaleString()}`}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </SwiperSlide>
+                                        );
+                                    })}
+                                </Swiper>
+
+                                <button
+                                    onClick={() => swiperRef.current?.slideNext()}
+                                    className="absolute right-2 z-[30] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                >
+                                    <ChevronRight size={24} strokeWidth={3} />
+                                </button>
                             </div>
                         )}
                     </div>
 
-                    <div className="mt-auto pt-8 border-t border-gray-100">
-                        <div className="flex justify-between items-center text-2xl font-black">
-                            <span className="text-gray-400 uppercase text-xs tracking-[0.2em]">Subtotal</span>
-                            <span className="text-gray-900">
-                                ${(selectedFloorPlan.price || 232596).toLocaleString()}
-                            </span>
-                        </div>
+                    {/* Design Note Disclaimer */}
+                    <div className="mt-8 px-10 text-center pb-4">
+                        <p className="text-[10px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest px-10 md:px-20">
+                            This facade render is indicative only. Please note this render may depict upgrades. Driveways, landscaping, blinds and fencing are not included and can be added as an upgrade.
+                        </p>
                     </div>
                 </div>
 
-                {/* Next Step Button */}
-                <button
-                    disabled={!selectedFacade}
-                    onClick={handleNext}
-                    className={`w-full py-5 rounded-2xl font-black uppercase text-sm tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 ${selectedFacade
-                        ? 'bg-black text-white hover:bg-gray-800 shadow-xl scale-[1.02]'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-                        }`}
-                >
-                    Next Step <ArrowRight size={18} />
-                </button>
+                {/* Right Column: Quote Summary Hub */}
+                <div className="lg:w-[32%] flex flex-col gap-6">
+                    <div className="bg-white rounded-[32px] border border-gray-100 p-10 shadow-2xl space-y-12 min-h-[600px]">
+                        <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">QUOTE SUMMARY</h2>
+
+                        <div className="space-y-10">
+                            {/* Floorplan Section */}
+                            <div className="space-y-4">
+                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">FLOORPLAN</h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-[11px]">
+                                        <span className="font-bold text-gray-500 uppercase tracking-widest">Floorplan Name: <span className="text-gray-900">{selectedFloorPlan.title}</span></span>
+                                        <span className="font-bold text-gray-900">${(selectedFloorPlan.price || 232596).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[11px] pt-1">
+                                        <span className="font-bold text-gray-900 uppercase tracking-widest">Subtotal:</span>
+                                        <span className="font-black text-[#0796b1]">${(selectedFloorPlan.price || 232596).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Facade Section */}
+                            <div className="space-y-4">
+                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">FACADE</h3>
+                                {selectedFacade ? (
+                                    <div className="space-y-3">
+                                        <div className="flex justify-between items-center text-[11px]">
+                                            <span className="font-bold text-gray-500 uppercase tracking-widest">Facade Name: <span className="text-gray-900">{selectedFacade.title}</span></span>
+                                            <span className="font-bold text-[#0796b1]">Included</span>
+                                        </div>
+                                        <div className="flex justify-between items-center text-[11px] pt-1">
+                                            <span className="font-bold text-gray-900 uppercase tracking-widest">Subtotal:</span>
+                                            <span className="font-black text-[#0796b1]">Included</span>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="py-6 border border-dashed border-gray-100 rounded-2xl text-center opacity-40">
+                                        <p className="text-[9px] font-bold text-gray-400 uppercase tracking-widest">Selection pending</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Total Area */}
+                            <div className="pt-12 flex justify-end items-center gap-6">
+                                <span className="text-xl font-black text-gray-900 uppercase tracking-tighter italic">TOTAL:</span>
+                                <span className="text-5xl font-black text-[#0796b1] tracking-tighter italic">
+                                    ${Math.round(selectedFloorPlan.price || 232596).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end pr-4">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-[#0796b1] text-white px-8 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-900/10 hover:bg-cyan-700 transition-all"
+                        >
+                            RESTART QUOTE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Nav Section */}
+            <div className="flex flex-col items-center gap-6 py-12 relative overflow-visible">
+                <div className="relative group">
+                    <AnimatePresence>
+                        {selectedFacade && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="absolute top-[-55px] left-1/2 -translate-x-1/2 bg-[#0796b1] text-white px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap shadow-xl z-20"
+                            >
+                                To continue building your quote, please press this button
+                                <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0796b1] rotate-45" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <button
+                        onClick={handleNext}
+                        disabled={!selectedFacade}
+                        className={`px-24 py-7 rounded-[32px] font-black uppercase text-sm tracking-[0.3em] flex items-center gap-6 transition-all shadow-2xl active:scale-95 ${selectedFacade
+                            ? 'bg-gray-900 text-white hover:bg-black shadow-gray-900/40 hover:-translate-y-1'
+                            : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            }`}
+                    >
+                        NEXT STEP <ChevronRight size={24} strokeWidth={4} />
+                    </button>
+                </div>
 
                 <button
                     onClick={onBack}
-                    className="w-full py-4 text-gray-400 font-bold uppercase text-[10px] tracking-widest hover:text-black transition-colors flex items-center justify-center gap-2"
+                    className="text-[#0796b1] font-black uppercase text-[10px] tracking-[0.4em] hover:opacity-80 transition-all underline underline-offset-8 decoration-2"
                 >
-                    ‹ Previous Step
+                    &lt; GO BACK
                 </button>
             </div>
 
-            {/* Fancy Box / Lightbox Popup */}
+            {/* Global Lightbox */}
             <AnimatePresence>
                 {viewingImage && (
                     <motion.div
@@ -290,28 +273,23 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setViewingImage(null)}
-                        className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-12 cursor-zoom-out"
+                        className="fixed inset-0 z-[200] bg-gray-900/95 backdrop-blur-2xl flex items-center justify-center p-20"
                     >
-                        <motion.button
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="absolute top-8 right-8 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
-                        >
-                            <X size={32} />
-                        </motion.button>
-
+                        <button className="absolute top-10 right-10 text-white bg-white/10 p-5 rounded-full hover:bg-white/20 transition-all">
+                            <X size={36} />
+                        </button>
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative w-full h-full max-w-6xl max-h-[80vh]"
+                            className="relative w-full h-full max-w-7xl bg-white rounded-[56px] overflow-hidden p-16 shadow-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <Image
                                 src={viewingImage}
-                                alt="Facade Preview"
+                                alt="High Resolution Detail"
                                 fill
-                                className="object-contain"
+                                className="object-contain p-12"
                                 priority
                             />
                         </motion.div>

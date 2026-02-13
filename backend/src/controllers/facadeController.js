@@ -1,4 +1,4 @@
-const { Facade, FloorPlan } = require('../models');
+const { Facade, FloorPlan, FacadeVariant } = require('../models');
 
 exports.getAllFacades = async (req, res, next) => {
     try {
@@ -39,6 +39,10 @@ exports.getFacadeById = async (req, res, next) => {
                 model: FloorPlan,
                 as: 'floorplans',
                 through: { attributes: [] }
+            },
+            {
+                model: FacadeVariant,
+                as: 'variants'
             }]
         });
         if (!facade) return res.status(404).json({ error: 'Facade not found' });
@@ -50,7 +54,7 @@ exports.getFacadeById = async (req, res, next) => {
 
 exports.createFacade = async (req, res, next) => {
     try {
-        const { floorplan_ids, ...facadeData } = req.body;
+        const { floorplan_ids, variants, ...facadeData } = req.body;
         const facade = await Facade.create(facadeData);
 
         // Associate floor plans if provided
@@ -61,12 +65,26 @@ exports.createFacade = async (req, res, next) => {
             await facade.setFloorplans(floorplans);
         }
 
+        // Create variants
+        if (variants && Array.isArray(variants)) {
+            await Promise.all(variants.map(variant => {
+                return FacadeVariant.create({
+                    ...variant,
+                    facade_id: facade.id
+                });
+            }));
+        }
+
         // Fetch with associations
         const result = await Facade.findByPk(facade.id, {
             include: [{
                 model: FloorPlan,
                 as: 'floorplans',
                 through: { attributes: [] }
+            },
+            {
+                model: FacadeVariant,
+                as: 'variants'
             }]
         });
 
@@ -78,7 +96,7 @@ exports.createFacade = async (req, res, next) => {
 
 exports.updateFacade = async (req, res, next) => {
     try {
-        const { floorplan_ids, ...facadeData } = req.body;
+        const { floorplan_ids, variants, ...facadeData } = req.body;
         const facade = await Facade.findByPk(req.params.id);
         if (!facade) return res.status(404).json({ error: 'Facade not found' });
 
@@ -92,12 +110,29 @@ exports.updateFacade = async (req, res, next) => {
             await facade.setFloorplans(floorplans);
         }
 
+        // Update variants
+        if (variants && Array.isArray(variants)) {
+            // Simple sync strategy: delete all and recreate
+            await FacadeVariant.destroy({ where: { facade_id: facade.id } });
+
+            await Promise.all(variants.map(variant => {
+                return FacadeVariant.create({
+                    ...variant,
+                    facade_id: facade.id
+                });
+            }));
+        }
+
         // Fetch with associations
         const result = await Facade.findByPk(facade.id, {
             include: [{
                 model: FloorPlan,
                 as: 'floorplans',
                 through: { attributes: [] }
+            },
+            {
+                model: FacadeVariant,
+                as: 'variants'
             }]
         });
 

@@ -17,6 +17,12 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'facade_id',
                 as: 'listings'
             });
+
+            // One-to-many with FacadeVariant
+            Facade.hasMany(models.FacadeVariant, {
+                foreignKey: 'facade_id',
+                as: 'variants'
+            });
         }
     }
 

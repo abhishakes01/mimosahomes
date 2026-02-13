@@ -3,16 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { api, getFullUrl } from "@/services/api";
-import { ArrowLeft, ArrowRight, Bed, Bath, Car, Search, ChevronLeft, ChevronRight, X, ZoomIn } from "lucide-react";
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, EffectCoverflow } from 'swiper/modules';
-import type { Swiper as SwiperType } from 'swiper';
+import { Bed, Bath, Car, Search, X, ZoomIn, ChevronLeft, ChevronRight, Info } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination, Mousewheel } from 'swiper/modules';
+import type { Swiper as SwiperType } from 'swiper';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
-import 'swiper/css/effect-coverflow';
 
 interface FloorPlanSelectorProps {
     filters: {
@@ -31,7 +30,6 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
     const [viewingImage, setViewingImage] = useState<string | null>(null);
     const swiperRef = useRef<SwiperType>(null);
 
-    // Internal filters state
     const [localFilters, setLocalFilters] = useState(filters);
     const [availableOptions, setAvailableOptions] = useState<{ widths: number[], depths: number[], storeys: number[] }>({ widths: [], depths: [], storeys: [] });
 
@@ -47,8 +45,13 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                 api.getFloorPlanFilters()
             ]);
 
-            setFloorplans(plansData.data);
+            const data = plansData.data || [];
+            setFloorplans(data);
             setAvailableOptions(filtersData as any);
+
+            if (data.length > 0) {
+                setSelectedPlan(data[0]);
+            }
         } catch (error) {
             console.error("Failed to load floorplans", error);
         } finally {
@@ -67,10 +70,6 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
         return matchWidth && matchDepth && matchStoreys;
     });
 
-    const handlePlanSelect = (plan: any) => {
-        setSelectedPlan(plan);
-    };
-
     const handleNext = () => {
         if (selectedPlan) {
             onSelect(selectedPlan);
@@ -78,319 +77,272 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
     };
 
     return (
-        <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column: Floorplans Slider */}
-            <div className="flex-grow lg:w-2/3 bg-white p-6 rounded-2xl shadow-sm border border-gray-100 min-h-[600px]">
+        <div className="flex flex-col gap-8 w-full">
 
-                {/* Header & Filters */}
-                <div className="flex flex-wrap items-end justify-between gap-4 mb-8 pb-4 border-b border-gray-100">
-                    <h2 className="text-2xl font-extrabold text-gray-900 tracking-tight uppercase">Floorplans</h2>
+            {/* Top Row: Browser and Summary */}
+            <div className="flex flex-col lg:flex-row gap-8 items-stretch">
 
-                    <div className="flex flex-wrap items-center gap-4">
-                        <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 mb-1">Width selected:</span>
-                            <div className="relative">
+                {/* Left: Floorplan Browser */}
+                <div className="flex-grow lg:w-[68%] bg-white rounded-[32px] border border-gray-100 p-8 flex flex-col min-h-[700px] shadow-sm overflow-hidden">
+
+                    {/* Header: Title & Dropdowns */}
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8 px-4">
+                        <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter">FLOORPLANS</h2>
+
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold text-gray-400">Width selected:</span>
                                 <select
                                     value={localFilters.width}
                                     onChange={(e) => handleFilterChange("width", e.target.value)}
-                                    className="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-1.5 px-3 pr-8 rounded leading-tight focus:outline-none focus:border-black text-sm w-32"
+                                    className="bg-white border-2 border-gray-100 rounded-xl px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-[#0796b1] transition-all"
                                 >
                                     <option value="">Any</option>
                                     {availableOptions.widths.map(w => <option key={w} value={w}>{w}m+</option>)}
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <ChevronRight size={14} className="rotate-90" />
-                                </div>
                             </div>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 mb-1">Depth selected:</span>
-                            <div className="relative">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold text-gray-400">Depth selected:</span>
                                 <select
                                     value={localFilters.depth}
                                     onChange={(e) => handleFilterChange("depth", e.target.value)}
-                                    className="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-1.5 px-3 pr-8 rounded leading-tight focus:outline-none focus:border-black text-sm w-32"
+                                    className="bg-white border-2 border-gray-100 rounded-xl px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-[#0796b1] transition-all"
                                 >
                                     <option value="">Any</option>
                                     {availableOptions.depths.map(d => <option key={d} value={d}>{d}m+</option>)}
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <ChevronRight size={14} className="rotate-90" />
-                                </div>
                             </div>
-                        </div>
-
-                        <div className="flex flex-col">
-                            <span className="text-xs text-gray-500 mb-1">Storeys selected:</span>
-                            <div className="relative">
+                            <div className="flex flex-col gap-1">
+                                <span className="text-[10px] font-bold text-gray-400">Storeys selected:</span>
                                 <select
                                     value={localFilters.storeys}
                                     onChange={(e) => handleFilterChange("storeys", e.target.value)}
-                                    className="appearance-none bg-gray-50 border border-gray-300 text-gray-700 py-1.5 px-3 pr-8 rounded leading-tight focus:outline-none focus:border-black text-sm w-32"
+                                    className="bg-white border-2 border-gray-100 rounded-xl px-4 py-2 text-[10px] font-black uppercase outline-none focus:border-[#0796b1] transition-all"
                                 >
                                     <option value="">Any</option>
-                                    {availableOptions.storeys.map(s => <option key={s} value={s}>{s === 1 ? "Single" : "Double"}</option>)}
+                                    {availableOptions.storeys.map(s => <option key={s} value={s}>{s}</option>)}
                                 </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                                    <ChevronRight size={14} className="rotate-90" />
-                                </div>
                             </div>
+                            <button className="bg-gray-900 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest mt-4 hover:bg-black transition-all">
+                                CHANGE
+                            </button>
                         </div>
-
-                        <button className="self-end bg-black text-white px-6 py-2 rounded text-xs font-bold uppercase tracking-wider mb-0.5 hover:bg-gray-800 transition-colors">
-                            Change
-                        </button>
                     </div>
-                </div>
 
-                {/* Slider */}
-                {loading ? (
-                    <div className="flex justify-center items-center h-[350px]">
-                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-black"></div>
-                    </div>
-                ) : filteredPlans.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center h-[350px] text-gray-400">
-                        <Search size={48} className="mb-4 opacity-20" />
-                        <p>No floorplans found matching your criteria.</p>
-                        <button
-                            onClick={() => setLocalFilters({ width: "", depth: "", storeys: "" })}
-                            className="mt-4 text-black underline font-bold text-sm"
-                        >
-                            Clear Filters
-                        </button>
-                    </div>
-                ) : (
-                    <div className="relative px-8 group mt-8">
-                        {/* Swiper Active Slide Styling */}
-                        <style jsx global>{`
-                            .floorplan-swiper .swiper-slide {
-                                transition: all 0.5s ease;
-                                transform: scale(0.85);
-                                opacity: 0.3 !important;
-                                filter: grayscale(1);
-                            }
-                            .floorplan-swiper .swiper-slide-active {
-                                transform: scale(1.05);
-                                opacity: 1 !important;
-                                filter: grayscale(0);
-                            }
-                        `}</style>
-
-                        {/* Custom Navigation Buttons */}
-                        <div
-                            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-black text-white rounded-full cursor-pointer hover:bg-gray-800 transition-colors shadow-lg"
-                            onClick={() => swiperRef.current?.slidePrev()}
-                        >
-                            <ChevronLeft size={20} />
-                        </div>
-                        <div
-                            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 p-2 bg-black text-white rounded-full cursor-pointer hover:bg-gray-800 transition-colors shadow-lg"
-                            onClick={() => swiperRef.current?.slideNext()}
-                        >
-                            <ChevronRight size={20} />
-                        </div>
-
-                        <Swiper
-                            onSwiper={(swiper) => {
-                                swiperRef.current = swiper;
-                            }}
-                            modules={[Navigation, EffectCoverflow]}
-                            effect={'coverflow'}
-                            grabCursor={true}
-                            centeredSlides={true}
-                            slidesPerView={'auto'}
-                            coverflowEffect={{
-                                rotate: 0,
-                                stretch: 0,
-                                depth: 150,
-                                modifier: 1.5,
-                                slideShadows: false,
-                            }}
-                            initialSlide={0}
-                            className="pb-4 floorplan-swiper"
-                        >
-                            {filteredPlans.map(plan => (
-                                <SwiperSlide key={plan.id} className="w-[170px] sm:w-[210px]">
-                                    <div className={`bg-white rounded-xl overflow-hidden h-full flex flex-col relative transition-all duration-300 border-2 ${selectedPlan?.id === plan.id ? 'border-black shadow-xl' : 'border-gray-100 shadow-sm'}`}>
-
-                                        {/* Select Indicator */}
-                                        {selectedPlan?.id === plan.id && (
-                                            <div className="absolute top-0 inset-x-0 h-1 bg-black z-20"></div>
-                                        )}
-
-                                        {/* Action Button Top Right */}
-                                        <div className="absolute top-2 right-2 z-10">
-                                            <button
-                                                onClick={() => handlePlanSelect(plan)}
-                                                className={`text-[8px] font-bold px-2 py-1 rounded-full uppercase transition-all ${selectedPlan?.id === plan.id ? 'bg-black text-white' : 'bg-white text-black border border-gray-200 hover:bg-gray-50 shadow-sm'}`}
-                                            >
-                                                {selectedPlan?.id === plan.id ? 'Selected' : 'Select'}
-                                            </button>
-                                        </div>
-
-                                        {/* Zoom/Fancy Icon */}
-                                        <div className="absolute top-2 left-2 z-10">
-                                            <button
-                                                onClick={() => setViewingImage(getFullUrl(plan.image_url))}
-                                                className="bg-white/90 backdrop-blur-sm text-black p-1 rounded-full hover:bg-white shadow-sm transition-all"
-                                                title="View Large"
-                                            >
-                                                <ZoomIn size={12} />
-                                            </button>
-                                        </div>
-
-                                        {/* Image Area */}
-                                        <div className="relative h-36 bg-white p-3 pt-10">
-                                            <div className="relative w-full h-full">
-                                                {plan.image_url ? (
-                                                    <Image
-                                                        src={getFullUrl(plan.image_url)}
-                                                        alt={plan.title}
-                                                        fill
-                                                        className="object-contain"
-                                                    />
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-full text-gray-300">No Image</div>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {/* Content Area */}
-                                        <div className="flex flex-col items-center text-center p-3 flex-grow">
-                                            <h3 className="text-base font-black text-gray-900 uppercase mb-0.5 tracking-tight">{plan.title}</h3>
-                                            <button
-                                                onClick={() => setViewingImage(getFullUrl(plan.image_url))}
-                                                className="text-gray-500 text-[8px] font-bold underline uppercase mb-3 hover:text-black tracking-widest"
-                                            >
-                                                View Floorplan
-                                            </button>
-
-                                            <button className="bg-gray-100 text-gray-900 text-[8px] font-black px-3 py-1 rounded-full mb-4 hover:bg-gray-200 uppercase tracking-widest transition-colors">
-                                                Inclusions
-                                            </button>
-
-                                            {/* Icons */}
-                                            <div className="flex items-center gap-4 mb-4 text-gray-900">
-                                                <div className="flex flex-col items-center gap-0.5">
-                                                    <Bed size={14} strokeWidth={2} />
-                                                    <span className="text-[10px] font-black">{plan.bedrooms}</span>
-                                                </div>
-                                                <div className="flex flex-col items-center gap-0.5">
-                                                    <Bath size={14} strokeWidth={2} />
-                                                    <span className="text-[10px] font-black">{plan.bathrooms}</span>
-                                                </div>
-                                                <div className="flex flex-col items-center gap-0.5">
-                                                    <Car size={14} strokeWidth={2} />
-                                                    <span className="text-[10px] font-black">{plan.car_spaces}</span>
-                                                </div>
-                                            </div>
-
-                                            {/* Divider */}
-                                            <div className="w-6 h-[1px] bg-gray-200 mb-4"></div>
-
-                                            {/* Specs */}
-                                            <div className="space-y-1 text-[9px] text-gray-500 mb-4 w-full px-1">
-                                                <div className="flex justify-between items-center">
-                                                    <span className="uppercase tracking-widest">Min Frontage</span>
-                                                    <span className="font-black text-gray-900 text-[11px]">{plan.min_frontage}m</span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="uppercase tracking-widest">Min Depth</span>
-                                                    <span className="font-black text-gray-900 text-[11px]">{plan.min_depth}m</span>
-                                                </div>
-                                                <div className="flex justify-between items-center">
-                                                    <span className="uppercase tracking-widest">Total Area</span>
-                                                    <span className="font-black text-gray-900 text-[11px]">{plan.total_area}sq</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Footer / Price */}
-                                        <div className="bg-gray-900 text-white py-2.5 text-center text-base font-black mt-auto tracking-tighter">
-                                            ${(plan.price || 232596).toLocaleString()}
-                                        </div>
-                                    </div>
-                                </SwiperSlide>
-                            ))}
-                        </Swiper>
-                    </div>
-                )}
-            </div>
-
-            {/* Right Column: Quote Summary */}
-            <div className="lg:w-1/3 flex flex-col gap-6">
-                <div className="bg-white p-8 rounded-2xl shadow-sm border border-gray-100 flex flex-col min-h-[500px]">
-                    <h3 className="text-xl font-black text-gray-900 uppercase tracking-widest mb-8 border-b border-gray-100 pb-4">Quote Summary</h3>
-
-                    <div className="flex-grow space-y-6">
-                        {selectedPlan ? (
-                            <motion.div
-                                initial={{ opacity: 0, y: 10 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                className="space-y-6"
-                            >
-                                <div className="flex justify-between items-start">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Floorplan</span>
-                                        <span className="text-lg font-black text-gray-900 uppercase">{selectedPlan.title}</span>
-                                    </div>
-                                    <span className="font-black text-gray-900">${(selectedPlan.price || 232596).toLocaleString()}</span>
-                                </div>
-
-                                <div className="p-4 bg-gray-50 rounded-xl space-y-2">
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-gray-500">Bedrooms</span>
-                                        <span className="font-black">{selectedPlan.bedrooms}</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-gray-500">Bathrooms</span>
-                                        <span className="font-black">{selectedPlan.bathrooms}</span>
-                                    </div>
-                                    <div className="flex justify-between text-xs">
-                                        <span className="text-gray-500">Garages</span>
-                                        <span className="font-black">{selectedPlan.car_spaces}</span>
-                                    </div>
-                                </div>
-                            </motion.div>
+                    {/* Carousel Area */}
+                    <div className="relative flex-grow flex items-center justify-center py-10 overflow-hidden">
+                        {loading ? (
+                            <div className="flex justify-center items-center h-64">
+                                <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0796b1]"></div>
+                            </div>
+                        ) : filteredPlans.length === 0 ? (
+                            <div className="text-center py-20 grayscale opacity-20">
+                                <Search size={64} className="mx-auto mb-4" />
+                                <p className="font-black uppercase tracking-widest">No matching plans</p>
+                            </div>
                         ) : (
-                            <div className="text-gray-400 italic text-sm text-center mt-12 bg-gray-50 p-8 rounded-2xl border border-dashed border-gray-200">
-                                Select a floorplan to view your quote summary
+                            <div className="relative w-full h-full flex items-center justify-center">
+                                {/* Navigation Arrows */}
+                                <button
+                                    onClick={() => swiperRef.current?.slidePrev()}
+                                    className="absolute left-0 z-[20] w-14 h-14 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                >
+                                    <ChevronLeft size={28} strokeWidth={3} />
+                                </button>
+
+                                <Swiper
+                                    onSwiper={(swiper) => { swiperRef.current = swiper; }}
+                                    modules={[Navigation, Mousewheel]}
+                                    mousewheel={true}
+                                    centeredSlides={true}
+                                    slidesPerView={1}
+                                    spaceBetween={30}
+                                    className="w-full !overflow-visible"
+                                >
+                                    {filteredPlans.map(plan => {
+                                        const isSelected = selectedPlan?.id === plan.id;
+                                        return (
+                                            <SwiperSlide key={plan.id} className="h-full">
+                                                <div
+                                                    onClick={() => setSelectedPlan(plan)}
+                                                    className={`mx-auto bg-white border-2 rounded-[32px] transition-all duration-700 cursor-pointer overflow-hidden flex flex-col md:flex-row h-full min-h-[480px] ${isSelected
+                                                        ? 'border-[#0796b1] shadow-[0_35px_60px_-15px_rgba(7,150,177,0.3)]'
+                                                        : 'border-gray-100 hover:border-gray-200'
+                                                        }`}
+                                                >
+                                                    {/* Left Half: Technical Drawing */}
+                                                    <div className="flex-1 relative bg-white p-8 group overflow-hidden border-r border-gray-50 flex items-center justify-center">
+                                                        <div className="absolute top-6 left-8 z-10">
+                                                            <div className="w-10 h-10 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all cursor-zoom-in"
+                                                                onClick={(e) => { e.stopPropagation(); setViewingImage(getFullUrl(plan.image_url)); }}
+                                                            >
+                                                                <ZoomIn size={20} />
+                                                            </div>
+                                                        </div>
+
+                                                        <div className="relative w-full h-[350px]">
+                                                            <Image
+                                                                src={getFullUrl(plan.image_url)}
+                                                                alt={plan.title}
+                                                                fill
+                                                                className="object-contain"
+                                                                priority
+                                                            />
+                                                        </div>
+
+                                                        {/* Bottom Center Logic Marker */}
+                                                        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 flex flex-col items-center opacity-40">
+                                                            <div className="w-[1px] h-6 bg-[#0796b1] mb-2" />
+                                                            <div className="flex gap-2">
+                                                                <div className="w-2 h-2 border border-[#0796b1] rotate-45" />
+                                                                <div className="w-2 h-2 border border-[#0796b1] rotate-45 bg-[#0796b1]" />
+                                                                <div className="w-2 h-2 border border-[#0796b1] rotate-45" />
+                                                            </div>
+                                                        </div>
+                                                    </div>
+
+                                                    {/* Right Half: Details */}
+                                                    <div className="w-full md:w-[40%] p-10 flex flex-col justify-center gap-10 relative">
+                                                        {isSelected && (
+                                                            <button
+                                                                className="absolute top-6 right-8 bg-[#0796b1] text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-cyan-900/10"
+                                                                onClick={(e) => { e.stopPropagation(); }}
+                                                            >
+                                                                UNSELECT
+                                                            </button>
+                                                        )}
+
+                                                        <div className="text-center space-y-4">
+                                                            <h3 className="text-4xl font-black text-gray-900 uppercase tracking-tighter leading-none">{plan.title}</h3>
+                                                            <button className="text-[#0796b1] text-[10px] font-black uppercase tracking-widest underline underline-offset-8 decoration-2 hover:text-cyan-700 transition-all">
+                                                                View Floorplan
+                                                            </button>
+                                                            <div className="pt-2">
+                                                                <button className="bg-[#0796b1] text-white px-10 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-cyan-900/20 hover:bg-cyan-700 transition-all">
+                                                                    INCLUSIONS
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Icons Stack */}
+                                                        <div className="flex flex-col items-center gap-6 py-8 border-t border-b border-gray-100">
+                                                            <div className="flex items-center gap-4">
+                                                                <Bed size={24} className="text-[#0796b1]" strokeWidth={2.5} />
+                                                                <span className="text-3xl font-black text-gray-900 tracking-tighter">4</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-4">
+                                                                <Bath size={24} className="text-[#0796b1]" strokeWidth={2.5} />
+                                                                <span className="text-3xl font-black text-gray-900 tracking-tighter">2</span>
+                                                            </div>
+                                                            <div className="flex items-center gap-4">
+                                                                <Car size={24} className="text-[#0796b1]" strokeWidth={2.5} />
+                                                                <span className="text-3xl font-black text-gray-900 tracking-tighter">2</span>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Footnotes */}
+                                                        <div className="space-y-3 text-center">
+                                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Min Frontage: <span className="text-gray-900">{plan.min_frontage}m</span></p>
+                                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Min Depth: <span className="text-gray-900">{plan.min_depth}m</span></p>
+                                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total Area: <span className="text-gray-900">{plan.total_area}sq</span></p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </SwiperSlide>
+                                        );
+                                    })}
+                                </Swiper>
+
+                                <button
+                                    onClick={() => swiperRef.current?.slideNext()}
+                                    className="absolute right-0 z-[20] w-14 h-14 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                >
+                                    <ChevronRight size={28} strokeWidth={3} />
+                                </button>
                             </div>
                         )}
                     </div>
-
-                    <div className="mt-auto pt-8 border-t border-gray-100">
-                        <div className="flex justify-between items-center text-2xl font-black">
-                            <span className="text-gray-400 uppercase text-xs tracking-[0.2em]">Total</span>
-                            <span className="text-gray-900">
-                                {selectedPlan ? `$${(selectedPlan.price || 232596).toLocaleString()}` : "-"}
-                            </span>
-                        </div>
-                    </div>
                 </div>
 
-                {/* Next Step Button */}
-                <button
-                    disabled={!selectedPlan}
-                    onClick={handleNext}
-                    className={`w-full py-5 rounded-2xl font-black uppercase text-sm tracking-[0.2em] transition-all duration-300 flex items-center justify-center gap-3 ${selectedPlan
-                        ? 'bg-black text-white hover:bg-gray-800 shadow-xl scale-[1.02]'
-                        : 'bg-gray-100 text-gray-400 cursor-not-allowed opacity-50'
-                        }`}
-                >
-                    Next Step <ArrowRight size={18} />
-                </button>
+                {/* Right: Selection Hub Summary */}
+                <div className="lg:w-[32%] flex flex-col gap-6">
+                    <div className="bg-white rounded-[32px] border border-gray-100 p-10 shadow-2xl space-y-12 min-h-[600px]">
+                        <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">QUOTE SUMMARY</h2>
+
+                        <div className="space-y-10">
+                            {/* Floorplan Section */}
+                            <div className="space-y-4">
+                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">FLOORPLAN</h3>
+                                <div className="space-y-3">
+                                    <div className="flex justify-between items-center text-[11px]">
+                                        <span className="font-bold text-gray-500 uppercase tracking-widest">Floorplan Name: <span className="text-gray-900">{selectedPlan?.title || "Unknown"}</span></span>
+                                        <span className="font-bold text-gray-900">${(selectedPlan?.price || 232596).toLocaleString()}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center text-[11px] pt-1">
+                                        <span className="font-bold text-gray-900 uppercase tracking-widest">Subtotal:</span>
+                                        <span className="font-black text-[#0796b1]">${(selectedPlan?.price || 232596).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Total Area */}
+                            <div className="pt-12 flex justify-end items-center gap-6">
+                                <span className="text-xl font-black text-gray-900 uppercase tracking-tighter italic">TOTAL:</span>
+                                <span className="text-5xl font-black text-[#0796b1] tracking-tighter italic">
+                                    ${Math.round(selectedPlan?.price || 232596).toLocaleString()}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="flex justify-end pr-4">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-[#0796b1] text-white px-8 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-900/10 hover:bg-cyan-700 transition-all"
+                        >
+                            RESTART QUOTE
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Bottom Nav Section */}
+            <div className="flex flex-col items-center gap-6 py-12 relative overflow-visible">
+                <div className="relative group">
+                    <AnimatePresence>
+                        {selectedPlan && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="absolute top-[-55px] left-1/2 -translate-x-1/2 bg-[#0796b1] text-white px-8 py-2.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] whitespace-nowrap shadow-xl"
+                            >
+                                To continue building your quote, please press this button
+                                <div className="absolute bottom-[-5px] left-1/2 -translate-x-1/2 w-3 h-3 bg-[#0796b1] rotate-45" />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    <button
+                        onClick={handleNext}
+                        disabled={!selectedPlan}
+                        className={`px-24 py-7 rounded-[32px] font-black uppercase text-sm tracking-[0.3em] flex items-center gap-6 transition-all shadow-2xl active:scale-95 ${selectedPlan
+                            ? 'bg-gray-900 text-white hover:bg-black shadow-gray-900/40 hover:-translate-y-1'
+                            : 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                            }`}
+                    >
+                        NEXT STEP <ChevronRight size={24} strokeWidth={4} />
+                    </button>
+                </div>
 
                 <button
                     onClick={onBack}
-                    className="w-full py-4 text-gray-400 font-bold uppercase text-[10px] tracking-widest hover:text-black transition-colors flex items-center justify-center gap-2"
+                    className="text-[#0796b1] font-black uppercase text-[10px] tracking-[0.4em] hover:opacity-80 transition-all underline underline-offset-8 decoration-2"
                 >
-                    ‹ Previous Step
+                    &lt; GO BACK
                 </button>
             </div>
 
-            {/* Fancy Box / Lightbox Popup */}
+            {/* Global Lightbox */}
             <AnimatePresence>
                 {viewingImage && (
                     <motion.div
@@ -398,28 +350,23 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setViewingImage(null)}
-                        className="fixed inset-0 z-[100] bg-black/95 backdrop-blur-md flex items-center justify-center p-4 sm:p-12 cursor-zoom-out"
+                        className="fixed inset-0 z-[200] bg-gray-900/95 backdrop-blur-2xl flex items-center justify-center p-20"
                     >
-                        <motion.button
-                            initial={{ opacity: 0, scale: 0.5 }}
-                            animate={{ opacity: 1, scale: 1 }}
-                            className="absolute top-8 right-8 text-white p-2 hover:bg-white/10 rounded-full transition-colors"
-                        >
-                            <X size={32} />
-                        </motion.button>
-
+                        <button className="absolute top-10 right-10 text-white bg-white/10 p-5 rounded-full hover:bg-white/20 transition-all">
+                            <X size={36} />
+                        </button>
                         <motion.div
                             initial={{ scale: 0.9, opacity: 0 }}
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
-                            className="relative w-full h-full max-w-6xl max-h-[80vh]"
+                            className="relative w-full h-full max-w-7xl bg-white rounded-[56px] overflow-hidden p-16 shadow-2xl"
                             onClick={(e) => e.stopPropagation()}
                         >
                             <Image
                                 src={viewingImage}
-                                alt="Floorplan Preview"
+                                alt="High Resolution Detail"
                                 fill
-                                className="object-contain"
+                                className="object-contain p-12"
                                 priority
                             />
                         </motion.div>

@@ -19,6 +19,8 @@ async function fetchAPI<T>(endpoint: string, options: RequestOptions = {}): Prom
         headers,
     };
 
+    console.log(`[API] ${config.method || 'GET'} ${endpoint}`, options.body ? JSON.parse(options.body as string) : '');
+
     const response = await fetch(`${API_URL}${endpoint}`, config);
 
     if (!response.ok) {
@@ -102,4 +104,25 @@ export const api = {
 
     // Floor Plan Filters
     getFloorPlanFilters: () => fetchAPI('/floorplans/filters'),
+
+    // Upgrades
+    getUpgradeGroups: (query?: any) => {
+        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        return fetchAPI(`/upgrades/groups${queryString}`);
+    },
+    createUpgradeGroup: (data: any, token: string) => fetchAPI('/upgrades/groups', { method: 'POST', body: JSON.stringify(data), token }),
+    updateUpgradeGroup: (id: string, data: any, token: string) => fetchAPI(`/upgrades/groups/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
+    deleteUpgradeGroup: (id: string, token: string) => fetchAPI(`/upgrades/groups/${id}`, { method: 'DELETE', token }),
+
+    getUpgradeCategories: (query?: any) => {
+        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        return fetchAPI(`/upgrades/categories${queryString}`);
+    },
+    createUpgradeCategory: (data: any, token: string) => fetchAPI('/upgrades/categories', { method: 'POST', body: JSON.stringify(data), token }),
+    updateUpgradeCategory: (id: string, data: any, token: string) => fetchAPI(`/upgrades/categories/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
+    deleteUpgradeCategory: (id: string, token: string) => fetchAPI(`/upgrades/categories/${id}`, { method: 'DELETE', token }),
+
+    createUpgrade: (data: any, token: string) => fetchAPI('/upgrades/upgrades', { method: 'POST', body: JSON.stringify(data), token }),
+    updateUpgrade: (id: string, data: any, token: string) => fetchAPI(`/upgrades/upgrades/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
+    deleteUpgrade: (id: string, token: string) => fetchAPI(`/upgrades/upgrades/${id}`, { method: 'DELETE', token }),
 };
