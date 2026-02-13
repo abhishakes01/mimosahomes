@@ -37,11 +37,20 @@ const config = {
 };
 
 // Handle case where NODE_ENV is set but not found in config
-const env = process.env.NODE_ENV?.trim() || 'development';
+const rawEnv = process.env.NODE_ENV?.trim() || 'development';
+const env = rawEnv === '' ? 'development' : rawEnv;
+
 if (!config[env]) {
     console.warn(`[database.js] Configuration for '${env}' not found. Falling back to 'production'.`);
-    module.exports = { ...config, [env]: config.production };
+    module.exports = {
+        ...config,
+        [env]: config.production,
+        '': config.development // Ensure empty string also maps to something valid
+    };
 } else {
-    module.exports = config;
+    module.exports = {
+        ...config,
+        '': config.development // Ensure empty string also maps to something valid
+    };
 }
 

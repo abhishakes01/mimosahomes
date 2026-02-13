@@ -5,6 +5,7 @@
 set -e
 
 # Sanitize NODE_ENV (remove whitespace/newlines)
+export NODE_ENV=${NODE_ENV:-production}
 export NODE_ENV=$(echo "$NODE_ENV" | tr -d '[:space:]')
 echo "Environment: '$NODE_ENV'"
 
@@ -41,6 +42,9 @@ fi
 
 echo "📦 Installing Frontend Dependencies..."
 npm install
+
+echo "🧹 Clearing Previous Build..."
+rm -rf .next
 
 echo "🏗️ Building Frontend..."
 npm run build
