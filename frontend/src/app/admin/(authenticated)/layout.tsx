@@ -151,7 +151,7 @@ export default function AdminLayout({
                     </div>
                     <div className="flex-1 overflow-hidden">
                         <h4 className="text-sm font-bold text-gray-900 truncate">Admin User</h4>
-                        <p className="text-[10px] text-gray-500 truncate">admin@mimosahomes.com.au</p>
+                        <p className="text-[10px] text-gray-500 truncate">admin@mitrahomes.com.au</p>
                     </div>
                     <button
                         onClick={handleLogout}

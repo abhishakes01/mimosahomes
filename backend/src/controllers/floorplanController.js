@@ -5,8 +5,15 @@ exports.getAllFloorPlans = async (req, res, next) => {
         const { page = 1, limit = 10 } = req.query;
         const offset = (page - 1) * limit;
 
+        const { Facade } = require('../models');
         const { count, rows: floorplans } = await FloorPlan.findAndCountAll({
             order: [['created_at', 'DESC']],
+            include: [{
+                model: Facade,
+                as: 'facades',
+                through: { attributes: [] }
+            }],
+            distinct: true, // Important for correct count with includes
             limit: parseInt(limit),
             offset: parseInt(offset)
         });
@@ -24,7 +31,14 @@ exports.getAllFloorPlans = async (req, res, next) => {
 
 exports.getFloorPlanById = async (req, res, next) => {
     try {
-        const floorplan = await FloorPlan.findByPk(req.params.id);
+        const { Facade } = require('../models');
+        const floorplan = await FloorPlan.findByPk(req.params.id, {
+            include: [{
+                model: Facade,
+                as: 'facades',
+                through: { attributes: [] }
+            }]
+        });
         if (!floorplan) return res.status(404).json({ error: 'Floor plan not found' });
         res.json(floorplan);
     } catch (error) {
@@ -34,8 +48,29 @@ exports.getFloorPlanById = async (req, res, next) => {
 
 exports.createFloorPlan = async (req, res, next) => {
     try {
-        const floorplan = await FloorPlan.create(req.body);
-        res.status(201).json(floorplan);
+        const { facade_ids, ...floorPlanData } = req.body;
+        const floorplan = await FloorPlan.create(floorPlanData);
+
+        // Associate facades if provided
+        if (facade_ids && facade_ids.length > 0) {
+            const { Facade } = require('../models');
+            const facades = await Facade.findAll({
+                where: { id: facade_ids }
+            });
+            await floorplan.setFacades(facades);
+        }
+
+        // Fetch with associations
+        const { Facade } = require('../models');
+        const result = await FloorPlan.findByPk(floorplan.id, {
+            include: [{
+                model: Facade,
+                as: 'facades',
+                through: { attributes: [] }
+            }]
+        });
+
+        res.status(201).json(result);
     } catch (error) {
         next(error);
     }
@@ -43,11 +78,32 @@ exports.createFloorPlan = async (req, res, next) => {
 
 exports.updateFloorPlan = async (req, res, next) => {
     try {
+        const { facade_ids, ...floorPlanData } = req.body;
         const floorplan = await FloorPlan.findByPk(req.params.id);
         if (!floorplan) return res.status(404).json({ error: 'Floor plan not found' });
 
-        await floorplan.update(req.body);
-        res.json(floorplan);
+        await floorplan.update(floorPlanData);
+
+        // Update facade associations if provided
+        if (facade_ids !== undefined) {
+            const { Facade } = require('../models');
+            const facades = await Facade.findAll({
+                where: { id: facade_ids }
+            });
+            await floorplan.setFacades(facades);
+        }
+
+        // Fetch with associations
+        const { Facade } = require('../models');
+        const result = await FloorPlan.findByPk(floorplan.id, {
+            include: [{
+                model: Facade,
+                as: 'facades',
+                through: { attributes: [] }
+            }]
+        });
+
+        res.json(result);
     } catch (error) {
         next(error);
     }

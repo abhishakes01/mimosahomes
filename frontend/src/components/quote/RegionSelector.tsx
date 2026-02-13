@@ -121,7 +121,7 @@ export default function RegionSelector({ onSelect }: RegionSelectorProps) {
                         Build Region
                     </h1>
                     <p className="text-gray-500 font-medium mb-8 leading-relaxed text-sm">
-                        Start building your dream home with Mimosa Homes today. Explore our collection and customize your house to suit your needs.
+                        Start building your dream home with Mitra Homes today. Explore our collection and customize your house to suit your needs.
                     </p>
                     <div className="w-12 h-1 bg-black mb-6" />
                 </div>

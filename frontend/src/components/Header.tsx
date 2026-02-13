@@ -2,13 +2,60 @@
 
 import Link from "next/link";
 import Image from "next/image";
-import { Search, Menu, X, Phone, Calculator } from "lucide-react";
-import { useState, useEffect } from "react";
+import { Search, Menu, X, Phone, Calculator, ChevronDown } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+
+const NAV_ITEMS = [
+    { name: "New Home Designs", href: "/new-home-designs" },
+    {
+        name: "Display Homes",
+        href: "/display-homes",
+        dropdown: [
+            {
+                title: "Display Home Locations",
+                href: "/display-homes",
+                image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
+                description: "Visit our stunning displays"
+            },
+            {
+                title: "Display Home for Sale",
+                href: "/display-home-for-sale",
+                image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
+                description: "Display Home for Sale"
+            }
+        ]
+    },
+    {
+        name: "House & Land",
+        href: "/house-land",
+        dropdown: [
+            {
+                title: "House and Land Packages",
+                href: "/house-land-packages",
+                image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop",
+                description: "Perfectly paired value"
+            },
+            {
+                title: "Homes for Sale",
+                href: "/display-home-for-sale",
+                image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=2000&auto=format&fit=crop",
+                description: "Luxury ready to move in"
+            }
+        ]
+    },
+    {
+        name: "Building with us",
+        href: "#",
+        dropdown: true as any // Handled by specialized logic in the component
+    },
+];
 
 export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
         const handleScroll = () => {
@@ -17,6 +64,17 @@ export default function Header() {
         window.addEventListener("scroll", handleScroll);
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
+
+    const handleMouseEnter = (name: string) => {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        setActiveDropdown(name);
+    };
+
+    const handleMouseLeave = () => {
+        timeoutRef.current = setTimeout(() => {
+            setActiveDropdown(null);
+        }, 300);
+    };
 
     return (
         <header
@@ -51,18 +109,130 @@ export default function Header() {
 
                     {/* Right Side: Navigation and Actions */}
                     <div className="hidden lg:flex items-center gap-12 ml-auto">
-                        <nav className="flex items-center gap-8">
-                            {["New Home Designs", "Display Homes", "House & Land", "Promotions", "Facades"].map((item) => (
-                                <Link
-                                    key={item}
-                                    href="#"
-                                    className={`text-sm font-medium hover:text-mimosa-gold transition-colors uppercase tracking-wide ${isScrolled ? "text-gray-800" : "text-white"
-                                        }`}
+                        <nav className="flex items-center gap-8 h-full">
+                            {NAV_ITEMS.map((item) => (
+                                <div
+                                    key={item.name}
+                                    className="relative group h-full flex items-center"
+                                    onMouseEnter={() => item.dropdown && handleMouseEnter(item.name)}
+                                    onMouseLeave={handleMouseLeave}
                                 >
-                                    {item}
-                                </Link>
+                                    <Link
+                                        href={item.href}
+                                        className={`text-[13px] font-bold hover:text-mimosa-gold transition-colors uppercase tracking-wider flex items-center gap-1.5 py-4 ${isScrolled ? "text-gray-800" : "text-white"
+                                            }`}
+                                    >
+                                        {item.name}
+                                        {item.dropdown && <ChevronDown size={14} className={`transition-transform duration-300 ${activeDropdown === item.name ? "rotate-180" : ""}`} />}
+                                    </Link>
+
+                                    {/* Mega Menu Dropdown */}
+                                    <AnimatePresence>
+                                        {item.dropdown && activeDropdown === item.name && (
+                                            <motion.div
+                                                initial={{ opacity: 0, y: 15 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, y: 15 }}
+                                                transition={{ duration: 0.2, ease: "easeOut" }}
+                                                className={`absolute top-full pt-2 w-[1000px] z-[60] ${["House & Land", "Display Homes", "Building with us"].includes(item.name) ? "right-0" : "right-1/2 translate-x-1/2"}`}
+                                            >
+                                                <div className="bg-white rounded-[24px] shadow-[0_30px_60px_-15px_rgba(0,0,0,0.25)] overflow-hidden p-8">
+                                                    {item.name === "Building with us" ? (
+                                                        <div className="flex gap-12">
+                                                            {/* Left Side: Links */}
+                                                            <div className="w-[300px]">
+                                                                <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-6 block border-b border-gray-100 pb-2">
+                                                                    Building with us
+                                                                </span>
+                                                                <div className="flex flex-col gap-4">
+                                                                    {[
+                                                                        { title: "About Us", href: "/about-us" },
+                                                                        { title: "50 Year Structural Warranty", href: "/50-year-structural-warranty" },
+                                                                        { title: "Procedure", href: "/procedure" },
+                                                                        { title: "MPORIUM", href: "/mporium" },
+                                                                        { title: "Partners", href: "/partners" }
+                                                                    ].map((link) => (
+                                                                        <Link
+                                                                            key={link.title}
+                                                                            href={link.href}
+                                                                            className="text-gray-600 hover:text-mimosa-gold text-sm font-bold transition-colors flex items-center gap-2 group/link"
+                                                                        >
+                                                                            <span className="w-1.5 h-1.5 bg-gray-200 rounded-full group-hover/link:bg-mimosa-gold transition-colors" />
+                                                                            {link.title}
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
+                                                            </div>
+
+                                                            {/* Right Side: Visual Cards */}
+                                                            <div className="flex-1 flex gap-6">
+                                                                {[
+                                                                    {
+                                                                        title: "MPORIUM",
+                                                                        href: "/mporium",
+                                                                        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
+                                                                        description: "Selection Center"
+                                                                    },
+                                                                ].map((subItem) => (
+                                                                    <Link
+                                                                        key={subItem.title}
+                                                                        href={subItem.href}
+                                                                        className="flex-1 group/item relative h-64 rounded-[16px] overflow-hidden"
+                                                                    >
+                                                                        <Image
+                                                                            src={subItem.image}
+                                                                            alt={subItem.title}
+                                                                            fill
+                                                                            className="object-cover group-hover/item:scale-110 transition-transform duration-700"
+                                                                        />
+                                                                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                                                                        <div className="absolute inset-0 p-8 flex flex-col justify-end text-center">
+                                                                            <h4 className="text-white text-xl font-black uppercase tracking-tighter italic leading-none mb-2">
+                                                                                {subItem.title}
+                                                                            </h4>
+                                                                            <p className="text-white/70 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                                                                {subItem.description}
+                                                                            </p>
+                                                                        </div>
+                                                                    </Link>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    ) : (
+                                                        <div className="flex gap-6">
+                                                            {Array.isArray(item.dropdown) && item.dropdown.map((subItem: any) => (
+                                                                <Link
+                                                                    key={subItem.title}
+                                                                    href={subItem.href}
+                                                                    className="flex-1 group/item relative h-64 rounded-[16px] overflow-hidden"
+                                                                >
+                                                                    <Image
+                                                                        src={subItem.image}
+                                                                        alt={subItem.title}
+                                                                        fill
+                                                                        className="object-cover group-hover/item:scale-110 transition-transform duration-700"
+                                                                    />
+                                                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                                                                    <div className="absolute inset-0 p-8 flex flex-col justify-end text-center">
+                                                                        <h4 className="text-white text-xl font-black uppercase tracking-tighter italic leading-none mb-2">
+                                                                            {subItem.title}
+                                                                        </h4>
+                                                                        <p className="text-white/70 text-[10px] font-bold uppercase tracking-[0.2em]">
+                                                                            {subItem.description}
+                                                                        </p>
+                                                                    </div>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
                             ))}
                         </nav>
+
 
                         {/* Actions */}
                         <div className="flex items-center gap-4">
@@ -77,7 +247,7 @@ export default function Header() {
                                     }`}
                             >
                                 <Phone size={14} />
-                                <span>1300 MIMOSA</span>
+                                <span>1300 MITRA</span>
                             </a>
                         </div>
                     </div>
@@ -119,14 +289,21 @@ export default function Header() {
                             </button>
                         </div>
                         <nav className="flex flex-col p-6 gap-6 overflow-y-auto">
-                            {["New Home Designs", "Display Homes", "House & Land", "Promotions", "Facades", "Virtual Tours", "Build a Quote"].map((item) => (
+                            {[
+                                { name: "New Home Designs", href: "/new-home-designs" },
+                                { name: "Display Homes", href: "/display-homes" },
+                                { name: "House & Land", href: "/house-land" },
+                                // { name: "Facades", href: "#" },
+                                { name: "Virtual Tours", href: "/virtual-tours" },
+                                { name: "Build a Quote", href: "/quote/create" }
+                            ].map((item) => (
                                 <Link
-                                    key={item}
-                                    href="#"
+                                    key={item.name}
+                                    href={item.href}
                                     className="text-xl font-medium text-gray-800 hover:text-mimosa-gold"
                                     onClick={() => setMobileMenuOpen(false)}
                                 >
-                                    {item}
+                                    {item.name}
                                 </Link>
                             ))}
                             <div className="mt-8">

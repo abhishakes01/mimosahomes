@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Play, Pause, Volume2, VolumeX } from "lucide-react";
 import { useState, useRef } from "react";
+import Link from "next/link";
 
 export default function Hero() {
     const [isPlaying, setIsPlaying] = useState(true);
@@ -90,16 +91,22 @@ export default function Hero() {
                     </p>
 
                     <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-                        <button className="px-10 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl flex items-center gap-2">
+                        <Link
+                            href="/new-home-designs"
+                            className="px-10 py-4 bg-white text-black rounded-full font-bold text-lg hover:bg-gray-100 transition-all transform hover:scale-105 shadow-2xl flex items-center gap-2"
+                        >
                             View Home Designs
                             <ArrowRight size={20} />
-                        </button>
-                        <button className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-semibold text-lg hover:bg-white/20 transition-all flex items-center gap-2 group">
+                        </Link>
+                        <Link
+                            href="/house-land-packages"
+                            className="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-full font-semibold text-lg hover:bg-white/20 transition-all flex items-center gap-2 group"
+                        >
                             View House & Land
                             <span className="w-8 h-8 rounded-full bg-white text-black flex items-center justify-center group-hover:scale-110 transition-transform">
                                 <ArrowRight size={16} />
                             </span>
-                        </button>
+                        </Link>
                     </div>
                 </motion.div>
             </div>

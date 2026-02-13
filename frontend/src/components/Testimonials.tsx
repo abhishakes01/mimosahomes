@@ -3,13 +3,13 @@ import { Star, CheckCircle } from "lucide-react";
 const REVIEWS = [
     {
         title: "Great experience so far",
-        content: "We have recently started our build with Mimosa Homes. My partner and I have been dealing with the sales team who have been absolutely amazing. They have gone above and beyond to help us get our dream home started.",
+        content: "We have recently started our build with Mitra Homes. My partner and I have been dealing with the sales team who have been absolutely amazing. They have gone above and beyond to help us get our dream home started.",
         author: "Rachael & Daniel",
         location: "Melbourne, VIC"
     },
     {
         title: "First Home Buyer Support",
-        content: "Being a first home buyer, I was very nervous about the whole process. Mimosa Homes have been fantastic in guiding me through every step. The fixed price contract gave me huge peace of mind.",
+        content: "Being a first home buyer, I was very nervous about the whole process. Mitra Homes have been fantastic in guiding me through every step. The fixed price contract gave me huge peace of mind.",
         author: "Christopher S.",
         location: "Tarneit, VIC"
     },

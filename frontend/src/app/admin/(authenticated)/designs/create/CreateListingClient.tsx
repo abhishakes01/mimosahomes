@@ -31,8 +31,19 @@ export default function CreateListingClient() {
         collection: "V_Collection",
         facade_id: "",
         floorplan_id: "",
-        images: [] as string[]
+        images: [] as string[],
+        land_size: "",
+        building_size: "",
+        highlights: [] as string[],
+        builder_name: "Mitra Homes",
+        outdoor_features: "",
+        agent_name: "",
+        agent_email: "",
+        agent_phone: "",
+        agent_image: ""
     });
+
+    const [newHighlight, setNewHighlight] = useState("");
 
     useEffect(() => {
         loadFacades();
@@ -40,8 +51,8 @@ export default function CreateListingClient() {
 
     const loadFacades = async () => {
         try {
-            const data: any = await api.getFacades();
-            setFacades(data);
+            const response: any = await api.getFacades({ limit: 1000 });
+            setFacades(response.data || []);
         } catch (err) {
             console.error(err);
         }
@@ -58,8 +69,8 @@ export default function CreateListingClient() {
         });
     };
 
-    const selectedFacade = facades.find(f => f.id === formData.facade_id);
-    const selectedFloorPlan = selectedFacade?.floorplans?.find((fp: any) => fp.id === formData.floorplan_id);
+    const selectedFacade = facades.find(f => String(f.id) === String(formData.facade_id));
+    const selectedFloorPlan = selectedFacade?.floorplans?.find((fp: any) => String(fp.id) === String(formData.floorplan_id));
 
     useEffect(() => {
         if (selectedFloorPlan) {
@@ -131,14 +142,53 @@ export default function CreateListingClient() {
         }));
     };
 
+    const addHighlight = () => {
+        if (!newHighlight.trim()) return;
+        setFormData(prev => ({
+            ...prev,
+            highlights: [...prev.highlights, newHighlight.trim()]
+        }));
+        setNewHighlight("");
+    };
+
+    const removeHighlight = (index: number) => {
+        setFormData(prev => ({
+            ...prev,
+            highlights: prev.highlights.filter((_, i) => i !== index)
+        }));
+    };
+
+    const handleAgentImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setUploading(true);
+        try {
+            const data = await api.uploadFile(file, "agents");
+            setFormData(prev => ({ ...prev, agent_image: data.url }));
+        } catch (err) {
+            showAlert("Upload Failed", "Error uploading agent image.", "error");
+        } finally {
+            setUploading(false);
+        }
+    };
+
     const { showAlert } = useUI();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
+        const payload = { ...formData };
+        // Convert empty numeric strings to null
+        ['price', 'latitude', 'longitude', 'land_size', 'building_size'].forEach(field => {
+            if ((payload as any)[field] === "") {
+                (payload as any)[field] = null;
+            }
+        });
+
         try {
-            await api.createListing(formData, "mock-token");
+            await api.createListing(payload, "mock-token");
             showAlert("Success", "Listing created successfully!", "success");
             router.push("/admin/designs");
         } catch (err: any) {
@@ -406,6 +456,161 @@ export default function CreateListingClient() {
                             onChange={handleChange}
                             rows={4}
                             className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none resize-none"
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:col-span-2">
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Land Size (m²)</label>
+                            <input
+                                type="number"
+                                name="land_size"
+                                value={formData.land_size}
+                                onChange={handleChange}
+                                placeholder="e.g. 450"
+                                className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                            />
+                        </div>
+                        <div>
+                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Building Size (sq)</label>
+                            <input
+                                type="number"
+                                name="building_size"
+                                value={formData.building_size}
+                                onChange={handleChange}
+                                placeholder="e.g. 28.5"
+                                className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Builder Name</label>
+                        <input
+                            type="text"
+                            name="builder_name"
+                            value={formData.builder_name}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Outdoor Features</label>
+                        <textarea
+                            name="outdoor_features"
+                            value={formData.outdoor_features}
+                            onChange={handleChange}
+                            rows={2}
+                            placeholder="e.g. Covered alfresco and landscaped gardens"
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none resize-none"
+                        />
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* Home Highlights */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.12 }}
+                className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6"
+            >
+                <h3 className="text-xl font-bold text-gray-900">Home Highlights</h3>
+
+                <div className="flex gap-2">
+                    <input
+                        type="text"
+                        value={newHighlight}
+                        onChange={(e) => setNewHighlight(e.target.value)}
+                        placeholder="Add a highlight (e.g. Master suite with walk-in robe)"
+                        className="flex-1 bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                    />
+                    <button
+                        type="button"
+                        onClick={addHighlight}
+                        className="px-8 bg-mimosa-dark text-white rounded-2xl font-bold hover:bg-black transition-all"
+                    >
+                        Add
+                    </button>
+                </div>
+
+                <div className="space-y-2">
+                    {formData.highlights.map((highlight, index) => (
+                        <div key={index} className="flex items-center justify-between p-4 bg-gray-50 rounded-xl group">
+                            <span className="text-gray-700 font-medium">{highlight}</span>
+                            <button
+                                type="button"
+                                onClick={() => removeHighlight(index)}
+                                className="text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <X size={18} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+            </motion.div>
+
+            {/* Agent Information */}
+            <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.14 }}
+                className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6"
+            >
+                <h3 className="text-xl font-bold text-gray-900">Agent Information</h3>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="flex flex-col items-center gap-4 md:col-span-2 pb-6 border-b border-gray-100">
+                        <div
+                            className="w-32 h-32 rounded-full overflow-hidden bg-gray-100 border-4 border-white shadow-lg cursor-pointer group relative"
+                            onClick={() => document.getElementById('agent-img')?.click()}
+                        >
+                            {formData.agent_image ? (
+                                <img src={getFullUrl(formData.agent_image)} className="w-full h-full object-cover" alt="Agent" />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                    <Upload size={32} />
+                                </div>
+                            )}
+                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span className="text-white text-[10px] font-bold uppercase tracking-widest">Update</span>
+                            </div>
+                        </div>
+                        <input id="agent-img" type="file" hidden onChange={handleAgentImageChange} accept="image/*" />
+                        <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest italic">Click to upload Agent Image</span>
+                    </div>
+
+                    <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Agent Name</label>
+                        <input
+                            type="text"
+                            name="agent_name"
+                            value={formData.agent_name}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        />
+                    </div>
+
+                    <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Agent Email</label>
+                        <input
+                            type="email"
+                            name="agent_email"
+                            value={formData.agent_email}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        />
+                    </div>
+
+                    <div className="md:col-span-2">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Agent Phone</label>
+                        <input
+                            type="text"
+                            name="agent_phone"
+                            value={formData.agent_phone}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
                         />
                     </div>
                 </div>

@@ -11,7 +11,7 @@ export default function Footer() {
                     {/* Brand Column */}
                     <div className="space-y-6">
                         <div className="text-2xl font-black tracking-tighter uppercase text-white">
-                            MIMOSA<span className="text-mimosa-gold font-extralight ml-1">HOMES</span>
+                            MITRA<span className="text-mimosa-gold font-extralight ml-1">HOMES</span>
                         </div>
                         <p className="text-gray-400 leading-relaxed text-sm">
                             Building quality homes for Australian families. We pride ourselves on craftsmanship, design excellence, and customer satisfaction.
@@ -54,7 +54,7 @@ export default function Footer() {
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="text-mimosa-gold shrink-0" size={18} />
-                                <a href="mailto:info@mimosahomes.com.au" className="text-gray-400 hover:text-white transition-colors">info@mimosahomes.com.au</a>
+                                <a href="mailto:info@mitrahomes.com.au" className="text-gray-400 hover:text-white transition-colors">info@mitrahomes.com.au</a>
                             </li>
                         </ul>
                     </div>
@@ -70,7 +70,7 @@ export default function Footer() {
                 </div>
 
                 <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-gray-600">
-                    <p>© {new Date().getFullYear()} Mimosa Homes. All rights reserved.</p>
+                    <p>© {new Date().getFullYear()} Mitra Homes. All rights reserved.</p>
                     <p>Melbourne's Premier New Home Builder</p>
                 </div>
             </div>

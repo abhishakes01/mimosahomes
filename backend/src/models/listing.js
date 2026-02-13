@@ -73,6 +73,44 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.JSONB,
             allowNull: true,
             defaultValue: []
+        },
+        land_size: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: true
+        },
+        building_size: {
+            type: DataTypes.DECIMAL(10, 2),
+            allowNull: true
+        },
+        highlights: {
+            type: DataTypes.JSONB,
+            allowNull: true,
+            defaultValue: []
+        },
+        builder_name: {
+            type: DataTypes.STRING,
+            allowNull: true,
+            defaultValue: 'Mitra Homes'
+        },
+        outdoor_features: {
+            type: DataTypes.TEXT,
+            allowNull: true
+        },
+        agent_name: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        agent_email: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        agent_phone: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
+        agent_image: {
+            type: DataTypes.STRING,
+            allowNull: true
         }
     }, {
         sequelize,

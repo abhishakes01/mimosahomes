@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { api, getFullUrl } from "@/services/api";
 import { Upload, Save, ArrowLeft, Trash2 } from "lucide-react";
 import { useUI } from "@/context/UIContext";
+import MultiSelect from "@/components/MultiSelect";
 
 export default function EditFloorPlanClient() {
     const router = useRouter();
@@ -17,6 +18,7 @@ export default function EditFloorPlanClient() {
     const [saving, setSaving] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [facades, setFacades] = useState<any[]>([]);
     const [formData, setFormData] = useState({
         title: "",
         location: "",
@@ -33,44 +35,54 @@ export default function EditFloorPlanClient() {
         bathrooms: 2,
         car_spaces: 1,
         price: "",
-        image_url: ""
+        image_url: "",
+        facade_ids: [] as string[]
     });
 
     useEffect(() => {
-        if (id) {
-            loadFloorPlan();
-        }
-    }, [id]);
+        const loadData = async () => {
+            if (!id) return;
+            try {
+                const [floorPlanData, facadesData] = await Promise.all([
+                    api.getFloorPlan(id),
+                    api.getFacades({ limit: 1000 })
+                ]) as [any, any];
 
-    const loadFloorPlan = async () => {
-        try {
-            const data: any = await api.getFloorPlan(id);
-            setFormData({
-                title: data.title || "",
-                location: data.location || "",
-                min_frontage: data.min_frontage || "",
-                min_depth: data.min_depth || "",
-                total_area: data.total_area || "",
-                ground_floor_area: data.ground_floor_area || "",
-                first_floor_area: data.first_floor_area || "",
-                garage_area: data.garage_area || "",
-                porch_area: data.porch_area || "",
-                alfresco_area: data.alfresco_area || "",
-                stories: data.stories || 1,
-                bedrooms: data.bedrooms || 4,
-                bathrooms: data.bathrooms || 2,
-                car_spaces: data.car_spaces || 1,
-                price: data.price || "",
-                image_url: data.image_url || ""
-            });
-        } catch (err) {
-            console.error(err);
-            showAlert("Load Failed", "Failed to load floor plan details. Please check your connection.", "error");
-            router.push("/admin/floor-plans");
-        } finally {
-            setLoading(false);
-        }
-    };
+                setFacades(facadesData.data || []);
+
+                setFormData({
+                    title: floorPlanData.title || "",
+                    location: floorPlanData.location || "",
+                    min_frontage: floorPlanData.min_frontage || "",
+                    min_depth: floorPlanData.min_depth || "",
+                    total_area: floorPlanData.total_area || "",
+                    ground_floor_area: floorPlanData.ground_floor_area || "",
+                    first_floor_area: floorPlanData.first_floor_area || "",
+                    garage_area: floorPlanData.garage_area || "",
+                    porch_area: floorPlanData.porch_area || "",
+                    alfresco_area: floorPlanData.alfresco_area || "",
+                    stories: floorPlanData.stories || 1,
+                    bedrooms: floorPlanData.bedrooms || 4,
+                    bathrooms: floorPlanData.bathrooms || 2,
+                    car_spaces: floorPlanData.car_spaces || 1,
+                    price: floorPlanData.price || "",
+                    image_url: floorPlanData.image_url || "",
+                    // @ts-ignore
+                    facade_ids: Array.isArray(floorPlanData.facades)
+                        ? floorPlanData.facades.map((f: any) => f.id)
+                        : []
+                });
+            } catch (err) {
+                console.error(err);
+                showAlert("Load Failed", "Failed to load details. Please check your connection.", "error");
+                router.push("/admin/floor-plans");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, [id]);
 
     const handleChange = (e: any) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -163,6 +175,25 @@ export default function EditFloorPlanClient() {
                     >
                         {saving ? "Saving..." : <><Save size={18} /> Save Changes</>}
                     </button>
+                </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Assign Facades</h3>
+                <p className="text-sm text-gray-500 mb-4">Select which facades are compatible with this floor plan</p>
+
+                <div className="w-full">
+                    <MultiSelect
+                        options={facades.map(f => ({
+                            label: f.title,
+                            value: f.id,
+                            image: f.image_url,
+                            subLabel: `${f.width || 'N/A'}m width`
+                        }))}
+                        selectedValues={formData.facade_ids}
+                        onChange={(values) => setFormData(prev => ({ ...prev, facade_ids: values }))}
+                        placeholder="Select facades..."
+                    />
                 </div>
             </div>
 

@@ -5,6 +5,7 @@ import { useRouter, useParams } from "next/navigation";
 import { api, getFullUrl } from "@/services/api";
 import { Upload, Save, ArrowLeft, Trash2 } from "lucide-react";
 import { useUI } from "@/context/UIContext";
+import MultiSelect from "@/components/MultiSelect";
 
 export default function EditFacadeClient() {
     const router = useRouter();
@@ -38,13 +39,12 @@ export default function EditFacadeClient() {
             try {
                 const [facadeData, floorplansData] = await Promise.all([
                     api.getFacade(id),
-                    api.getFloorPlans()
+                    api.getFloorPlans({ limit: 1000 })
                 ]) as [any, any];
 
                 // @ts-ignore
-                if (Array.isArray(floorplansData)) {
-                    setFloorplans(floorplansData);
-                }
+                const plans = floorplansData.data || (Array.isArray(floorplansData) ? floorplansData : []);
+                setFloorplans(plans);
 
                 if (facadeData) {
                     // @ts-ignore
@@ -278,34 +278,18 @@ export default function EditFacadeClient() {
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Assign Floor Plans</h3>
                 <p className="text-sm text-gray-500 mb-4">Select which floor plans are compatible with this facade</p>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {floorplans.map(fp => (
-                        <label
-                            key={fp.id}
-                            className={`p-4 rounded-2xl border-2 cursor-pointer transition-all flex items-center ${formData.floorplan_ids.includes(fp.id)
-                                ? 'border-mimosa-dark bg-mimosa-dark/5'
-                                : 'border-gray-100 hover:border-gray-200'
-                                }`}
-                        >
-                            <input
-                                type="checkbox"
-                                checked={formData.floorplan_ids.includes(fp.id)}
-                                onChange={() => handleFloorPlanToggle(fp.id)}
-                                className="mr-3"
-                            />
-                            {fp.image_url && (
-                                <img
-                                    src={getFullUrl(fp.image_url)}
-                                    alt={fp.title}
-                                    className="w-48 h-32 object-cover rounded-xl mr-4"
-                                />
-                            )}
-                            <div>
-                                <span className="font-bold text-gray-900 block">{fp.title}</span>
-                                <span className="text-sm text-gray-500">({fp.total_area || 'N/A'} sq)</span>
-                            </div>
-                        </label>
-                    ))}
+                <div className="w-full">
+                    <MultiSelect
+                        options={floorplans.map(fp => ({
+                            label: fp.title,
+                            value: fp.id,
+                            image: fp.image_url,
+                            subLabel: `${fp.total_area || 'N/A'} sq`
+                        }))}
+                        selectedValues={formData.floorplan_ids}
+                        onChange={(values) => setFormData(prev => ({ ...prev, floorplan_ids: values }))}
+                        placeholder="Select floor plans..."
+                    />
                 </div>
 
                 {floorplans.length === 0 && (

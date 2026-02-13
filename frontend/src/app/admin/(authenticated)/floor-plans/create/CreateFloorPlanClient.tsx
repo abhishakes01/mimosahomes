@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { api, getFullUrl } from "@/services/api";
 import { Upload, Save, ArrowLeft } from "lucide-react";
 import { useUI } from "@/context/UIContext";
+import MultiSelect from "@/components/MultiSelect";
 
 export default function CreateFloorPlanClient() {
     const router = useRouter();
@@ -13,6 +14,7 @@ export default function CreateFloorPlanClient() {
     const [saving, setSaving] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    const [facades, setFacades] = useState<any[]>([]);
     const [formData, setFormData] = useState({
         title: "",
         location: "",
@@ -29,8 +31,22 @@ export default function CreateFloorPlanClient() {
         bathrooms: 2,
         car_spaces: 1,
         price: "",
-        image_url: ""
+        image_url: "",
+        facade_ids: [] as string[]
     });
+
+    useEffect(() => {
+        loadFacades();
+    }, []);
+
+    const loadFacades = async () => {
+        try {
+            const response: any = await api.getFacades({ limit: 1000 }); // Fetch all/many facades
+            setFacades(response.data || []);
+        } catch (err) {
+            console.error(err);
+        }
+    };
 
     const handleChange = (e: any) => {
         setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
@@ -92,6 +108,25 @@ export default function CreateFloorPlanClient() {
             </div>
 
             <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-6">Assign Facades</h3>
+                <p className="text-sm text-gray-500 mb-4">Select which facades are compatible with this floor plan</p>
+
+                <div className="w-full">
+                    <MultiSelect
+                        options={facades.map(f => ({
+                            label: f.title,
+                            value: f.id,
+                            image: f.image_url,
+                            subLabel: `${f.width || 'N/A'}m width`
+                        }))}
+                        selectedValues={formData.facade_ids}
+                        onChange={(values) => setFormData(prev => ({ ...prev, facade_ids: values }))}
+                        placeholder="Select facades..."
+                    />
+                </div>
+            </div>
+
+            <div className="bg-white p-8 rounded-3xl border border-gray-100 shadow-sm space-y-6">
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Floor Plan Details</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -107,6 +142,7 @@ export default function CreateFloorPlanClient() {
                             placeholder="e.g., The Hampton - Ground Floor"
                         />
                     </div>
+                    {/* ... (rest of the inputs) ... */}
 
                     <div>
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Location</label>

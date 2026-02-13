@@ -15,6 +15,11 @@ exports.getAllFacades = async (req, res, next) => {
 
         const { count, rows: facades } = await Facade.findAndCountAll({
             where,
+            include: [{
+                model: FloorPlan,
+                as: 'floorplans',
+                through: { attributes: [] }
+            }],
             order: [['created_at', 'DESC']],
             limit: parseInt(limit),
             offset: parseInt(offset),

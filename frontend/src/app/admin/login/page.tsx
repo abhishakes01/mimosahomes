@@ -85,7 +85,7 @@ export default function AdminLogin() {
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     className="w-full bg-white/5 border border-white/10 rounded-xl px-12 py-4 text-white placeholder-gray-600 focus:outline-none focus:border-mimosa-gold/50 focus:bg-white/10 transition-all"
-                                    placeholder="admin@mimosahomes.com.au"
+                                    placeholder="admin@mitrahomes.com.au"
                                 />
                             </div>
                         </div>

@@ -35,7 +35,12 @@ exports.getAllListings = async (req, res, next) => {
             }, {
                 model: require('../models').FloorPlan,
                 as: 'floorplan',
-                where: Object.keys(floorPlanWhere).length > 0 ? floorPlanWhere : undefined
+                where: Object.keys(floorPlanWhere).length > 0 ? floorPlanWhere : undefined,
+                include: [{
+                    model: require('../models').Facade,
+                    as: 'facades',
+                    through: { attributes: [] }
+                }]
             }],
             order: [['created_at', 'DESC']],
             limit: parseInt(limit),
@@ -77,19 +82,34 @@ exports.getListingById = async (req, res, next) => {
     }
 };
 
+// Helper to sanitize numeric fields from empty strings to null
+const sanitizeNumeric = (val) => {
+    if (val === "" || val === undefined || val === null) return null;
+    const num = parseFloat(val);
+    return isNaN(num) ? null : num;
+};
+
 exports.createListing = async (req, res, next) => {
     try {
-        // Extract only the fields that exist in the Listing model
+        // Extract and sanitize numeric fields
         const {
             title, address, price, type, status,
             description, latitude, longitude,
-            collection, facade_id, floorplan_id, images
+            collection, facade_id, floorplan_id, images,
+            land_size, building_size, highlights, builder_name,
+            outdoor_features, agent_name, agent_email, agent_phone, agent_image
         } = req.body;
 
         const listingData = {
-            title, address, price, type, status,
-            description, latitude, longitude,
-            collection, facade_id, floorplan_id, images
+            title, address, type, status,
+            description, collection, facade_id, floorplan_id, images,
+            highlights, builder_name,
+            outdoor_features, agent_name, agent_email, agent_phone, agent_image,
+            price: sanitizeNumeric(price),
+            latitude: sanitizeNumeric(latitude),
+            longitude: sanitizeNumeric(longitude),
+            land_size: sanitizeNumeric(land_size),
+            building_size: sanitizeNumeric(building_size)
         };
 
         const listing = await Listing.create(listingData);
@@ -104,7 +124,16 @@ exports.updateListing = async (req, res, next) => {
         const listing = await Listing.findByPk(req.params.id);
         if (!listing) return res.status(404).json({ error: 'Listing not found' });
 
-        await listing.update(req.body);
+        const data = { ...req.body };
+        const numericFields = ['price', 'latitude', 'longitude', 'land_size', 'building_size'];
+
+        numericFields.forEach(field => {
+            if (Object.prototype.hasOwnProperty.call(data, field)) {
+                data[field] = sanitizeNumeric(data[field]);
+            }
+        });
+
+        await listing.update(data);
         res.json(listing);
     } catch (error) {
         next(error);

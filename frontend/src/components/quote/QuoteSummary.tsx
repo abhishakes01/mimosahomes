@@ -210,7 +210,7 @@ export default function QuoteSummary({
                     </div>
 
                     <p className="text-[9px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest px-4 italic">
-                        The smaller facade is indicative only and is there to represent the external colours chosen. Refer to your official Mimosa Homes preliminary agreement for full and accurate pricing, promotions and terms and conditions. This is not an official quote.
+                        The smaller facade is indicative only and is there to represent the external colours chosen. Refer to your official Mitra Homes preliminary agreement for full and accurate pricing, promotions and terms and conditions. This is not an official quote.
                     </p>
 
                     {/* Final Action Bar */}
