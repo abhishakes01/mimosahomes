@@ -21,8 +21,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.SSH_PORT }}
           script: |
-            # export NEXT_ENV=${{ secrets.NEXT_ENV }}
-            # export NODE_ENV=${{ secrets.NODE_ENV }}
+            export NEXT_ENV=${{ secrets.NEXT_ENV }}
+            export NODE_ENV=${{ secrets.NODE_ENV }}
             
             # Create/Rewrite .env files from secrets
             echo "${{ secrets.BACKEND_ENV }}" > ${{ secrets.REMOTE_PATH }}/backend/.env
