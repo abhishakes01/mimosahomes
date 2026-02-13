@@ -50,4 +50,4 @@ jobs:
             chmod +x scripts/deploy.sh
             
             # Run the deployment script
-            bash scripts/deploy.sh
+            NODE_ENV=production bash scripts/deploy.sh
