@@ -19,14 +19,17 @@
     from {
       height: 0;
     }
+
     to {
       height: var(--radix-accordion-content-height);
     }
   }
+
   @keyframes accordion-up {
     from {
       height: var(--radix-accordion-content-height);
     }
+
     to {
       height: 0;
     }
@@ -36,12 +39,15 @@
 :root {
   --background: #ffffff;
   --foreground: #000000;
-  
+
   /* Palette - Classified Luxury */
-  --mimosa-gold: #C0C0C0; /* Sophisticated Silver/Platinum */
-  --mimosa-dark: #000000; /* Deep Black */
-  --mimosa-light: #f3f4f6; /* Subtle Grey */
-  
+  --mimosa-gold: #C0C0C0;
+  /* Sophisticated Silver/Platinum */
+  --mimosa-dark: #000000;
+  /* Deep Black */
+  --mimosa-light: #f3f4f6;
+  /* Subtle Grey */
+
   --radius: 0.5rem;
 }
 
@@ -61,6 +67,78 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: var(--font-heading), sans-serif;
+}
+
+/* International Phone Input Styling */
+.phone-input-custom {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  width: 100% !important;
+}
+
+.phone-input-custom .PhoneInputCountry {
+  display: flex !important;
+  align-items: center !important;
+  background-color: #f9fafb !important;
+  /* gray-50 */
+  border: 1px solid #e5e7eb !important;
+  /* gray-200 */
+  border-radius: 1rem !important;
+  /* 2xl */
+  padding: 0 1rem !important;
+  height: 3.75rem !important;
+  /* Matches px-6 py-4 height */
+  transition: all 0.2s !important;
+}
+
+.phone-input-custom .PhoneInputCountry:focus-within {
+  border-color: #1a3a4a !important;
+  box-shadow: 0 0 0 4px rgba(26, 58, 74, 0.1) !important;
+  background-color: white !important;
+}
+
+.phone-input-custom .PhoneInputInput {
+  flex: 1 !important;
+  background-color: #f9fafb !important;
+  /* gray-50 */
+  border: 1px solid #e5e7eb !important;
+  /* gray-200 */
+  border-radius: 1rem !important;
+  /* 2xl */
+  padding: 1rem 1.5rem !important;
+  height: 3.75rem !important;
+  font-size: 0.875rem !important;
+  /* text-sm */
+  font-weight: 500 !important;
+  color: #111827 !important;
+  /* gray-900 */
+  outline: none !important;
+  transition: all 0.2s !important;
+}
+
+.phone-input-custom .PhoneInputInput:focus {
+  background-color: white !important;
+  border-color: #1a3a4a !important;
+  box-shadow: 0 0 0 4px rgba(26, 58, 74, 0.1) !important;
+}
+
+.phone-input-custom .PhoneInputCountrySelect {
+  cursor: pointer !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+}
+
+.phone-input-custom .PhoneInputCountryIcon {
+  width: 1.5rem !important;
+  height: auto !important;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1) !important;
 }

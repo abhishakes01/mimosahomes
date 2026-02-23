@@ -1,20 +1,89 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Testimonials from "@/components/Testimonials";
 import { motion } from "framer-motion";
-import { ShieldCheck, Trophy, Clock, Star, ArrowRight, CheckCircle2 } from "lucide-react";
+import { ShieldCheck, Trophy, Clock, Star, ArrowRight, CheckCircle2, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { api, getFullUrl } from "@/services/api";
 
-const STATS = [
+const DEFAULT_STATS = [
     { label: "Display Homes", value: "50+", icon: Trophy },
     { label: "Product Review", value: "4.8", icon: Star, subValue: "Average Rating" },
     { label: "Years Experience", value: "18+", icon: Clock }
 ];
 
+const DEFAULT_CONFIDENCE_ITEMS = [
+    "Engineered concrete slabs designed specifically for your block.",
+    "Premium Australian quality structural timber frames.",
+    "Rigorous multi-stage inspections by independent surveyors.",
+    "Direct access to our building supervisors during the structural phase."
+];
+
 export default function WarrantyPage() {
+    const [pageData, setPageData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPage = async () => {
+            try {
+                const data: any = await api.getPageBySlug('50-year-structural-warranty');
+                setPageData(data.content);
+            } catch (error) {
+                console.error("Failed to fetch page data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPage();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#0897b1]" size={64} />
+            </div>
+        );
+    }
+
+    const content = pageData || {};
+    const heroImage = content.heroImage
+        ? getFullUrl(content.heroImage)
+        : "https://images.unsplash.com/photo-1556912173-3bb406ef7e77?q=80&w=2070&auto=format&fit=crop";
+
+    // Default main text if not provided in CMS
+    const defaultParagraph1 = "At Mitra Homes, we believe a great home isn't just built for today; it's built for lifetimes. Our 50-year structural warranty is a reflection of the trust we place in our engineering, our materials, and our master tradespeople.";
+    const defaultParagraph2 = "From the slab to the frame, every structural element is meticulously inspected to ensure your investment is protected for generations to come.";
+
+    let paragraphs = [];
+    if (content.mainText) {
+        paragraphs = content.mainText.split('\n').filter((p: string) => p.trim() !== '');
+    } else {
+        paragraphs = [defaultParagraph1, defaultParagraph2];
+    }
+
+    // Confidence Section
+    const confidenceTitle = content.confidenceTitle || "Confidence That Moves In With You";
+    const confidenceItems = content.confidenceItems?.length > 0 ? content.confidenceItems : DEFAULT_CONFIDENCE_ITEMS;
+    const confidenceImage = content.confidenceImage ? getFullUrl(content.confidenceImage) : "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop";
+
+    // Stats Section
+    const stats = content.stats?.length > 0
+        ? content.stats.map((s: any, i: number) => ({ ...s, icon: DEFAULT_STATS[i % DEFAULT_STATS.length].icon }))
+        : DEFAULT_STATS;
+
+    // Spotlight Section
+    const spotlightHeadline = content.spotlightHeadline || "Don't just take our word for it";
+    const spotlightTitle = content.spotlightTitle || "Our Homeowners Say it Best";
+    const spotlightQuote = content.spotlightQuote || "At Mitra Homes, we believe in being honest with each citizen of Melbourne about the homes that we build. It's that honesty that leads to us being Melbourne's West's best home builder. We truly believe it's about the people that we build for, it's about our clients and their future.";
+    const spotlightAuthor = content.spotlightAuthor || "Sarah & James Wilson";
+    const spotlightAuthorTitle = content.spotlightAuthorTitle || "Proud Mitra Homeowners";
+    const spotlightAvatar = content.spotlightAvatar ? getFullUrl(content.spotlightAvatar) : "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop";
+    const spotlightImage = content.spotlightImage ? getFullUrl(content.spotlightImage) : "https://images.unsplash.com/photo-1600607687644-c7171b42398f?q=80&w=2070&auto=format&fit=crop";
+
     return (
         <main className="min-h-screen bg-white">
             <Header />
@@ -22,7 +91,7 @@ export default function WarrantyPage() {
             {/* Hero Section */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <Image
-                    src="https://images.unsplash.com/photo-1556912173-3bb406ef7e77?q=80&w=2070&auto=format&fit=crop"
+                    src={heroImage}
                     alt="Mitra Homes Kitchen"
                     fill
                     priority
@@ -97,15 +166,12 @@ export default function WarrantyPage() {
                                     50 Years of Confidence, Built into Every Home
                                 </h3>
                             </div>
-                            <p className="text-white/70 text-lg leading-relaxed">
-                                At Mitra Homes, we believe a great home isn't just built for today; it's built for lifetimes.
-                                Our 50-year structural warranty is a reflection of the trust we place in our engineering,
-                                our materials, and our master tradespeople.
-                            </p>
-                            <p className="text-white/60 text-base italic border-l-2 border-mimosa-gold pl-6">
-                                From the slab to the frame, every structural element is meticulously inspected to ensure your
-                                investment is protected for generations to come.
-                            </p>
+
+                            {paragraphs.map((para: string, idx: number) => (
+                                <p key={idx} className={idx === 0 ? "text-white/70 text-lg leading-relaxed" : "text-white/60 text-base italic border-l-2 border-mimosa-gold pl-6"}>
+                                    {para}
+                                </p>
+                            ))}
                             <button className="bg-mimosa-gold text-mimosa-dark px-10 py-5 rounded-full font-black uppercase text-xs tracking-widest hover:bg-white transition-all shadow-xl">
                                 Download Warranty Guide
                             </button>
@@ -125,24 +191,11 @@ export default function WarrantyPage() {
                             className="flex-1 space-y-8"
                         >
                             <h3 className="text-3xl md:text-4xl font-extrabold italic tracking-tight uppercase leading-tight text-gray-900">
-                                Confidence That Moves In With You
+                                {confidenceTitle}
                             </h3>
                             <div className="space-y-6 text-gray-600 text-lg leading-relaxed">
-                                <p>
-                                    When you choose Mitra Homes to build your new home, you can rest easy knowing that everything has been
-                                    meticulously thought about, down to the very smallest of details.
-                                </p>
-                                <p>
-                                    Our commitment to quality is what makes us special. We ensure all of the homes that we build are
-                                    constructed with honesty, professionalism and quality. That's why we stand by our 50-year structural warranty.
-                                </p>
                                 <ul className="space-y-4">
-                                    {[
-                                        "Engineered concrete slabs designed specifically for your block.",
-                                        "Premium Australian quality structural timber frames.",
-                                        "Rigorous multi-stage inspections by independent surveyors.",
-                                        "Direct access to our building supervisors during the structural phase."
-                                    ].map((item, i) => (
+                                    {confidenceItems.map((item: string, i: number) => (
                                         <li key={i} className="flex items-start gap-4">
                                             <div className="mt-1 w-5 h-5 rounded-full bg-mimosa-gold/10 flex items-center justify-center flex-shrink-0">
                                                 <CheckCircle2 className="text-mimosa-gold" size={14} />
@@ -162,7 +215,7 @@ export default function WarrantyPage() {
                         >
                             <div className="relative rounded-[32px] overflow-hidden shadow-2xl aspect-[4/5] lg:aspect-[3/4]">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop"
+                                    src={confidenceImage}
                                     alt="Luxury Kitchen Interior"
                                     fill
                                     className="object-cover"
@@ -177,7 +230,7 @@ export default function WarrantyPage() {
             <section className="py-12 bg-gray-50 border-y border-gray-100">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {STATS.map((stat, i) => (
+                        {stats.map((stat: any, i: number) => (
                             <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 20 }}
@@ -215,8 +268,8 @@ export default function WarrantyPage() {
                         >
                             <div className="relative rounded-[32px] overflow-hidden shadow-2xl aspect-video lg:aspect-square">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1600607687644-c7171b42398f?q=80&w=2070&auto=format&fit=crop"
-                                    alt="Happy Family at Home"
+                                    src={spotlightImage}
+                                    alt="Homeowner Spotlight"
                                     fill
                                     className="object-cover"
                                 />
@@ -230,29 +283,26 @@ export default function WarrantyPage() {
                             className="flex-1 space-y-8"
                         >
                             <div className="space-y-4">
-                                <h2 className="text-mimosa-gold font-extrabold uppercase tracking-[0.3em] text-[10px]">Don't just take our word for it</h2>
+                                <h2 className="text-mimosa-gold font-extrabold uppercase tracking-[0.3em] text-[10px]">{spotlightHeadline}</h2>
                                 <h3 className="text-3xl md:text-4xl font-extrabold italic tracking-tight uppercase leading-tight text-gray-900">
-                                    Our Homeowners Say it Best
+                                    {spotlightTitle}
                                 </h3>
                             </div>
                             <p className="text-gray-600 text-xl italic leading-relaxed font-medium">
-                                "At Mitra Homes, we believe in being honest with each citizen of Melbourne about the homes that we build.
-                                It's that honesty that leads to us being Melbourne's West's best home builder. We truly believe it's
-                                about the people that we build for, it's about our clients and their future."
+                                "{spotlightQuote}"
                             </p>
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200">
+                                <div className="w-12 h-12 rounded-full overflow-hidden bg-gray-200 relative">
                                     <Image
-                                        src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=1976&auto=format&fit=crop"
+                                        src={spotlightAvatar}
                                         alt="Client Avatar"
-                                        width={48}
-                                        height={48}
+                                        fill
                                         className="object-cover"
                                     />
                                 </div>
                                 <div>
-                                    <span className="block font-extrabold uppercase text-xs tracking-widest text-gray-900">Sarah & James Wilson</span>
-                                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">Proud Mitra Homeowners</span>
+                                    <span className="block font-extrabold uppercase text-xs tracking-widest text-gray-900">{spotlightAuthor}</span>
+                                    <span className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest">{spotlightAuthorTitle}</span>
                                 </div>
                             </div>
                         </motion.div>

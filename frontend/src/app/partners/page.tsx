@@ -3,42 +3,76 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
+import { ChevronRight, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useState, useEffect } from "react";
+import { api, getFullUrl } from "@/services/api";
 
 const PARTNER_LOGOS = [
-    { name: "A&L Windows", url: "https://placehold.co/400x200/white/005a8f?text=A%26L+Windows" },
-    { name: "AllGreen", url: "https://placehold.co/400x200/white/005a8f?text=AllGreen" },
-    { name: "Alpine Truss", url: "https://placehold.co/400x200/white/005a8f?text=Alpine+Truss" },
-    { name: "ARC", url: "https://placehold.co/400x200/white/005a8f?text=ARC" },
-    { name: "Arki", url: "https://placehold.co/400x200/white/005a8f?text=Arki" },
-    { name: "ARX", url: "https://placehold.co/400x200/white/005a8f?text=ARX" },
-    { name: "Austral Bricks", url: "https://placehold.co/400x200/white/005a8f?text=Austral+Bricks" },
-    { name: "B&D", url: "https://placehold.co/400x200/white/005a8f?text=B%26D" },
-    { name: "Beaumont Tiles", url: "https://placehold.co/400x200/white/005a8f?text=Beaumont+Tiles" },
-    { name: "Colorbond", url: "https://placehold.co/400x200/white/005a8f?text=Colorbond" },
-    { name: "Gainsborough", url: "https://placehold.co/400x200/white/005a8f?text=Gainsborough" },
-    { name: "Haymes Paint", url: "https://placehold.co/400x200/white/005a8f?text=Haymes+Paint" },
-    { name: "James Hardie", url: "https://placehold.co/400x200/white/005a8f?text=James+Hardie" },
-    { name: "Laminex", url: "https://placehold.co/400x200/white/005a8f?text=Laminex" },
-    { name: "Monier", url: "https://placehold.co/400x200/white/005a8f?text=Monier" },
-    { name: "Omega", url: "https://placehold.co/400x200/white/005a8f?text=Omega" },
-    { name: "Origin", url: "https://placehold.co/400x200/white/005a8f?text=Origin" },
-    { name: "PGH Bricks", url: "https://placehold.co/400x200/white/005a8f?text=PGH+Bricks" },
-    { name: "RACV", url: "https://placehold.co/400x200/white/005a8f?text=RACV" },
-    { name: "Siniat", url: "https://placehold.co/400x200/white/005a8f?text=Siniat" },
-    { name: "Smeg", url: "https://placehold.co/400x200/white/005a8f?text=Smeg" },
-    { name: "Stegbar", url: "https://placehold.co/400x200/white/005a8f?text=Stegbar" }
+    { name: "A&L Windows", url: "" },
+    { name: "AllGreen", url: "" },
+    { name: "Alpine Truss", url: "" },
+    { name: "ARC", url: "" },
+    { name: "Arki", url: "" },
+    { name: "ARX", url: "" },
+    { name: "Austral Bricks", url: "" },
+    { name: "B&D", url: "" },
+    { name: "Beaumont Tiles", url: "" },
+    { name: "Colorbond", url: "" },
+    { name: "Gainsborough", url: "" },
+    { name: "Haymes Paint", url: "" },
+    { name: "James Hardie", url: "" },
+    { name: "Laminex", url: "" },
+    { name: "Monier", url: "" },
+    { name: "Omega", url: "" },
+    { name: "Origin", url: "" },
+    { name: "PGH Bricks", url: "" },
+    { name: "RACV", url: "" },
+    { name: "Siniat", url: "" },
+    { name: "Smeg", url: "" },
+    { name: "Stegbar", url: "" }
 ];
 
-// Placeholder logos array to fill up the grid like the screenshot
-const PLACEHOLDERS = Array.from({ length: 18 }).map((_, i) => ({
-    name: `Partner ${i + 1}`,
-    url: ""
-}));
-
 export default function PartnersPage() {
+    const [pageData, setPageData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPage = async () => {
+            try {
+                const data: any = await api.getPageBySlug('partners');
+                setPageData(data.content);
+            } catch (error) {
+                console.error("Failed to fetch page data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPage();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#0897b1]" size={64} />
+            </div>
+        );
+    }
+
+    const content = pageData || {};
+    const heroImage = content.heroImage
+        ? getFullUrl(content.heroImage)
+        : "https://images.unsplash.com/photo-1522071823991-b51829980aa8?q=80&w=2070&auto=format&fit=crop";
+
+    const partners = (content.partners && content.partners.length > 0)
+        ? content.partners.map((p: any) => ({ ...p, url: p.url ? getFullUrl(p.url) : "" }))
+        : PARTNER_LOGOS;
+
+    const heroTitle = content.heroTitle || "OUR PARTNERS";
+    const heroSubtitle = content.heroSubtitle || "Working with industry leaders to deliver excellence.";
+    const introText = content.introText || "At Mitra Homes, we take great pride in our partnerships. We collaborate with the most trusted names in the industry to ensure that every home we build meets our exacting standards of quality, innovation, and design.";
+
     return (
         <main className="min-h-screen bg-white">
             <Header />
@@ -46,7 +80,7 @@ export default function PartnersPage() {
             {/* Hero Section */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <img
-                    src="https://images.unsplash.com/photo-1522071823991-b51829980aa8?q=80&w=2070&auto=format&fit=crop"
+                    src={heroImage}
                     alt="Mitra Homes Partners"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -57,8 +91,18 @@ export default function PartnersPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-6xl md:text-7xl font-extrabold uppercase tracking-tight italic"
                     >
-                        PARTNERS
+                        {heroTitle}
                     </motion.h1>
+                    {heroSubtitle && (
+                        <motion.p
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: 0.2 }}
+                            className="text-xl md:text-2xl text-white/80 mt-4 max-w-2xl mx-auto font-medium"
+                        >
+                            {heroSubtitle}
+                        </motion.p>
+                    )}
                 </div>
 
                 {/* Breadcrumbs */}
@@ -69,20 +113,36 @@ export default function PartnersPage() {
                 </div>
             </section>
 
+            {/* Intro Section */}
+            <section className="py-20 bg-gray-50/50">
+                <div className="container mx-auto px-6">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        className="max-w-4xl mx-auto text-center"
+                    >
+                        <p className="text-xl md:text-2xl text-gray-600 leading-relaxed font-medium italic">
+                            "{introText}"
+                        </p>
+                    </motion.div>
+                </div>
+            </section>
+
             {/* Partners Logo Grid Section */}
             <section className="py-24 bg-white">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 md:gap-20">
-                        {PARTNER_LOGOS.map((partner, index) => (
+                        {partners.map((partner: any, index: number) => (
                             <motion.div
-                                key={partner.name}
+                                key={partner.name || index}
                                 initial={{ opacity: 0, y: 20 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: (index % 5) * 0.1 }}
                                 className="group flex flex-col items-center justify-center transition-all duration-500 hover:scale-110"
                             >
-                                <div className="h-20 w-full relative flex items-center justify-center p-4">
+                                <div className="h-24 w-full relative flex items-center justify-center p-4">
                                     {partner.url ? (
                                         <div className="relative w-full h-full">
                                             <img
@@ -92,26 +152,10 @@ export default function PartnersPage() {
                                             />
                                         </div>
                                     ) : (
-                                        <div className="w-full h-full bg-gray-50 flex items-center justify-center rounded-lg border border-gray-100">
-                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400">{partner.name}</span>
+                                        <div className="w-full h-full bg-gray-50 flex flex-col items-center justify-center rounded-2xl border border-gray-100 shadow-sm group-hover:border-mimosa-gold transition-colors">
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-gray-400 text-center px-2">{partner.name}</span>
                                         </div>
                                     )}
-                                </div>
-                            </motion.div>
-                        ))}
-
-                        {/* More placeholders to match the screenshot density */}
-                        {PLACEHOLDERS.map((partner, index) => (
-                            <motion.div
-                                key={`placeholder-${index}`}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: (index % 5) * 0.1 + 0.3 }}
-                                className="group flex flex-col items-center justify-center grayscale hover:grayscale-0 transition-all duration-500 hover:scale-110"
-                            >
-                                <div className="h-20 w-full relative flex items-center justify-center p-6 bg-gray-50/50 rounded-xl border border-gray-50 opacity-40 group-hover:opacity-100 transition-opacity">
-                                    <div className="w-full h-2 bg-gray-100 rounded-full" />
                                 </div>
                             </motion.div>
                         ))}

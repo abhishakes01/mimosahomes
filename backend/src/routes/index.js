@@ -22,5 +22,14 @@ const serviceAreaRoutes = require('./serviceAreas');
 router.use('/service-areas', serviceAreaRoutes);
 const upgradeRoutes = require('./upgrades');
 router.use('/upgrades', upgradeRoutes);
+const pageRoutes = require('./pages');
+router.use('/pages', pageRoutes);
+const reviewRoutes = require('./reviewRoutes');
+router.use('/reviews', reviewRoutes);
+const settingsRoutes = require('./settings');
+router.use('/settings', settingsRoutes);
+
+const captchaRoutes = require('./captchaRoutes');
+router.use('/captcha', captchaRoutes);
 
 module.exports = router;

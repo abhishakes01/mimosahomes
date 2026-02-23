@@ -29,11 +29,17 @@ export default function Footer() {
                     <div>
                         <h4 className="text-lg font-semibold mb-6">Quick Links</h4>
                         <ul className="space-y-3">
-                            {["Home Designs", "House & Land", "Display Homes", "Promotions", "Contact"].map((item) => (
-                                <li key={item}>
-                                    <Link href="#" className="text-gray-400 hover:text-mimosa-gold transition-colors flex items-center text-sm group">
+                            {[
+                                { name: "Home Designs", href: "/new-home-designs" },
+                                { name: "House & Land", href: "/house-land-packages" },
+                                { name: "Display Homes", href: "/display-homes" },
+                                { name: "Promotions", href: "#" },
+                                { name: "Contact", href: "/contact" }
+                            ].map((item) => (
+                                <li key={item.name}>
+                                    <Link href={item.href} className="text-gray-400 hover:text-mimosa-gold transition-colors flex items-center text-sm group">
                                         <ArrowRight size={14} className="mr-2 opacity-0 -ml-4 group-hover:opacity-100 group-hover:ml-0 transition-all duration-300" />
-                                        {item}
+                                        {item.name}
                                     </Link>
                                 </li>
                             ))}

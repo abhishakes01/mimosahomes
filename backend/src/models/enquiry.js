@@ -34,7 +34,16 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
         },
         type: {
-            type: DataTypes.ENUM('general', 'listing_enquiry', 'finance'),
+            type: DataTypes.ENUM(
+                'general',
+                'listing_enquiry',
+                'finance',
+                'new-home',
+                'house-land',
+                'display-homes',
+                'QUOTE_BUILDER',
+                'MPORIUM_ENQUIRY'
+            ),
             defaultValue: 'general'
         },
         listing_id: {

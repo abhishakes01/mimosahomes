@@ -4,6 +4,7 @@ import { useState } from "react";
 import { X, Send, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/services/api";
+import Captcha from "@/components/Captcha";
 
 interface EnquiryModalProps {
     onClose: () => void;
@@ -15,7 +16,8 @@ export default function EnquiryModal({ onClose, quoteData }: EnquiryModalProps) 
         firstName: "",
         lastName: "",
         email: "",
-        phone: ""
+        phone: "",
+        captcha: ""
     });
     const [loading, setLoading] = useState(false);
     const [submitted, setSubmitted] = useState(false);
@@ -128,6 +130,21 @@ export default function EnquiryModal({ onClose, quoteData }: EnquiryModalProps) 
                                     className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors placeholder:text-gray-300"
                                     placeholder="0400 000 000"
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end pb-2">
+                                <Captcha />
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Enter Code</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        value={formData.captcha}
+                                        onChange={e => setFormData({ ...formData, captcha: e.target.value })}
+                                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors placeholder:text-gray-300"
+                                        placeholder="Type code..."
+                                    />
+                                </div>
                             </div>
 
                             <button

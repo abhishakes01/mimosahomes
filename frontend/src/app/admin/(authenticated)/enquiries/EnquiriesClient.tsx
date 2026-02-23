@@ -89,10 +89,15 @@ export default function EnquiriesClient() {
                                         </div>
                                     </div>
                                     <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide ${enquiry.type === 'finance' ? 'bg-purple-100 text-purple-700' :
-                                        enquiry.type === 'listing_enquiry' ? 'bg-blue-100 text-blue-700' :
-                                            'bg-gray-100 text-gray-600'
+                                            enquiry.type === 'listing_enquiry' ? 'bg-blue-100 text-blue-700' :
+                                                enquiry.type === 'new-home' ? 'bg-orange-100 text-orange-700' :
+                                                    enquiry.type === 'house-land' ? 'bg-green-100 text-green-700' :
+                                                        enquiry.type === 'display-homes' ? 'bg-indigo-100 text-indigo-700' :
+                                                            enquiry.type === 'QUOTE_BUILDER' ? 'bg-mimosa-gold shadow-sm text-mimosa-dark' :
+                                                                enquiry.type === 'MPORIUM_ENQUIRY' ? 'bg-mimosa-dark text-white' :
+                                                                    'bg-gray-100 text-gray-600'
                                         }`}>
-                                        {enquiry.type.replace('_', ' ')}
+                                        {enquiry.type.replace('_', ' ').replace('-', ' ')}
                                     </span>
                                 </div>
 

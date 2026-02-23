@@ -11,7 +11,8 @@ interface ModalProps {
     onClose: () => void;
     onConfirm?: () => void;
     title: string;
-    message: string;
+    message?: string;
+    children?: React.ReactNode;
     type?: ModalType;
     confirmText?: string;
     cancelText?: string;
@@ -23,6 +24,7 @@ export default function Modal({
     onConfirm,
     title,
     message,
+    children,
     type = "info",
     confirmText = "Confirm",
     cancelText = "Cancel"
@@ -91,38 +93,47 @@ export default function Modal({
                             <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-tight">
                                 {title}
                             </h3>
-                            <p className="text-gray-500 font-medium leading-relaxed mb-10">
-                                {message}
-                            </p>
 
-                            <div className="flex flex-col sm:flex-row gap-3">
-                                {type === "confirm" ? (
-                                    <>
-                                        <button
-                                            onClick={onClose}
-                                            className="flex-1 px-8 py-4 rounded-3xl font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all active:scale-95"
-                                        >
-                                            {cancelText}
-                                        </button>
-                                        <button
-                                            onClick={() => {
-                                                onConfirm?.();
-                                                onClose();
-                                            }}
-                                            className={`flex-1 px-8 py-4 rounded-3xl font-bold text-white transition-all active:scale-95 shadow-lg ${getAccentColor()} hover:brightness-110`}
-                                        >
-                                            {confirmText}
-                                        </button>
-                                    </>
-                                ) : (
-                                    <button
-                                        onClick={onClose}
-                                        className={`w-full px-8 py-4 rounded-3xl font-bold text-white transition-all active:scale-95 shadow-lg ${getAccentColor()} hover:brightness-110`}
-                                    >
-                                        Got it
-                                    </button>
-                                )}
-                            </div>
+                            {children ? (
+                                <div className="mt-6 text-left">
+                                    {children}
+                                </div>
+                            ) : (
+                                <>
+                                    <p className="text-gray-500 font-medium leading-relaxed mb-10">
+                                        {message}
+                                    </p>
+
+                                    <div className="flex flex-col sm:flex-row gap-3">
+                                        {type === "confirm" ? (
+                                            <>
+                                                <button
+                                                    onClick={onClose}
+                                                    className="flex-1 px-8 py-4 rounded-3xl font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 transition-all active:scale-95"
+                                                >
+                                                    {cancelText}
+                                                </button>
+                                                <button
+                                                    onClick={() => {
+                                                        onConfirm?.();
+                                                        onClose();
+                                                    }}
+                                                    className={`flex-1 px-8 py-4 rounded-3xl font-bold text-white transition-all active:scale-95 shadow-lg ${getAccentColor()} hover:brightness-110`}
+                                                >
+                                                    {confirmText}
+                                                </button>
+                                            </>
+                                        ) : (
+                                            <button
+                                                onClick={onClose}
+                                                className={`w-full px-8 py-4 rounded-3xl font-bold text-white transition-all active:scale-95 shadow-lg ${getAccentColor()} hover:brightness-110`}
+                                            >
+                                                Got it
+                                            </button>
+                                        )}
+                                    </div>
+                                </>
+                            )}
                         </div>
 
                         {/* Close button icon */}

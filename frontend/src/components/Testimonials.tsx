@@ -1,6 +1,12 @@
-import { Star, CheckCircle } from "lucide-react";
+"use client";
 
-const REVIEWS = [
+import { useState, useEffect } from "react";
+import { Star, CheckCircle, Plus, MessageSquare } from "lucide-react";
+import { api } from "@/services/api";
+import ReviewForm from "./ReviewForm";
+import Modal from "./Modal";
+
+const STATIC_REVIEWS = [
     {
         title: "Great experience so far",
         content: "We have recently started our build with Mitra Homes. My partner and I have been dealing with the sales team who have been absolutely amazing. They have gone above and beyond to help us get our dream home started.",
@@ -22,61 +28,122 @@ const REVIEWS = [
 ];
 
 export default function Testimonials() {
+    const [reviews, setReviews] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [showForm, setShowForm] = useState(false);
+
+    const fetchReviews = async () => {
+        try {
+            setLoading(true);
+            const data: any = await api.getApprovedReviews();
+            if (data && data.length > 0) {
+                setReviews(data);
+            } else {
+                setReviews(STATIC_REVIEWS.map(r => ({ ...r, id: Math.random(), comment: r.content, name: r.author, rating: 5 })));
+            }
+        } catch (error) {
+            console.error("Failed to fetch reviews", error);
+            setReviews(STATIC_REVIEWS.map(r => ({ ...r, id: Math.random(), comment: r.content, name: r.author, rating: 5 })));
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchReviews();
+    }, []);
+
     return (
-        <section className="py-20 bg-white">
-            <div className="container mx-auto px-6">
+        <section className="py-24 bg-white overflow-hidden relative">
+            <div className="absolute top-0 left-0 w-64 h-64 bg-mimosa-gold/5 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2" />
+            <div className="absolute bottom-0 right-0 w-96 h-96 bg-mimosa-gold/5 rounded-full blur-3xl translate-x-1/2 translate-y-1/2" />
 
+            <div className="container mx-auto px-6 relative z-10">
                 {/* Header Section */}
-                <div className="text-center mb-12">
-                    <h2 className="text-4xl md:text-5xl font-bold text-mimosa-dark mb-6 tracking-tight">What Our Customers Have to Say</h2>
-
-                    <div className="inline-flex flex-col items-center justify-center p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                        <div className="flex items-center gap-3 text-mimosa-dark font-bold text-lg mb-2">
-                            <span className="text-[#48bb78] text-4xl font-extrabold">4.8</span>
-                            <div className="flex flex-col items-start">
-                                <div className="flex gap-1 mb-1">
-                                    {[1, 2, 3, 4, 5].map(i => <Star key={i} fill="#48bb78" stroke="none" size={24} />)}
-                                </div>
-                                <span className="text-gray-400 text-xs font-medium uppercase tracking-wide">based on 324 reviews</span>
+                <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-16">
+                    <div className="space-y-4 text-center md:text-left">
+                        <h2 className="text-4xl md:text-5xl font-extrabold text-mimosa-dark italic tracking-tight uppercase leading-none">
+                            What Our Customers <br /> <span className="text-mimosa-gold">Have to Say</span>
+                        </h2>
+                        <div className="flex items-center justify-center md:justify-start gap-4">
+                            <div className="flex gap-1">
+                                {[1, 2, 3, 4, 5].map(i => <Star key={i} fill="#E8B04F" stroke="none" size={20} />)}
                             </div>
+                            <span className="text-gray-400 text-sm font-bold uppercase tracking-widest">4.8 / 5.0 Rating</span>
                         </div>
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/ProductReview.com.au_logo.png" alt="ProductReview" className="h-6 opacity-60 grayscale hover:grayscale-0 transition-all" />
                     </div>
+
+                    <button
+                        onClick={() => setShowForm(true)}
+                        className="group relative flex items-center gap-3 bg-mimosa-dark text-white px-8 py-5 rounded-full font-black uppercase text-xs tracking-widest hover:bg-black transition-all shadow-[0_10px_30px_rgba(0,0,0,0.1)] active:scale-95"
+                    >
+                        <div className="w-8 h-8 bg-mimosa-gold rounded-full flex items-center justify-center group-hover:rotate-90 transition-transform">
+                            <Plus size={18} className="text-white" />
+                        </div>
+                        Write a Review
+                    </button>
                 </div>
 
                 {/* Reviews Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
-                    {REVIEWS.map((review, index) => (
-                        <div key={index} className="bg-white p-8 rounded-xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:-translate-y-1 transition-transform duration-300 relative flex flex-col">
-                            <div className="flex items-center gap-1 mb-4">
-                                {[1, 2, 3, 4, 5].map(i => <Star key={i} fill="#48bb78" stroke="none" size={18} />)}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
+                    {reviews.map((review) => (
+                        <div key={review.id} className="group bg-white p-10 rounded-[40px] shadow-[0_15px_50px_-15px_rgba(0,0,0,0.05)] border border-gray-50 hover:border-mimosa-gold/20 hover:shadow-2xl transition-all duration-500 relative flex flex-col min-h-[350px]">
+                            <div className="absolute top-8 right-10 opacity-10 group-hover:opacity-20 transition-opacity">
+                                <MessageSquare size={60} fill="#E8B04F" className="text-mimosa-gold" />
                             </div>
 
-                            <h3 className="font-bold text-lg text-mimosa-dark mb-3">{review.title}</h3>
-                            <p className="text-gray-600 text-sm leading-relaxed mb-6 flex-grow">
-                                "{review.content}"
+                            <div className="flex items-center gap-1 mb-6">
+                                {[...Array(5)].map((_, i) => (
+                                    <Star key={i} fill={i < review.rating ? "#E8B04F" : "#E2E8F0"} stroke="none" size={16} />
+                                ))}
+                            </div>
+
+                            <h3 className="font-extrabold text-xl text-gray-900 mb-4 h-14 line-clamp-2 uppercase italic tracking-tight leading-tight group-hover:text-mimosa-gold transition-colors">
+                                {review.title || (review.rating >= 4 ? "Excellent Service" : "My Experience")}
+                            </h3>
+
+                            <p className="text-gray-500 text-lg leading-relaxed mb-8 flex-grow italic font-medium">
+                                "{review.comment || review.content}"
                             </p>
 
-                            <div className="pt-6 border-t border-gray-100 flex items-center justify-between">
-                                <div>
-                                    <span className="block font-bold text-gray-900 text-sm">{review.author}</span>
-                                    <span className="block text-gray-400 text-xs">{review.location}</span>
+                            <div className="pt-8 border-t border-gray-50 flex items-center justify-between mt-auto">
+                                <div className="space-y-1">
+                                    <span className="block font-black text-gray-900 text-sm uppercase tracking-tight">{review.name || review.author}</span>
+                                    <span className="block text-gray-400 text-xs font-bold uppercase tracking-widest">{review.location || "Verified Client"}</span>
                                 </div>
-                                <div className="flex items-center gap-1 text-[10px] text-[#48bb78] font-bold uppercase tracking-wider bg-green-50 px-2 py-1 rounded">
-                                    <CheckCircle size={12} /> Verified
+                                <div className="flex items-center gap-1.5 text-[10px] text-green-600 font-black uppercase tracking-widest bg-green-50 px-3 py-1.5 rounded-full">
+                                    <CheckCircle size={14} /> Verified
                                 </div>
                             </div>
                         </div>
                     ))}
                 </div>
 
-                <div className="text-center mt-12">
-                    <a href="#" className="inline-flex items-center gap-2 text-gray-500 hover:text-mimosa-dark transition-colors font-medium border-b border-transparent hover:border-mimosa-dark pb-0.5">
-                        Read all reviews on ProductReview.com.au
-                    </a>
-                </div>
-
+                {/* <div className="text-center mt-20 space-y-8">
+                    <p className="text-gray-400 font-bold uppercase text-xs tracking-[0.2em]">Trusted by hundreds of families</p>
+                    <div className="flex justify-center flex-wrap gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/ProductReview.com.au_logo.png" alt="ProductReview" className="h-6" />
+                        <div className="h-6 w-px bg-gray-200" />
+                        <span className="font-black italic text-gray-900 text-xl tracking-tighter">Google Reviews</span>
+                        <div className="h-6 w-px bg-gray-200" />
+                        <span className="font-black italic text-gray-900 text-xl tracking-tighter">Facebook</span>
+                    </div>
+                </div> */}
             </div>
+
+            {/* Review Form Modal */}
+            <Modal isOpen={showForm} onClose={() => setShowForm(false)} title="Share Your Journey">
+                <ReviewForm
+                    onSuccess={() => {
+                        // Keep open for success message, then maybe close after delay
+                        setTimeout(() => {
+                            setShowForm(false);
+                            fetchReviews();
+                        }, 3000);
+                    }}
+                    onClose={() => setShowForm(false)}
+                />
+            </Modal>
         </section>
     );
 }

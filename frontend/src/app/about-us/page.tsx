@@ -4,57 +4,103 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import Testimonials from "@/components/Testimonials";
 import { motion, AnimatePresence } from "framer-motion";
-import { CheckCircle2, ShieldCheck, Trophy, Clock, Star, ArrowRight } from "lucide-react";
-import { useState } from "react";
+import { CheckCircle2, ShieldCheck, Trophy, Clock, Star, ArrowRight, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { api, getFullUrl } from "@/services/api";
 
-const STATS = [
+const DEFAULT_STATS = [
     { label: "Display Homes", value: "50+", icon: Trophy },
     { label: "Product Review", value: "4.8", icon: Star, subValue: "Average Rating" },
     { label: "Years Experience", value: "18+", icon: Clock }
 ];
 
-const COMMITMENTS = [
+const DEFAULT_COMMITMENTS = [
     {
-        id: "quality",
-        title: "Built with Quality",
-        content: "We never compromise on the quality of your home. From the foundation to the final coat of paint, our rigorous quality control ensures every detail meets our exacting standards. We use premium materials and work with trusted local trades to deliver a home that stands the test of time.",
-        image: "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=2070&auto=format&fit=crop",
-        badge: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=1973&auto=format&fit=crop"
+        title: "Quality Construction",
+        content: "We provide an exceptional quality of finish, as we only use the most reputable and reliable suppliers and tradespeople.",
+        image: "https://images.unsplash.com/photo-1541888946425-d81bb19480c5?q=80&w=2070&auto=format&fit=crop"
     },
     {
-        id: "style",
-        title: "Built with Style",
-        content: "Our designs are inspired by modern Australian living. We combine aesthetic beauty with functional layouts to create homes that are as stunning to look at as they are comfortable to live in. Our M-PORIUM selection center allows you to personalize your home with the latest trends and finishes.",
-        image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop",
-        badge: "https://images.unsplash.com/photo-1613545325278-f24b0cae1224?q=80&w=2070&auto=format&fit=crop"
+        title: "Personalised Experience",
+        content: "At Mitra Homes, we believe that every home is unique. We work closely with you to ensure your vision comes to life exactly as you imagined.",
+        image: "https://images.unsplash.com/photo-1560518883-ce09059eeffa?q=80&w=2073&auto=format&fit=crop"
     },
     {
-        id: "care",
-        title: "Built with Care",
-        content: "Choosing to build a home is a big decision, and we're here to support you every step of the way. Our team provides personalized service and transparent communication throughout the entire journey. We treat every home as if it were our own, ensuring a stress-free and rewarding experience.",
-        image: "https://images.unsplash.com/photo-1600566753190-17f0bbc2a6c3?q=80&w=2070&auto=format&fit=crop",
-        badge: "https://images.unsplash.com/photo-1582408921715-18e7806365c1?q=80&w=2070&auto=format&fit=crop"
+        title: "Transparency & Trust",
+        content: "Build with confidence. We offer fixed-price contracts and clear communication at every step of the building process.",
+        image: "https://images.unsplash.com/photo-1521791136064-7986c295944b?q=80&w=2070&auto=format&fit=crop"
     },
     {
-        id: "time",
-        title: "Built on Time",
-        content: "We understand that you're excited to move into your new home. That's why we emphasize efficient project management and realistic timelines. Our standardized processes and experienced supervisors keep your build on track, so you can start your new life as planned.",
-        image: "https://images.unsplash.com/photo-1503387762-592dea58ef0e?q=80&w=2000&auto=format&fit=crop",
-        badge: "https://images.unsplash.com/photo-1454165833767-02750801a600?q=80&w=2070&auto=format&fit=crop"
-    },
-    {
-        id: "last",
-        title: "Built to Last",
-        content: "Sustainability and durability are at the heart of our construction philosophy. Beyond just meeting building codes, we focus on energy efficiency and structural integrity. Our 50-year structural warranty is a testament to the confidence we have in our workmanship.",
-        image: "https://images.unsplash.com/photo-1518780664697-55e3ad937233?q=80&w=2000&auto=format&fit=crop",
-        badge: "https://images.unsplash.com/photo-1600573472591-ee6b68d14c68?q=80&w=2070&auto=format&fit=crop"
+        title: "Experience & Expertise",
+        content: "With over 18 years in the industry, our team brings unparalleled knowledge and craftsmanship to every foundation we lay.",
+        image: "https://images.unsplash.com/photo-1454165833762-0204b28c6733?q=80&w=2070&auto=format&fit=crop"
     }
 ];
 
 export default function AboutUsPage() {
-    const [activeTab, setActiveTab] = useState("last");
+    const [activeTab, setActiveTab] = useState(0);
+    const [pageData, setPageData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchPage = async () => {
+            try {
+                const data: any = await api.getPageBySlug('about-us');
+                setPageData(data.content);
+            } catch (error) {
+                console.error("Failed to fetch page data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPage();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#0897b1]" size={64} />
+            </div>
+        );
+    }
+
+    const content = pageData || {};
+    const heroImage = content.heroImage
+        ? getFullUrl(content.heroImage)
+        : "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop";
+
+    // Merge dynamic stats with default icons based on index
+    const stats = content.stats?.length > 0
+        ? content.stats.map((s: any, i: number) => ({ ...s, icon: DEFAULT_STATS[i % DEFAULT_STATS.length].icon }))
+        : DEFAULT_STATS;
+
+    const commitments = content.commitments?.length > 0 ? content.commitments : DEFAULT_COMMITMENTS;
+
+    // Introduction Section Data
+    const introImage = content.introImage ? getFullUrl(content.introImage) : "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070&auto=format&fit=crop";
+    const introBadgeText = content.introBadgeText || "18+";
+    const introBadgeLabel = content.introBadgeLabel || "Years of Luxury Builders";
+    const introTagline = content.introTagline || "Your journey to a dream home starts here";
+    const introTitle = content.introTitle || "Mitra Homes is your premier building company.";
+    const introDescription = content.introDescription || "At Mitra Homes, we specialize in building high-quality homes with heart. Based in Melbourne's West, we've spent over 18 years perfecting the art of crafting living spaces that inspire and endure.";
+    const introBenefits = content.introBenefits?.length > 0 ? content.introBenefits : [
+        "Professional service with a focus on your needs.",
+        "Fixed price contracts for peace of mind.",
+        "Innovative designs suited to modern living.",
+        "Exceptional quality control at every stage."
+    ];
+
+    // Confidence Banner Data
+    const confidenceTitle = content.confidenceTitle || "Our Build with Confidence Commitment";
+    const confidenceDesc = content.confidenceDesc || "There is more to making a house a home than just bricks and mortar. We care about how you feel about your new home design.";
+    const confidenceCheckText = content.confidenceCheckText || "At Mitra Homes, our 50-year structural warranty is our promise to you.";
+
+    // Bottom CTA Data
+    const ctaImage = content.ctaImage ? getFullUrl(content.ctaImage) : "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop";
+    const ctaTitle = content.ctaTitle || "Ready to Begin your Journey?";
+    const ctaDesc = content.ctaDesc || "Connect with one of our New Home Consultants today to explore your options, answer any questions, and take the first step toward your dream home.";
 
     return (
         <main className="min-h-screen bg-white">
@@ -63,7 +109,7 @@ export default function AboutUsPage() {
             {/* Hero Section */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <Image
-                    src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop"
+                    src={heroImage}
                     alt="Mitra Homes Interior"
                     fill
                     priority
@@ -93,15 +139,15 @@ export default function AboutUsPage() {
                         >
                             <div className="relative rounded-[32px] overflow-hidden shadow-2xl aspect-[4/3]">
                                 <Image
-                                    src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?q=80&w=2070&auto=format&fit=crop"
+                                    src={introImage}
                                     alt="Luxury Home"
                                     fill
                                     className="object-cover"
                                 />
                             </div>
                             <div className="absolute -bottom-10 -right-10 bg-mimosa-dark text-white p-10 rounded-[24px] shadow-2xl hidden md:block">
-                                <p className="text-4xl font-extrabold italic">18+</p>
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">Years of Luxury Builders</p>
+                                <p className="text-4xl font-extrabold italic">{introBadgeText}</p>
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-white/60">{introBadgeLabel}</p>
                             </div>
                         </motion.div>
 
@@ -112,24 +158,15 @@ export default function AboutUsPage() {
                             className="flex-1 space-y-8"
                         >
                             <div className="space-y-4">
-                                <h2 className="text-[12px] font-black text-mimosa-gold uppercase tracking-[0.3em]">Your journey to a dream home starts here</h2>
+                                <h2 className="text-[12px] font-black text-mimosa-gold uppercase tracking-[0.3em]">{introTagline}</h2>
                                 <h3 className="text-4xl md:text-5xl font-extrabold text-gray-900 leading-tight tracking-tight uppercase italic">
-                                    Mitra Homes is your premier building company.
+                                    {introTitle}
                                 </h3>
                             </div>
                             <div className="space-y-6 text-gray-600 leading-relaxed text-lg">
-                                <p>
-                                    At Mitra Homes, we specialize in building high-quality homes with heart.
-                                    Based in Melbourne's West, we've spent over 18 years perfecting the art of
-                                    crafting living spaces that inspire and endure.
-                                </p>
+                                <p>{introDescription}</p>
                                 <ul className="space-y-4">
-                                    {[
-                                        "Professional service with a focus on your needs.",
-                                        "Fixed price contracts for peace of mind.",
-                                        "Innovative designs suited to modern living.",
-                                        "Exceptional quality control at every stage."
-                                    ].map((item, i) => (
+                                    {introBenefits.map((item: string, i: number) => (
                                         <li key={i} className="flex items-start gap-4">
                                             <div className="mt-1 w-5 h-5 rounded-full bg-mimosa-gold/10 flex items-center justify-center flex-shrink-0">
                                                 <CheckCircle2 className="text-mimosa-gold" size={14} />
@@ -155,7 +192,7 @@ export default function AboutUsPage() {
             <section className="py-12 bg-gray-50 border-y border-gray-100">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-                        {STATS.map((stat, i) => (
+                        {stats.map((stat: any, i: number) => (
                             <motion.div
                                 key={i}
                                 initial={{ opacity: 0, y: 20 }}
@@ -188,14 +225,13 @@ export default function AboutUsPage() {
                     <div className="flex flex-col lg:flex-row items-center gap-12">
                         <div className="flex-1 space-y-6">
                             <h2 className="text-4xl md:text-5xl font-extrabold text-white italic tracking-tight uppercase leading-tight">
-                                Our Build with Confidence Commitment
+                                {confidenceTitle}
                             </h2>
                             <p className="text-white/70 text-lg leading-relaxed max-w-2xl">
-                                There is more to making a house a home than just bricks and mortar.
-                                We care about how you feel about your new home design.
+                                {confidenceDesc}
                             </p>
                             <p className="text-white/60 text-sm italic">
-                                At Mitra Homes, our 50-year structural warranty is our promise to you.
+                                {confidenceCheckText}
                             </p>
                         </div>
                         <div className="relative">
@@ -227,11 +263,11 @@ export default function AboutUsPage() {
 
                     {/* Tabs Navigation */}
                     <div className="flex flex-wrap justify-center gap-2 mb-12">
-                        {COMMITMENTS.map((tab) => (
+                        {commitments.map((tab: any, index: number) => (
                             <button
-                                key={tab.id}
-                                onClick={() => setActiveTab(tab.id)}
-                                className={`px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest transition-all ${activeTab === tab.id
+                                key={index}
+                                onClick={() => setActiveTab(index)}
+                                className={`px-8 py-4 rounded-full font-black uppercase text-xs tracking-widest transition-all ${activeTab === index
                                     ? "bg-mimosa-dark text-white shadow-xl scale-105"
                                     : "bg-gray-100 text-gray-400 hover:bg-gray-200"
                                     }`}
@@ -255,36 +291,41 @@ export default function AboutUsPage() {
                                 <div className="flex-1 space-y-8">
                                     <div className="space-y-4">
                                         <h3 className="text-3xl md:text-4xl font-extrabold text-gray-900 italic tracking-tight uppercase leading-none">
-                                            {COMMITMENTS.find(t => t.id === activeTab)?.title}
+                                            {commitments[activeTab]?.title}
                                         </h3>
                                         <div className="w-20 h-1.5 bg-mimosa-gold rounded-full" />
                                     </div>
                                     <p className="text-gray-600 text-xl leading-relaxed italic font-medium">
-                                        {COMMITMENTS.find(t => t.id === activeTab)?.content}
+                                        {commitments[activeTab]?.content}
                                     </p>
-                                    <button className="bg-mimosa-dark text-white px-8 py-4 rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-all">
+                                    <Link
+                                        href="/contact"
+                                        className="bg-mimosa-dark text-white px-8 py-4 rounded-full font-bold uppercase text-xs tracking-widest hover:bg-black transition-all inline-block"
+                                    >
                                         Learn More
-                                    </button>
+                                    </Link>
                                 </div>
 
                                 <div className="flex-1 relative">
                                     <div className="relative rounded-[32px] overflow-hidden shadow-2xl aspect-video scale-110 rotate-3 group overflow-hidden">
                                         <Image
-                                            src={COMMITMENTS.find(t => t.id === activeTab)?.image || ""}
+                                            src={getFullUrl(commitments[activeTab]?.image || "")}
                                             alt="Commitment Image"
                                             fill
                                             className="object-cover group-hover:scale-110 transition-transform duration-1000"
                                         />
                                     </div>
                                     {/* Small floating badge */}
-                                    <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full border-8 border-white overflow-hidden shadow-2xl rotate-12">
-                                        <Image
-                                            src={COMMITMENTS.find(t => t.id === activeTab)?.badge || ""}
-                                            alt="Badge"
-                                            fill
-                                            className="object-cover"
-                                        />
-                                    </div>
+                                    {commitments[activeTab]?.badge && (
+                                        <div className="absolute -bottom-8 -left-8 w-40 h-40 rounded-full border-8 border-white overflow-hidden shadow-2xl rotate-12">
+                                            <Image
+                                                src={getFullUrl(commitments[activeTab]?.badge || "")}
+                                                alt="Badge"
+                                                fill
+                                                className="object-cover"
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </motion.div>
                         </AnimatePresence>
@@ -298,7 +339,7 @@ export default function AboutUsPage() {
             {/* Ready to Begin Section */}
             <section className="py-24 relative overflow-hidden min-h-[500px] flex items-center">
                 <Image
-                    src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop"
+                    src={ctaImage}
                     alt="Living Room"
                     fill
                     className="object-cover grayscale-[0.2]"
@@ -312,11 +353,10 @@ export default function AboutUsPage() {
                         className="space-y-4"
                     >
                         <h2 className="text-4xl md:text-5xl font-extrabold uppercase italic tracking-tight leading-tight">
-                            Ready to Begin your Journey?
+                            {ctaTitle}
                         </h2>
                         <p className="text-xl text-white/70 max-w-2xl mx-auto italic">
-                            Connect with one of our New Home Consultants today to explore your options,
-                            answer any questions, and take the first step toward your dream home.
+                            {ctaDesc}
                         </p>
                     </motion.div>
                     <Link

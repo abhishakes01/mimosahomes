@@ -3,11 +3,15 @@
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { motion } from "framer-motion";
-import { ChevronRight, Play, Clock, MapPin, Phone } from "lucide-react";
+import { ChevronRight, Play, Clock, MapPin, Phone, Loader2 } from "lucide-react";
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+import { api, getFullUrl } from "@/services/api";
+import Captcha from "@/components/Captcha";
 
 export default function MporiumPage() {
+    const [pageData, setPageData] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
     const [formData, setFormData] = useState({
         title: "",
         firstName: "",
@@ -16,8 +20,10 @@ export default function MporiumPage() {
         email: "",
         suburb: "",
         question: "",
-        subscribe: "yes"
+        subscribe: "yes",
+        captcha: ""
     });
+    const [submitting, setSubmitting] = useState(false);
 
     const [isVpPlaying, setIsVpPlaying] = useState(false);
     const vpRef = useRef<HTMLVideoElement>(null);
@@ -33,11 +39,76 @@ export default function MporiumPage() {
         }
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        console.log("Form submitted:", formData);
-        alert("Thank you for your enquiry. We will get back to you soon!");
+        try {
+            setSubmitting(true);
+            const payload = {
+                ...formData,
+                name: `${formData.firstName} ${formData.lastName}`,
+                type: 'MPORIUM_ENQUIRY',
+                message: formData.question
+            };
+            await api.createEnquiry(payload);
+            alert("Thank you for your enquiry. We will get back to you soon!");
+            setFormData({
+                title: "",
+                firstName: "",
+                lastName: "",
+                phone: "",
+                email: "",
+                suburb: "",
+                question: "",
+                subscribe: "yes",
+                captcha: ""
+            });
+        } catch (error: any) {
+            console.error("Enquiry failed", error);
+            alert(error.message || "Something went wrong. Please try again.");
+        } finally {
+            setSubmitting(false);
+        }
     };
+
+    useEffect(() => {
+        const fetchPage = async () => {
+            try {
+                const data: any = await api.getPageBySlug('mporium');
+                setPageData(data.content);
+            } catch (error) {
+                console.error("Failed to fetch page data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchPage();
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-white flex items-center justify-center">
+                <Loader2 className="animate-spin text-[#0897b1]" size={64} />
+            </div>
+        );
+    }
+
+    const content = pageData || {};
+    const heroImage = content.heroImage
+        ? getFullUrl(content.heroImage)
+        : "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000&auto=format&fit=crop";
+
+    const defaultGallery = [
+        "https://images.unsplash.com/photo-1616486307514-61c07153cb7e?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1615873966503-4554b791caec?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?q=80&w=600&auto=format&fit=crop",
+        "https://images.unsplash.com/photo-1616137422495-1e9e47e2177e?q=80&w=600&auto=format&fit=crop"
+    ];
+
+    const gallery = (content.gallery && content.gallery.length > 0)
+        ? content.gallery.map((g: any, i: number) => g.url ? getFullUrl(g.url) : defaultGallery[i])
+        : defaultGallery;
+
+    const videoUrl = content.videoUrl && content.videoUrl.trim() !== '' ? content.videoUrl : "/banner/Generate_Elegant_House_Video.mp4";
 
     return (
         <main className="min-h-screen bg-white">
@@ -46,7 +117,7 @@ export default function MporiumPage() {
             {/* Hero Section */}
             <section className="relative h-[60vh] flex items-center justify-center overflow-hidden">
                 <img
-                    src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?q=80&w=2000&auto=format&fit=crop"
+                    src={heroImage}
                     alt="MPORIUM Showroom"
                     className="absolute inset-0 w-full h-full object-cover"
                 />
@@ -57,7 +128,7 @@ export default function MporiumPage() {
                         animate={{ opacity: 1, y: 0 }}
                         className="text-4xl md:text-6xl font-extrabold uppercase tracking-tight italic"
                     >
-                        MPORIUM - HOME DESIGN SHOWROOM
+                        {content.heroTitle || "MPORIUM - HOME DESIGN SHOWROOM"}
                     </motion.h1>
                 </div>
 
@@ -65,7 +136,7 @@ export default function MporiumPage() {
                 <div className="absolute bottom-8 left-8 z-10 hidden md:flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-widest">
                     <Link href="/" className="hover:text-white transition-colors">Mitra Homes</Link>
                     <ChevronRight size={14} className="text-mimosa-gold" />
-                    <span className="text-white">MPORIUM - HOME DESIGN SHOWROOM</span>
+                    <span className="text-white">{content.heroTitle || "MPORIUM - HOME DESIGN SHOWROOM"}</span>
                 </div>
             </section>
 
@@ -78,34 +149,15 @@ export default function MporiumPage() {
 
                             {/* Visual Gallery */}
                             <div className="grid grid-cols-4 gap-4 aspect-[21/9]">
-                                <div className="col-span-1 relative rounded-xl overflow-hidden shadow-lg border-2 border-transparent hover:border-mimosa-gold transition-all duration-500">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1616486307514-61c07153cb7e?q=80&w=600&auto=format&fit=crop"
-                                        alt="Showroom display"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div className="col-span-1 relative rounded-xl overflow-hidden shadow-lg border-2 border-transparent hover:border-mimosa-gold transition-all duration-500">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1615873966503-4554b791caec?q=80&w=600&auto=format&fit=crop"
-                                        alt="Showroom display"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div className="col-span-1 relative rounded-xl overflow-hidden shadow-lg border-2 border-transparent hover:border-mimosa-gold transition-all duration-500">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1616486029423-aaa4789e8c9a?q=80&w=600&auto=format&fit=crop"
-                                        alt="Showroom display"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                                <div className="col-span-1 relative rounded-xl overflow-hidden shadow-lg border-2 border-transparent hover:border-mimosa-gold transition-all duration-500">
-                                    <img
-                                        src="https://images.unsplash.com/photo-1616137422495-1e9e47e2177e?q=80&w=600&auto=format&fit=crop"
-                                        alt="Showroom display"
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
+                                {[0, 1, 2, 3].map((index) => (
+                                    <div key={index} className="col-span-1 relative rounded-xl overflow-hidden shadow-lg border-2 border-transparent hover:border-mimosa-gold transition-all duration-500">
+                                        <img
+                                            src={gallery[index] || defaultGallery[index]}
+                                            alt={`Showroom display ${index + 1}`}
+                                            className="w-full h-full object-cover"
+                                        />
+                                    </div>
+                                ))}
                             </div>
 
                             <motion.div
@@ -115,24 +167,34 @@ export default function MporiumPage() {
                                 className="space-y-8"
                             >
                                 <div className="space-y-6">
-                                    <p className="text-gray-600 text-lg leading-relaxed font-medium">
-                                        Welcome to MPORIUM - the ultimate destination for colour and design by Mitra Homes!
-                                        From the moment you step inside, prepare to be immersed in a world of exquisite design
-                                        and quality products that will engage all your senses. Our state-of-the-art showroom
-                                        offers a vast range of products that cater to your individual style and taste,
-                                        and our expert in-house professionals are always on hand to guide you every step of the way.
-                                    </p>
-                                    <p className="text-gray-600 text-lg leading-relaxed font-medium">
-                                        Discover our specially allocated areas and experience the thrill of creating your dream home.
-                                        At MPORIUM, we understand that your home is a reflection of your unique personality and lifestyle,
-                                        and our team of experts will help you bring your vision to life. From touch and feel to
-                                        visualizing your ideas, we offer a comprehensive range of services that make designing your
-                                        home a joyous and stress-free experience.
-                                    </p>
-                                    <p className="text-gray-600 text-lg leading-relaxed font-medium">
-                                        Join us at MPORIUM Home Design Showroom and be inspired to create a home that you will love for years to come.
-                                        We can't wait to see you there!
-                                    </p>
+                                    {(content.paragraphs && content.paragraphs.length > 0) ? (
+                                        content.paragraphs.map((para: string, i: number) => (
+                                            <p key={i} className="text-gray-600 text-lg leading-relaxed font-medium">
+                                                {para}
+                                            </p>
+                                        ))
+                                    ) : (
+                                        <>
+                                            <p className="text-gray-600 text-lg leading-relaxed font-medium">
+                                                Welcome to MPORIUM - the ultimate destination for colour and design by Mitra Homes!
+                                                From the moment you step inside, prepare to be immersed in a world of exquisite design
+                                                and quality products that will engage all your senses. Our state-of-the-art showroom
+                                                offers a vast range of products that cater to your individual style and taste,
+                                                and our expert in-house professionals are always on hand to guide you every step of the way.
+                                            </p>
+                                            <p className="text-gray-600 text-lg leading-relaxed font-medium">
+                                                Discover our specially allocated areas and experience the thrill of creating your dream home.
+                                                At MPORIUM, we understand that your home is a reflection of your unique personality and lifestyle,
+                                                and our team of experts will help you bring your vision to life. From touch and feel to
+                                                visualizing your ideas, we offer a comprehensive range of services that make designing your
+                                                home a joyous and stress-free experience.
+                                            </p>
+                                            <p className="text-gray-600 text-lg leading-relaxed font-medium">
+                                                Join us at MPORIUM Home Design Showroom and be inspired to create a home that you will love for years to come.
+                                                We can't wait to see you there!
+                                            </p>
+                                        </>
+                                    )}
                                 </div>
 
                                 {/* Matterport / Virtual Tour Placeholder */}
@@ -147,7 +209,7 @@ export default function MporiumPage() {
                                         playsInline
                                         className="absolute inset-0 w-full h-full object-cover opacity-80"
                                     >
-                                        <source src="/banner/Generate_Elegant_House_Video.mp4" type="video/mp4" />
+                                        <source src={videoUrl} type="video/mp4" />
                                     </video>
 
                                     <motion.div
@@ -158,8 +220,12 @@ export default function MporiumPage() {
                                         <div className="w-20 h-20 bg-mimosa-gold/80 backdrop-blur-sm rounded-full flex items-center justify-center mb-6 shadow-2xl">
                                             <Play size={40} fill="white" className="ml-2" />
                                         </div>
-                                        <h4 className="text-2xl font-extrabold uppercase tracking-widest italic drop-shadow-lg">Showroom Experience</h4>
-                                        <p className="text-white/80 text-xs font-bold uppercase tracking-[.3em] mt-2 drop-shadow-md">Step into your dream home</p>
+                                        <h4 className="text-2xl font-extrabold uppercase tracking-widest italic drop-shadow-lg">
+                                            {content.videoLabel || "Showroom Experience"}
+                                        </h4>
+                                        <p className="text-white/80 text-xs font-bold uppercase tracking-[.3em] mt-2 drop-shadow-md">
+                                            {content.videoSubtitle || "Step into your dream home"}
+                                        </p>
                                     </motion.div>
 
                                     {/* Small floating pause button when playing */}
@@ -183,15 +249,15 @@ export default function MporiumPage() {
                                         <ul className="space-y-4 font-bold text-sm tracking-widest uppercase">
                                             <li className="flex justify-between border-b border-gray-100 pb-2">
                                                 <span className="text-gray-900">Monday - Friday</span>
-                                                <span className="text-gray-400">By Appointment Only</span>
+                                                <span className="text-gray-400">{content.hours?.monFri || "By Appointment Only"}</span>
                                             </li>
                                             <li className="flex justify-between border-b border-gray-100 pb-2">
                                                 <span className="text-gray-900">Saturday</span>
-                                                <span className="text-gray-400">Open 9am - 1pm</span>
+                                                <span className="text-gray-400">{content.hours?.sat || "Open 9am - 1pm"}</span>
                                             </li>
                                             <li className="flex justify-between border-b border-gray-100 pb-2">
                                                 <span className="text-gray-900">Sunday</span>
-                                                <span className="text-gray-400 italic">Closed</span>
+                                                <span className="text-gray-400 italic">{content.hours?.sun || "Closed"}</span>
                                             </li>
                                             <li className="flex justify-between text-mimosa-gold/60 text-[10px]">
                                                 <span>Public Holidays</span>
@@ -207,8 +273,7 @@ export default function MporiumPage() {
                                         </div>
                                         <div className="space-y-2">
                                             <p className="text-gray-600 font-bold uppercase text-xs tracking-widest leading-loose">
-                                                123 Elgar Rd,<br />
-                                                Derrimut VIC 3026 Australia
+                                                {content.location || "123 Elgar Rd, Derrimut VIC 3026 Australia"}
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-4 text-mimosa-gold pt-2">
@@ -216,8 +281,12 @@ export default function MporiumPage() {
                                             <h4 className="text-xl font-extrabold uppercase tracking-tight italic text-gray-900">Contact</h4>
                                         </div>
                                         <div className="space-y-1">
-                                            <p className="text-gray-600 font-black text-lg tracking-tight">1300 MITRA</p>
-                                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">or (03) 8361 1900</p>
+                                            <p className="text-gray-600 font-black text-lg tracking-tight">
+                                                {content.phone || "1300 MITRA"}
+                                            </p>
+                                            <p className="text-gray-400 text-xs font-bold uppercase tracking-widest">
+                                                {content.phoneSub || "or (03) 8361 1900"}
+                                            </p>
                                         </div>
                                     </div>
                                 </div>
@@ -244,6 +313,7 @@ export default function MporiumPage() {
                                             <select
                                                 required
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all appearance-none cursor-pointer text-gray-700"
+                                                value={formData.title}
                                                 onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                             >
                                                 <option value="">Select</option>
@@ -260,6 +330,7 @@ export default function MporiumPage() {
                                                 type="text"
                                                 required
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                                value={formData.suburb}
                                                 onChange={(e) => setFormData({ ...formData, suburb: e.target.value })}
                                             />
                                         </div>
@@ -272,6 +343,7 @@ export default function MporiumPage() {
                                                 type="text"
                                                 required
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                                value={formData.firstName}
                                                 onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                                             />
                                         </div>
@@ -281,6 +353,7 @@ export default function MporiumPage() {
                                                 type="text"
                                                 required
                                                 className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                                value={formData.lastName}
                                                 onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                                             />
                                         </div>
@@ -292,6 +365,7 @@ export default function MporiumPage() {
                                             type="tel"
                                             required
                                             className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                            value={formData.phone}
                                             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         />
                                     </div>
@@ -302,6 +376,7 @@ export default function MporiumPage() {
                                             type="email"
                                             required
                                             className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                            value={formData.email}
                                             onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                                         />
                                     </div>
@@ -310,9 +385,25 @@ export default function MporiumPage() {
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Your Question</label>
                                         <textarea
                                             rows={4}
+                                            value={formData.question}
                                             className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all resize-none text-gray-800"
                                             onChange={(e) => setFormData({ ...formData, question: e.target.value })}
                                         />
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <Captcha />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Enter Captcha Code*</label>
+                                            <input
+                                                type="text"
+                                                required
+                                                value={formData.captcha}
+                                                className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                                placeholder="Enter the code shown above"
+                                                onChange={(e) => setFormData({ ...formData, captcha: e.target.value })}
+                                            />
+                                        </div>
                                     </div>
 
                                     <div className="space-y-4 pt-2">
@@ -344,9 +435,11 @@ export default function MporiumPage() {
 
                                     <button
                                         type="submit"
-                                        className="w-full bg-[#005a8f] text-white py-4 rounded-lg font-black uppercase text-xs tracking-[0.2em] hover:bg-[#004a75] transition-all shadow-xl mt-4"
+                                        disabled={submitting}
+                                        className="w-full bg-[#005a8f] text-white py-4 rounded-lg font-black uppercase text-xs tracking-[0.2em] hover:bg-[#004a75] transition-all shadow-xl mt-4 disabled:opacity-50 flex items-center justify-center gap-2"
                                     >
-                                        Submit
+                                        {submitting && <Loader2 className="animate-spin" size={16} />}
+                                        {submitting ? "Submitting..." : "Submit"}
                                     </button>
                                 </form>
                             </motion.div>

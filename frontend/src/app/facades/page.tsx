@@ -16,7 +16,7 @@ export default function FacadesPage() {
     const [selectedFacadeId, setSelectedFacadeId] = useState<string | null>(null);
 
     // Filters
-    const [collection, setCollection] = useState<string>('V_Collection');
+    const [collection, setCollection] = useState<string>('All');
     const [storeys, setStoreys] = useState<number | null>(null);
     const [selectedWidths, setSelectedWidths] = useState<string[]>([]);
 
@@ -57,9 +57,11 @@ export default function FacadesPage() {
         }
 
         // Mapping typical collection names to my internal filter
-        const isVCollection = facade.title?.toUpperCase().includes('V-') || facade.is_active;
-        if (collection === 'V_Collection' && !isVCollection) return false;
-        if (collection === 'M_Collection' && isVCollection) return false;
+        if (collection !== 'All') {
+            const isVCollection = facade.title?.toUpperCase().includes('V-') || facade.title?.toUpperCase().includes('V COLLECTION');
+            if (collection === 'V_Collection' && !isVCollection) return false;
+            if (collection === 'M_Collection' && isVCollection) return false;
+        }
 
         return true;
     });
@@ -172,7 +174,7 @@ export default function FacadesPage() {
                             <h3 className="text-[11px] font-black uppercase tracking-widest text-gray-400 mb-6">Collections</h3>
                             <div className="flex gap-4">
                                 <button
-                                    onClick={() => setCollection('V_Collection')}
+                                    onClick={() => setCollection(collection === 'V_Collection' ? 'All' : 'V_Collection')}
                                     className={`flex-1 group relative h-24 rounded-2xl overflow-hidden transition-all ${collection === 'V_Collection' ? 'ring-4 ring-[#f47e20] ring-offset-2' : 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100'}`}
                                 >
                                     <div className="absolute inset-0 bg-[#f47e20]" />
@@ -184,7 +186,7 @@ export default function FacadesPage() {
                                     </div>
                                 </button>
                                 <button
-                                    onClick={() => setCollection('M_Collection')}
+                                    onClick={() => setCollection(collection === 'M_Collection' ? 'All' : 'M_Collection')}
                                     className={`flex-1 group relative h-24 rounded-2xl overflow-hidden transition-all ${collection === 'M_Collection' ? 'ring-4 ring-[#1a3a4a] ring-offset-2' : 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100'}`}
                                 >
                                     <div className="absolute inset-0 bg-[#1a3a4a]" />
@@ -269,11 +271,17 @@ export default function FacadesPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-                            {filteredFacades.map((facade, index) => {
+                            {filteredFacades.reduce((acc: any[], facade, index) => {
                                 const isSelected = selectedFacadeId === facade.id;
 
-                                return (
-                                    <div key={facade.id} className="contents">
+                                // Group into rows of 3 (for lg screens)
+                                // To make the expansion truly inline, we render the facade card,
+                                // and then if it's selected, we render the details view.
+                                // In CSS grid, col-span-full will span the whole row automatically,
+                                // pushing subsequent items down naturally if we don't use 'contents'
+
+                                acc.push(
+                                    <div key={facade.id} className="flex flex-col">
                                         <div className="group">
                                             <div className="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-lg bg-gray-100 mb-6">
                                                 <Image
@@ -286,7 +294,11 @@ export default function FacadesPage() {
                                                     <CollectionBadge type={facade.title?.toUpperCase().includes('V-') ? 'V' : 'MJ'} />
                                                 </div>
                                                 <button
-                                                    onClick={() => setLightboxImage(getFullUrl(facade.image_url))}
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setLightboxImage(getFullUrl(facade.image_url));
+                                                    }}
                                                     className="absolute bottom-4 right-4 p-2 bg-black/40 backdrop-blur-md text-white rounded-lg hover:bg-[#0897b1] transition-all cursor-pointer z-10"
                                                 >
                                                     <Maximize2 size={16} />
@@ -307,7 +319,11 @@ export default function FacadesPage() {
                                                 </div>
                                                 <div className="shrink-0 flex gap-2">
                                                     <button
-                                                        onClick={() => setSelectedFacadeId(isSelected ? null : facade.id)}
+                                                        onClick={(e) => {
+                                                            e.preventDefault();
+                                                            e.stopPropagation();
+                                                            setSelectedFacadeId(isSelected ? null : facade.id);
+                                                        }}
                                                         className={`px-8 py-2.5 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${isSelected ? 'bg-[#0a3a4a] text-white shadow-lg' : 'border-2 border-[#0a3a4a] text-[#0a3a4a] hover:bg-[#0a3a4a] hover:text-white'}`}
                                                     >
                                                         {isSelected ? "Close" : "View Details"}
@@ -315,14 +331,21 @@ export default function FacadesPage() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <AnimatePresence>
-                                            {isSelected && (
-                                                <FacadeDetails facade={facade} />
-                                            )}
-                                        </AnimatePresence>
                                     </div>
                                 );
-                            })}
+
+                                if (isSelected) {
+                                    acc.push(
+                                        <div key={`details-${facade.id}`} className="col-span-1 md:col-span-2 lg:col-span-3 w-full">
+                                            <AnimatePresence mode="wait">
+                                                <FacadeDetails facade={facade} />
+                                            </AnimatePresence>
+                                        </div>
+                                    );
+                                }
+
+                                return acc;
+                            }, [])}
                         </div>
                     )}
                 </div>
