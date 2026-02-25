@@ -109,6 +109,7 @@ export const api = {
 
     // Floor Plan Filters
     getFloorPlanFilters: () => fetchAPI('/floorplans/filters'),
+    getNewFloorPlansCount: () => fetchAPI<{ count: number }>('/floorplans/stats/new-count'),
 
     // Upgrades
     getUpgradeGroups: (query?: any) => {

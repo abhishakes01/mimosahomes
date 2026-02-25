@@ -19,7 +19,8 @@ import {
     Ruler,
     Menu,
     X,
-    MessageSquare
+    MessageSquare,
+    Book
 } from "lucide-react";
 
 
@@ -90,6 +91,7 @@ export default function AdminLayout({
         { icon: BadgePercent, label: "Upgrades", href: "/admin/upgrades" },
         { icon: Users, label: "Enquiries", href: "/admin/enquiries" },
         { icon: Map, label: "Service Areas", href: "/admin/service-areas" },
+        // { icon: Book, label: "Ebooks", href: "/admin/pages/ebook" },
         { icon: FileText, label: "Content Pages", href: "/admin/pages" },
         { icon: Settings, label: "Settings", href: "/admin/settings" },
     ];

@@ -19,6 +19,19 @@ export default function FacadesPage() {
     const [collection, setCollection] = useState<string>('All');
     const [storeys, setStoreys] = useState<number | null>(null);
     const [selectedWidths, setSelectedWidths] = useState<string[]>([]);
+    const [pageData, setPageData] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchPageData = async () => {
+            try {
+                const data = await api.getPageBySlug('facades');
+                setPageData(data);
+            } catch (err) {
+                console.error("Failed to fetch page data:", err);
+            }
+        };
+        fetchPageData();
+    }, []);
 
     const lotWidths = ["8.5m", "10m", "10.5m", "12m", "12.5m", "13m", "14m", "16m"];
 
@@ -141,7 +154,7 @@ export default function FacadesPage() {
             {/* Hero Section */}
             <section className="relative h-[50vh] min-h-[400px] flex items-center justify-center overflow-hidden">
                 <Image
-                    src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=100&w=2000"
+                    src={getFullUrl(pageData?.content?.heroImage) || "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&q=100&w=2000"}
                     alt="Facades"
                     fill
                     className="object-cover"
@@ -153,15 +166,20 @@ export default function FacadesPage() {
                         initial={{ opacity: 0, y: 30 }}
                         animate={{ opacity: 1, y: 0 }}
                     >
-                        <h1 className="text-6xl md:text-8xl font-black text-white uppercase tracking-tighter italic leading-none mb-6">
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter italic leading-none mb-6">
                             Facades
                         </h1>
-                        <div className="flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-white/70">
-                            <Link href="/" className="hover:text-white transition-colors">Mimosa</Link>
-                            <ChevronRight size={10} />
-                            <span className="text-white">Facades</span>
-                        </div>
+                        <p className="text-xl text-white/80 font-medium max-w-xl italic mx-auto mt-6">
+                            Discover the perfect <span className="text-[#0897b1] border-b-2 border-[#0897b1]">external design</span> for your new home with our gallery of stunning facades.
+                        </p>
                     </motion.div>
+                </div>
+
+                {/* Breadcrumbs */}
+                <div className="absolute bottom-8 left-8 z-10 hidden md:flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-widest">
+                    <Link href="/" className="hover:text-white transition-colors">Mitra Homes</Link>
+                    <ChevronRight size={14} className="text-[#0897b1]" />
+                    <span className="text-white">Facades</span>
                 </div>
             </section>
 

@@ -1,16 +1,19 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Loader2, Grid as GridIcon, Map as MapIcon, ChevronDown, Bed, Bath, Car, Maximize, SlidersHorizontal, X, ChevronRight, ChevronLeft } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { api } from "@/services/api";
+import { useSearchParams } from "next/navigation";
+import { api, getFullUrl } from "@/services/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ReadyBuiltCard from "@/components/ReadyBuiltCard";
 
-export default function HouseLandPackagesPage() {
+// Main Content Component that uses searchParams
+function HouseLandPackagesContent() {
+    const searchParams = useSearchParams();
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -24,11 +27,45 @@ export default function HouseLandPackagesPage() {
     const [houseSizeRange, setHouseSizeRange] = useState(500);
     const [selectedSuburbs, setSelectedSuburbs] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState("Recently Added");
+    const [pageData, setPageData] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchPageData = async () => {
+            try {
+                const data = await api.getPageBySlug('house-land-packages');
+                setPageData(data);
+            } catch (err) {
+                console.error("Failed to fetch page data:", err);
+            }
+        };
+        fetchPageData();
+    }, []);
 
     const suburbs = Array.from(new Set(listings.map(l => {
         const parts = l.address?.split(',');
         return parts && parts.length >= 2 ? parts[1].trim() : null;
     }).filter(Boolean))) as string[];
+
+    // Sync from URL
+    useEffect(() => {
+        const collectionParam = searchParams.get('collection');
+        if (collectionParam) setCollection(collectionParam);
+
+        const bedsParam = searchParams.get('beds');
+        if (bedsParam) setBeds(bedsParam);
+
+        const bathsParam = searchParams.get('baths');
+        if (bathsParam) setBaths(bathsParam);
+
+        const priceParam = searchParams.get('price');
+        if (priceParam) setPriceRange(parseInt(priceParam));
+
+        const lotSizeParam = searchParams.get('lotSize');
+        if (lotSizeParam) setLotSizeRange(parseInt(lotSizeParam));
+
+        const houseSizeParam = searchParams.get('houseSize');
+        if (houseSizeParam) setHouseSizeRange(parseInt(houseSizeParam));
+    }, [searchParams]);
 
     useEffect(() => {
         const fetchPackages = async () => {
@@ -77,11 +114,11 @@ export default function HouseLandPackagesPage() {
             {/* Hero Section */}
             <section className="relative h-[60vh] min-h-[400px] flex items-center justify-center overflow-hidden">
                 <Image
-                    src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&q=100&w=2000"
-                    alt="House and Land Packages"
+                    src={getFullUrl(pageData?.content?.heroImage) || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop"}
+                    alt="House & Land Packages"
                     fill
-                    className="object-cover"
                     priority
+                    className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/40" />
                 <div className="container mx-auto px-6 relative z-10 text-center">
@@ -318,5 +355,17 @@ export default function HouseLandPackagesPage() {
 
             <Footer />
         </main>
+    );
+}
+
+export default function HouseLandPackagesPage() {
+    return (
+        <Suspense fallback={
+            <div className="min-h-screen bg-[#F8F9FA] flex items-center justify-center">
+                <Loader2 className="w-10 h-10 text-[#0897b1] animate-spin" />
+            </div>
+        }>
+            <HouseLandPackagesContent />
+        </Suspense>
     );
 }

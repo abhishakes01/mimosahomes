@@ -8,6 +8,8 @@ import Link from "next/link";
 import { useState, useRef, useEffect } from "react";
 import { api, getFullUrl } from "@/services/api";
 import Captcha from "@/components/Captcha";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 export default function MporiumPage() {
     const [pageData, setPageData] = useState<any>(null);
@@ -361,12 +363,14 @@ export default function MporiumPage() {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Phone*</label>
-                                        <input
-                                            type="tel"
-                                            required
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
+                                        <PhoneInput
+                                            international
+                                            defaultCountry="AU"
+                                            placeholder="Enter phone number"
                                             value={formData.phone}
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                            onChange={(value) => setFormData({ ...formData, phone: value || "" })}
+                                            className="phone-input-custom"
+                                            required
                                         />
                                     </div>
 

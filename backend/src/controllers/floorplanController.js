@@ -121,6 +121,26 @@ exports.deleteFloorPlan = async (req, res, next) => {
     }
 };
 
+exports.getNewFloorPlansCount = async (req, res, next) => {
+    try {
+        const { Op } = require('sequelize');
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+        const count = await FloorPlan.count({
+            where: {
+                created_at: {
+                    [Op.gte]: sevenDaysAgo
+                }
+            }
+        });
+
+        res.json({ count });
+    } catch (error) {
+        next(error);
+    }
+};
+
 exports.getFloorPlanFilters = async (req, res, next) => {
     try {
         const { sequelize } = require('../models');

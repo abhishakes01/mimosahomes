@@ -94,6 +94,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.INTEGER,
             allowNull: true,
             defaultValue: 2
+        },
+        collection: {
+            type: DataTypes.ENUM('V_Collection', 'M_Collection'),
+            allowNull: true
         }
     }, {
         sequelize,

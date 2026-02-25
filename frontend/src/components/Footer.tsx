@@ -33,7 +33,6 @@ export default function Footer() {
                                 { name: "Home Designs", href: "/new-home-designs" },
                                 { name: "House & Land", href: "/house-land-packages" },
                                 { name: "Display Homes", href: "/display-homes" },
-                                { name: "Promotions", href: "#" },
                                 { name: "Contact", href: "/contact" }
                             ].map((item) => (
                                 <li key={item.name}>

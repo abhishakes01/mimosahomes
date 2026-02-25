@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { api, getFullUrl } from "@/services/api";
-import { Save, ArrowLeft, Loader2, Image as ImageIcon, Plus, Trash2, MapPin, Search } from "lucide-react";
+import { Save, ArrowLeft, Loader2, Image as ImageIcon, Plus, Trash2, MapPin, Search, FileText } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -49,7 +49,17 @@ export default function PageEdit() {
                     'procedure': 'Procedure',
                     'mporium': 'Mporium',
                     'partners': 'Partners',
-                    'contact': 'Contact Us'
+                    'ebook': 'Ebook',
+                    'contact': 'Contact Us',
+                    'v-collection-standard-inclusions': 'V Collection Standard Inclusions',
+                    'm-collection-standard-inclusions': 'M Collection Standard Inclusions',
+                    'v-collection-offers': 'V Collection Offers',
+                    'm-collection-offers': 'M Collection Offers',
+                    'display-homes': 'Display Homes',
+                    'new-home-designs': 'New Home Designs',
+                    'house-land-packages': 'House & Land Packages',
+                    'display-home-for-sale': 'Display Home For Sale',
+                    'facades': 'Facades'
                 };
                 setPageTitle(defaultTitles[slug] || slug);
                 setContent({});
@@ -165,6 +175,40 @@ export default function PageEdit() {
             longitude: lng.toString()
         });
     };
+
+    const renderFileUploader = (label: string, fieldPath: string, currentUrl: string) => (
+        <div className="space-y-2">
+            <label className="block text-sm font-bold text-gray-700">{label}</label>
+            <div className={`relative border-2 border-dashed ${currentUrl ? 'border-[#1a3a4a]' : 'border-gray-200'} rounded-xl bg-gray-50 flex items-center justify-center overflow-hidden transition-all group h-32`}>
+                {uploadingField === fieldPath ? (
+                    <div className="flex flex-col items-center text-gray-400">
+                        <Loader2 className="w-8 h-8 animate-spin mb-2 text-[#0897b1]" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Uploading...</span>
+                    </div>
+                ) : currentUrl ? (
+                    <div className="flex flex-col items-center">
+                        <FileText className="w-8 h-8 mb-2 text-[#1a3a4a]" />
+                        <span className="text-[10px] font-bold text-gray-900 truncate max-w-[200px]">{currentUrl.split('/').pop()}</span>
+                        <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                            <span className="text-white text-xs font-bold uppercase tracking-widest px-4 py-2 border border-white rounded-lg backdrop-blur-sm shadow-xl">Change PDF</span>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="flex flex-col items-center text-gray-400 group-hover:text-[#1a3a4a] transition-colors">
+                        <FileText className="w-8 h-8 mb-2" />
+                        <span className="text-xs font-bold uppercase tracking-widest">Upload PDF</span>
+                    </div>
+                )}
+                <input
+                    type="file"
+                    accept=".pdf"
+                    onChange={(e) => handleImageUpload(e, fieldPath)}
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    disabled={uploadingField === fieldPath}
+                />
+            </div>
+        </div>
+    );
 
     const handleGeocode = async () => {
         const query = locationSearch || content.address;
@@ -1046,6 +1090,277 @@ export default function PageEdit() {
                             <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest leading-relaxed">
                                 Enter a place name or address and click {"\"Search\""} to automatically set coordinates. The latitude and longitude will be saved when you submit the form.
                             </p>
+                        </div>
+                    </div>
+                )}
+
+                {/* EBOOK SCHEMA */}
+                {slug === 'ebook' && (
+                    <div className="space-y-12">
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Hero Section</h2>
+                            <div className="grid grid-cols-1 gap-6">
+                                {renderImageUploader("Hero Background Image", "heroImage", content.heroImage)}
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Hero Title</label>
+                                    <input
+                                        type="text"
+                                        value={content.heroTitle || ''}
+                                        onChange={(e) => setContent({ ...content, heroTitle: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none font-black italic uppercase"
+                                        placeholder="EBOOK"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Ebook Collections</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-6 bg-gray-50 p-8 rounded-[32px] border border-gray-100">
+                                    <h3 className="text-lg font-black text-[#f39200] uppercase italic tracking-tight">V Collection</h3>
+                                    <div className="space-y-4">
+                                        {renderFileUploader("V Collection PDF", "vCollectionPdf", content.vCollectionPdf)}
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Subtitle</label>
+                                            <input
+                                                type="text"
+                                                value={content.vSubtitle || ''}
+                                                onChange={(e) => setContent({ ...content, vSubtitle: e.target.value })}
+                                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none"
+                                                placeholder="HOME COLLECTION"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6 bg-gray-50 p-8 rounded-[32px] border border-gray-100">
+                                    <h3 className="text-lg font-black text-[#0793ad] uppercase italic tracking-tight">M Collection</h3>
+                                    <div className="space-y-4">
+                                        {renderFileUploader("M Collection PDF", "mCollectionPdf", content.mCollectionPdf)}
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Subtitle</label>
+                                            <input
+                                                type="text"
+                                                value={content.mSubtitle || ''}
+                                                onChange={(e) => setContent({ ...content, mSubtitle: e.target.value })}
+                                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none"
+                                                placeholder="HOME COLLECTION"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+                {/* COLLECTIONS INCLUSIONS SCHEMA */}
+                {slug.includes('standard-inclusions') && (
+                    <div className="space-y-12">
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Inclusion Categories</h2>
+                                <button
+                                    onClick={() => addNestedItem('categories', { title: '', items: [''] })}
+                                    className="flex items-center gap-2 text-xs font-bold text-[#0897b1] hover:text-[#067a8f] uppercase tracking-widest"
+                                >
+                                    <Plus size={14} /> Add Category
+                                </button>
+                            </div>
+
+                            <div className="space-y-8">
+                                {(content.categories || []).map((category: any, cIndex: number) => (
+                                    <div key={cIndex} className="bg-gray-50 p-8 rounded-[32px] relative border border-gray-100 group">
+                                        <button
+                                            onClick={() => removeNestedItem('categories', cIndex)}
+                                            className="absolute -top-2 -right-2 w-10 h-10 flex items-center justify-center bg-white text-gray-400 hover:text-red-500 rounded-full shadow-lg opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                        >
+                                            <Trash2 size={16} />
+                                        </button>
+
+                                        <div className="space-y-6">
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Category Title (e.g. KITCHEN)</label>
+                                                <input
+                                                    type="text"
+                                                    value={category.title || ''}
+                                                    onChange={(e) => updateNestedContent('categories', cIndex, 'title', e.target.value)}
+                                                    className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold uppercase tracking-tight focus:border-[#1a3a4a] outline-none"
+                                                />
+                                            </div>
+
+                                            <div className="space-y-4">
+                                                <div className="flex items-center justify-between">
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest">Inclusion Items</label>
+                                                    <button
+                                                        onClick={() => {
+                                                            const newCategories = [...content.categories];
+                                                            newCategories[cIndex].items = [...(newCategories[cIndex].items || []), ""];
+                                                            setContent({ ...content, categories: newCategories });
+                                                        }}
+                                                        className="text-[10px] font-bold text-[#0897b1] uppercase tracking-widest flex items-center gap-1"
+                                                    >
+                                                        <Plus size={12} /> Add Item
+                                                    </button>
+                                                </div>
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                                    {(category.items || []).map((item: string, iIndex: number) => (
+                                                        <div key={iIndex} className="flex gap-2">
+                                                            <input
+                                                                type="text"
+                                                                value={item}
+                                                                onChange={(e) => {
+                                                                    const newCategories = [...content.categories];
+                                                                    newCategories[cIndex].items[iIndex] = e.target.value;
+                                                                    setContent({ ...content, categories: newCategories });
+                                                                }}
+                                                                className="flex-1 bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm focus:border-[#1a3a4a] outline-none"
+                                                                placeholder="e.g. 900mm Stainless Steel Oven"
+                                                            />
+                                                            <button
+                                                                onClick={() => {
+                                                                    const newCategories = [...content.categories];
+                                                                    newCategories[cIndex].items = newCategories[cIndex].items.filter((_: any, i: number) => i !== iIndex);
+                                                                    setContent({ ...content, categories: newCategories });
+                                                                }}
+                                                                className="p-1 text-gray-300 hover:text-red-500"
+                                                            >
+                                                                <Trash2 size={14} />
+                                                            </button>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Bottom CTA Override */}
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Bottom Section Override</h2>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Bottom Title</label>
+                                    <input
+                                        type="text"
+                                        value={content.bottomTitle || ''}
+                                        onChange={(e) => setContent({ ...content, bottomTitle: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none font-bold"
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Bottom Subtitle</label>
+                                    <input
+                                        type="text"
+                                        value={content.bottomSubtitle || ''}
+                                        onChange={(e) => setContent({ ...content, bottomSubtitle: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none"
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* COLLECTIONS OFFERS SCHEMA */}
+                {slug.includes('-offers') && (
+                    <div className="space-y-12">
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Active Offers</h2>
+                                <button
+                                    onClick={() => addNestedItem('offers', { title: '', description: '', image: '', badge: '', linkText: '', linkUrl: '' })}
+                                    className="flex items-center gap-2 text-xs font-bold text-[#0897b1] hover:text-[#067a8f] uppercase tracking-widest"
+                                >
+                                    <Plus size={14} /> Add Offer Block
+                                </button>
+                            </div>
+
+                            <div className="space-y-12">
+                                {(content.offers || []).map((offer: any, oIndex: number) => (
+                                    <div key={oIndex} className="bg-gray-50 p-8 rounded-[40px] relative border border-gray-100 group">
+                                        <button
+                                            onClick={() => removeNestedItem('offers', oIndex)}
+                                            className="absolute -top-2 -right-2 w-12 h-12 flex items-center justify-center bg-white text-gray-400 hover:text-red-500 rounded-full shadow-xl opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                                        >
+                                            <Trash2 size={20} />
+                                        </button>
+
+                                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+                                            <div className="space-y-6">
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Offer Title</label>
+                                                    <input
+                                                        type="text"
+                                                        value={offer.title || ''}
+                                                        onChange={(e) => updateNestedContent('offers', oIndex, 'title', e.target.value)}
+                                                        className="w-full bg-white border border-gray-200 rounded-2xl px-6 py-4 text-lg font-black italic uppercase tracking-tight focus:border-[#1a3a4a] outline-none"
+                                                        placeholder="e.g. LUXURY UPGRADE PACK"
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Description</label>
+                                                    <textarea
+                                                        value={offer.description || ''}
+                                                        onChange={(e) => updateNestedContent('offers', oIndex, 'description', e.target.value)}
+                                                        rows={4}
+                                                        className="w-full bg-white border border-gray-200 rounded-2xl px-6 py-4 text-sm focus:border-[#1a3a4a] outline-none leading-relaxed"
+                                                        placeholder="Describe the offer details..."
+                                                    />
+                                                </div>
+                                                <div className="grid grid-cols-2 gap-4">
+                                                    <div>
+                                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Button Text</label>
+                                                        <input
+                                                            type="text"
+                                                            value={offer.linkText || ''}
+                                                            onChange={(e) => updateNestedContent('offers', oIndex, 'linkText', e.target.value)}
+                                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold uppercase tracking-widest focus:border-[#1a3a4a] outline-none"
+                                                            placeholder="VIEW DETAILS"
+                                                        />
+                                                    </div>
+                                                    <div>
+                                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Button URL</label>
+                                                        <input
+                                                            type="text"
+                                                            value={offer.linkUrl || ''}
+                                                            onChange={(e) => updateNestedContent('offers', oIndex, 'linkUrl', e.target.value)}
+                                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-xs font-bold focus:border-[#1a3a4a] outline-none"
+                                                            placeholder="/contact"
+                                                        />
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div className="space-y-6">
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                    {renderImageUploader("Offer Feature Image", `offers.${oIndex}.image`, offer.image)}
+                                                    {renderImageUploader("Promotion Badge (Optional)", `offers.${oIndex}.badge`, offer.badge)}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Banner Disclaimer Override */}
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Offers Page Intro</h2>
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Hero Subtitle</label>
+                                    <textarea
+                                        value={content.heroSubtitle || ''}
+                                        onChange={(e) => setContent({ ...content, heroSubtitle: e.target.value })}
+                                        rows={2}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none"
+                                        placeholder="Limited time offers to make your dream home a reality."
+                                    />
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

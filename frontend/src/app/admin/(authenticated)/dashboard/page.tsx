@@ -23,17 +23,42 @@ export default function AdminDashboard() {
         fetchStats();
     }, []);
 
+    const formatPrice = (price: number) => {
+        if (!price) return "$0";
+        if (price >= 1000000) return `$${(price / 1000000).toFixed(1)}m`;
+        if (price >= 1000) return `$${Math.round(price / 1000)}k`;
+        return `$${price}`;
+    };
+
     const stats = [
         {
             title: "Total Enquiries",
             value: statsData?.totalEnquiries?.toLocaleString() || "0",
-            change: statsData?.newEnquiries ? `+${statsData.newEnquiries} new` : "0 new",
+            change: statsData?.newEnquiries ? `${statsData.newEnquiries} new` : "0 new",
             icon: Users,
             color: "bg-blue-50 text-blue-600"
         },
-        { title: "Active Design Listings", value: "45", change: "+4", icon: Home, color: "bg-orange-50 text-orange-600" },
-        { title: "House & Land Packages", value: "128", change: "-2", icon: Map, color: "bg-green-50 text-green-600" },
-        { title: "Avg. Sale Price", value: "$485k", change: "+5.2%", icon: DollarSign, color: "bg-purple-50 text-purple-600" },
+        {
+            title: "Active Design Listings",
+            value: statsData?.activeDesignListings?.toString() || "0",
+            change: "Live",
+            icon: Home,
+            color: "bg-orange-50 text-orange-600"
+        },
+        {
+            title: "House & Land Packages",
+            value: statsData?.houseLandPackages?.toString() || "0",
+            change: "Live",
+            icon: Map,
+            color: "bg-green-50 text-green-600"
+        },
+        {
+            title: "Avg. Sale Price",
+            value: formatPrice(statsData?.avgPrice),
+            change: "Avg",
+            icon: DollarSign,
+            color: "bg-purple-50 text-purple-600"
+        },
     ];
 
     if (loading) {

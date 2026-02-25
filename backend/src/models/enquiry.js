@@ -42,7 +42,8 @@ module.exports = (sequelize, DataTypes) => {
                 'house-land',
                 'display-homes',
                 'QUOTE_BUILDER',
-                'MPORIUM_ENQUIRY'
+                'MPORIUM_ENQUIRY',
+                'EBOOK_ENQUIRY'
             ),
             defaultValue: 'general'
         },

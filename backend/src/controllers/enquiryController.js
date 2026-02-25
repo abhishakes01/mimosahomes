@@ -1,9 +1,9 @@
-const { Enquiry, Listing } = require('../models');
+const { Enquiry, Listing, Page } = require('../models');
 const emailService = require('../services/emailService');
 
 exports.createEnquiry = async (req, res, next) => {
     try {
-        const { captcha } = req.body;
+        const { captcha, email, name, collection, type } = req.body;
 
         // Verify CAPTCHA
         const storedCaptcha = req.signedCookies.captcha;
@@ -17,6 +17,29 @@ exports.createEnquiry = async (req, res, next) => {
         emailService.sendEnquiryNotification(req.body).catch(err => {
             console.error("Email notification failed:", err);
         });
+
+        // Automated Ebook Delivery to User
+        if (type === 'EBOOK_ENQUIRY' && email) {
+            (async () => {
+                try {
+                    const ebookPage = await Page.findOne({ where: { slug: 'ebook' } });
+                    if (ebookPage && ebookPage.content) {
+                        const { vCollectionPdf, mCollectionPdf } = ebookPage.content;
+                        let pdfUrl = null;
+
+                        if (collection === 'V Collection') pdfUrl = vCollectionPdf;
+                        else if (collection === 'M Collection') pdfUrl = mCollectionPdf;
+
+                        if (pdfUrl) {
+                            await emailService.sendEbookToUser({ name, email, collection }, pdfUrl);
+                            console.log(`[EBOOK] Delivery email sent to ${email} for ${collection}`);
+                        }
+                    }
+                } catch (ebookErr) {
+                    console.error("Ebook delivery failed:", ebookErr);
+                }
+            })();
+        }
 
         res.status(201).json({ message: 'Enquiry received', enquiry });
     } catch (error) {
@@ -63,29 +86,41 @@ exports.updateEnquiryStatus = async (req, res, next) => {
 
 exports.getDashboardStats = async (req, res, next) => {
     try {
-        console.log("[Stats] Fetching dashboard stats...");
         const totalEnquiries = await Enquiry.count();
-        console.log("[Stats] Total Enquiries:", totalEnquiries);
-
         const newEnquiries = await Enquiry.count({ where: { status: 'new' } });
-        console.log("[Stats] New Enquiries:", newEnquiries);
+
+        // Fetch Listing stats
+        const activeDesignListings = await Listing.count({
+            where: { status: 'available' }
+        });
+
+        const houseLandPackages = await Listing.count({
+            where: {
+                type: 'house_land',
+                status: 'available'
+            }
+        });
+
+        const avgPriceResult = await Listing.aggregate('price', 'avg', {
+            where: { status: 'available' }
+        });
 
         // Fetch recent enquiries (last 5)
-        console.log("[Stats] Fetching recent enquiries...");
         const recentEnquiries = await Enquiry.findAll({
             limit: 5,
             order: [['createdAt', 'DESC']],
             include: [{ model: Listing, as: 'listing', attributes: ['title'] }]
         });
-        console.log("[Stats] Recent Enquiries fetched:", recentEnquiries?.length);
 
         res.json({
             totalEnquiries,
             newEnquiries,
+            activeDesignListings,
+            houseLandPackages,
+            avgPrice: Math.round(Number(avgPriceResult) || 0),
             recentEnquiries
         });
     } catch (error) {
-        console.error("[Stats] Dashboard stats error:", error);
         next(error);
     }
 };

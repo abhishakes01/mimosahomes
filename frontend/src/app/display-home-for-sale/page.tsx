@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ChevronRight, Search, Loader2 } from "lucide-react";
 import { motion } from "framer-motion";
-import { api } from "@/services/api";
+import { api, getFullUrl } from "@/services/api";
+import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import ReadyBuiltCard from "@/components/ReadyBuiltCard";
@@ -19,6 +20,19 @@ export default function ReadyBuiltPage() {
     const [total, setTotal] = useState(0);
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
+    const [pageData, setPageData] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchPageData = async () => {
+            try {
+                const data = await api.getPageBySlug('display-home-for-sale');
+                setPageData(data);
+            } catch (err) {
+                console.error("Failed to fetch page data:", err);
+            }
+        };
+        fetchPageData();
+    }, []);
 
     // Filters State
     const [collection, setCollection] = useState<string | null>(null);
@@ -100,10 +114,11 @@ export default function ReadyBuiltPage() {
 
             {/* Hero Section */}
             <section className="relative h-[45vh] flex items-center justify-center overflow-hidden">
-                <img
-                    src="https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop"
+                <Image
+                    src={getFullUrl(pageData?.content?.heroImage) || "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?q=80&w=2070&auto=format&fit=crop"}
                     alt="Ready Built Homes"
-                    className="absolute inset-0 w-full h-full object-cover"
+                    fill
+                    className="object-cover"
                 />
                 <div className="absolute inset-0 bg-black/50" />
                 <div className="relative z-10 text-center text-white px-4">

@@ -100,3 +100,63 @@ exports.sendEnquiryNotification = async (enquiryData) => {
 
     return transporter.sendMail(mailOptions);
 };
+
+/**
+ * Sends the selected ebook collection PDF to the user
+ */
+exports.sendEbookToUser = async (userData, ebookUrl) => {
+    const { name, email, collection } = userData;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const logoUrl = `${frontendUrl}/logo-text.png`;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 20px auto; padding: 40px; border: 1px solid #eee; border-radius: 8px; }
+            .header { text-align: center; margin-bottom: 40px; }
+            .logo { max-width: 150px; }
+            .content { margin-bottom: 30px; text-align: center; }
+            .title { font-size: 24px; font-weight: 900; color: #1a1a1a; text-transform: uppercase; italic; margin-bottom: 10px; }
+            .subtitle { font-size: 14px; font-weight: bold; color: #0897b1; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+            .button { display: inline-block; padding: 16px 32px; background-color: #0897b1; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; margin-top: 20px; box-shadow: 0 4px 12px rgba(8, 151, 177, 0.2); }
+            .footer { text-align: center; font-size: 12px; color: #aaa; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="${logoUrl}" alt="Mitra Homes" class="logo">
+            </div>
+            
+            <div class="content">
+                <h1 class="title">Your Dream Home Awaits</h1>
+                <p class="subtitle">${collection} Ebook Inside</p>
+                
+                <p>Hello ${name},</p>
+                <p>Thank you for your interest in Mitra Homes. We're excited to help you start your journey toward your dream home.</p>
+                <p>Please find your requested ebook collection via the link below:</p>
+                
+                <a href="${ebookUrl}" class="button" target="_blank">Download Ebook</a>
+            </div>
+            
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} Mitra Homes. All rights reserved.<br>
+                If you have any questions, feel free to reply to this email.
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    const mailOptions = {
+        from: process.env.SMTP_FROM || '"Mitra Homes" <noreply@mitrahomes.com>',
+        to: email,
+        subject: `Your Mitra Homes Ebook: ${collection}`,
+        html: htmlContent,
+    };
+
+    return transporter.sendMail(mailOptions);
+};

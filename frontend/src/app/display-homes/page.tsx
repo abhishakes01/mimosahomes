@@ -2,10 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Image from "next/image";
-import { Search, Loader2, Map as MapIcon, Grid, Phone } from "lucide-react";
+import Link from "next/link";
+import { Search, Loader2, Map as MapIcon, Grid, Phone, ChevronRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
-import { api } from "@/services/api";
+import { api, getFullUrl } from "@/services/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import DisplayHomeCard from "@/components/DisplayHomeCard";
@@ -41,6 +42,19 @@ export default function DisplayHomesPage() {
     const [beds, setBeds] = useState("Any");
     const [houseDesign, setHouseDesign] = useState("Any");
     const [designs, setDesigns] = useState<any[]>([]);
+    const [pageData, setPageData] = useState<any>(null);
+
+    useEffect(() => {
+        const fetchPageData = async () => {
+            try {
+                const data = await api.getPageBySlug('display-homes');
+                setPageData(data);
+            } catch (err) {
+                console.error("Failed to fetch page data:", err);
+            }
+        };
+        fetchPageData();
+    }, []);
 
     useEffect(() => {
         const fetchLevelData = async () => {
@@ -101,38 +115,38 @@ export default function DisplayHomesPage() {
             {/* Hero Section */}
             <section className="relative h-[60vh] flex items-center overflow-hidden">
                 <Image
-                    src="https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop"
+                    src={getFullUrl(pageData?.content?.heroImage) || "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?q=80&w=2053&auto=format&fit=crop"}
                     alt="Display Homes"
                     fill
                     priority
                     className="object-cover"
                 />
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" />
-                <div className="container mx-auto px-6 relative z-10">
-                    <div className="max-w-3xl space-y-6">
-                        <motion.h1
-                            initial={{ opacity: 0, y: 30 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className="text-6xl md:text-8xl font-black text-white uppercase tracking-tight italic leading-tight"
-                        >
-                            Display<br />Homes
-                        </motion.h1>
+                <div className="absolute inset-0 bg-black/50" />
+                <div className="container mx-auto px-6 relative z-10 text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        animate={{ opacity: 1, y: 0 }}
+                    >
+                        <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white uppercase tracking-tighter italic leading-none mb-6">
+                            Display<br className="md:hidden" /> Homes
+                        </h1>
                         <motion.p
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ delay: 0.1 }}
-                            className="text-xl text-white/80 font-medium max-w-xl italic"
+                            className="text-xl text-white/80 font-medium max-w-xl italic mx-auto mt-6"
                         >
                             Want to see some of our <span className="text-[#0897b1] border-b-2 border-[#0897b1]">new homes</span> in real life?
                             Then why not come and visit us at one of our display homes around Melbourne.
                         </motion.p>
-                    </div>
+                    </motion.div>
                 </div>
 
-                {/* Visual Breadcrumb style */}
-                <div className="absolute bottom-8 left-6 text-[10px] font-black uppercase tracking-[0.3em] text-white/60 flex items-center gap-2">
-                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
-                    MITRA {">"} DISPLAY HOMES
+                {/* Breadcrumbs */}
+                <div className="absolute bottom-8 left-8 z-10 hidden md:flex items-center gap-2 text-white/80 text-xs font-bold uppercase tracking-widest">
+                    <Link href="/" className="hover:text-white transition-colors">Mitra Homes</Link>
+                    <ChevronRight size={14} className="text-[#0897b1]" />
+                    <span className="text-white">Display Homes</span>
                 </div>
             </section>
 

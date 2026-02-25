@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export default function ImageNav() {
     const links = [
-        { title: "Display Homes", href: '/display-home', image: "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=1974&auto=format&fit=crop" },
+        { title: "Display Homes", href: '/display-homes', image: "https://images.unsplash.com/photo-1600210491892-03d54c0aaf87?q=80&w=1974&auto=format&fit=crop" },
         { title: "Facades", href: '/facades', image: "/facades.jpg" },
         { title: "House & Land Packages", href: '/house-land-packages', image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?q=80&w=2070&auto=format&fit=crop" },
     ];

@@ -5,6 +5,8 @@ import { X, Send, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { api } from "@/services/api";
 import Captcha from "@/components/Captcha";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 interface EnquiryModalProps {
     onClose: () => void;
@@ -122,13 +124,14 @@ export default function EnquiryModal({ onClose, quoteData }: EnquiryModalProps) 
 
                             <div className="space-y-2">
                                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
-                                <input
-                                    type="tel"
-                                    required
+                                <PhoneInput
+                                    international
+                                    defaultCountry="AU"
+                                    placeholder="Enter phone number"
                                     value={formData.phone}
-                                    onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                                    className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors placeholder:text-gray-300"
-                                    placeholder="0400 000 000"
+                                    onChange={(value) => setFormData({ ...formData, phone: value || "" })}
+                                    className="phone-input-custom"
+                                    required
                                 />
                             </div>
 

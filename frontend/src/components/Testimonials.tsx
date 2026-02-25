@@ -118,17 +118,6 @@ export default function Testimonials() {
                         </div>
                     ))}
                 </div>
-
-                {/* <div className="text-center mt-20 space-y-8">
-                    <p className="text-gray-400 font-bold uppercase text-xs tracking-[0.2em]">Trusted by hundreds of families</p>
-                    <div className="flex justify-center flex-wrap gap-8 opacity-40 grayscale hover:grayscale-0 transition-all duration-700">
-                        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e9/ProductReview.com.au_logo.png" alt="ProductReview" className="h-6" />
-                        <div className="h-6 w-px bg-gray-200" />
-                        <span className="font-black italic text-gray-900 text-xl tracking-tighter">Google Reviews</span>
-                        <div className="h-6 w-px bg-gray-200" />
-                        <span className="font-black italic text-gray-900 text-xl tracking-tighter">Facebook</span>
-                    </div>
-                </div> */}
             </div>
 
             {/* Review Form Modal */}

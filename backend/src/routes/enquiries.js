@@ -18,8 +18,8 @@ const createEnquirySchema = z.object({
 
 router.post('/', validate(createEnquirySchema), enquiryController.createEnquiry);
 router.get('/', enquiryController.getAllEnquiries);
-router.get('/:id', enquiryController.getEnquiryById);
 router.get('/stats', enquiryController.getDashboardStats);
+router.get('/:id', enquiryController.getEnquiryById);
 router.patch('/:id/status', enquiryController.updateEnquiryStatus);
 
 module.exports = router;

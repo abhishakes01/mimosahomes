@@ -8,6 +8,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { api, getFullUrl } from "@/services/api";
+import PhoneInput from 'react-phone-number-input';
+import 'react-phone-number-input/style.css';
 
 const DEFAULT_STEPS = [
     {
@@ -239,11 +241,14 @@ export default function ProcedurePage() {
 
                                     <div className="space-y-2">
                                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-[0.2em] ml-1">Phone*</label>
-                                        <input
-                                            type="tel"
+                                        <PhoneInput
+                                            international
+                                            defaultCountry="AU"
+                                            placeholder="Enter phone number"
+                                            value={formData.phone}
+                                            onChange={(value) => setFormData({ ...formData, phone: value || "" })}
+                                            className="phone-input-custom"
                                             required
-                                            className="w-full bg-gray-50 border border-gray-100 rounded-lg px-4 py-4 text-sm focus:outline-none focus:ring-2 focus:ring-mimosa-gold/20 transition-all text-gray-800"
-                                            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                                         />
                                     </div>
 

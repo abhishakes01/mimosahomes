@@ -22,7 +22,12 @@ export default function PagesIndex() {
         { title: "Procedure", slug: "procedure", description: "Manage the step-by-step building process instructions." },
         { title: "Mporium", slug: "mporium", description: "Manage the design showroom details and visual gallery." },
         { title: "Partners", slug: "partners", description: "Manage the partner logos and the hero banner." },
-        { title: "Contact Us", slug: "contact", description: "Manage contact information, business hours, and location." }
+        { title: "Ebook", slug: "ebook", description: "Manage ebook collections, PDF uploads, and hero content." },
+        { title: "Contact Us", slug: "contact", description: "Manage contact information, business hours, and location." },
+        { title: "V Collection Inclusions", slug: "v-collection-standard-inclusions", description: "Manage the standard inclusions list for the V Collection." },
+        { title: "M Collection Inclusions", slug: "m-collection-standard-inclusions", description: "Manage the standard inclusions list for the M Collection." },
+        { title: "V Collection Offers", slug: "v-collection-offers", description: "Manage current promotional offers for the V Collection." },
+        { title: "M Collection Offers", slug: "m-collection-offers", description: "Manage current promotional offers for the M Collection." }
     ];
 
     useEffect(() => {

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DollarSign, Star, ArrowRight } from "lucide-react";
 
 export default function Collections() {
@@ -30,9 +31,9 @@ export default function Collections() {
                             </div>
                         </div>
 
-                        <button className="self-start px-8 py-4 border-2 border-mimosa-dark text-mimosa-dark font-bold rounded-full hover:bg-mimosa-dark hover:text-white transition-all flex items-center gap-2 group">
+                        <Link href="/new-home-designs?collections=v-collection" className="self-start px-8 py-4 border-2 border-mimosa-dark text-mimosa-dark font-bold rounded-full hover:bg-mimosa-dark hover:text-white transition-all flex items-center gap-2 group">
                             View V Collection <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
-                        </button>
+                        </Link>
                     </div>
 
                     {/* Image Side */}
@@ -80,12 +81,12 @@ export default function Collections() {
                         </div>
 
                         <div className="flex flex-col sm:flex-row gap-4">
-                            <button className="px-8 py-4 bg-white text-[#003366] font-bold rounded-full hover:bg-gray-100 transition-all">
+                            <Link href="/new-home-designs?collections=m-collection" className="px-8 py-4 bg-white text-[#003366] font-bold rounded-full hover:bg-gray-100 transition-all text-center">
                                 View M Collection
-                            </button>
-                            <button className="px-8 py-4 border-2 border-white/30 text-white font-bold rounded-full hover:bg-white hover:text-[#003366] transition-all">
+                            </Link>
+                            <Link href="/m-collection/standard-inclusions" className="px-8 py-4 border-2 border-white/30 text-white font-bold rounded-full hover:bg-white hover:text-[#003366] transition-all text-center">
                                 Inclusions
-                            </button>
+                            </Link>
                         </div>
                     </div>
                 </div>

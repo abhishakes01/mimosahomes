@@ -32,6 +32,7 @@ export default function CreateFloorPlanClient() {
         car_spaces: 1,
         price: "",
         image_url: "",
+        collection: "" as "V_Collection" | "M_Collection" | "",
         facade_ids: [] as string[]
     });
 
@@ -130,7 +131,7 @@ export default function CreateFloorPlanClient() {
                 <h3 className="text-xl font-bold text-gray-900 mb-6">Floor Plan Details</h3>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="md:col-span-2">
+                    <div className="md:col-span-1">
                         <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Title</label>
                         <input
                             type="text"
@@ -141,6 +142,19 @@ export default function CreateFloorPlanClient() {
                             className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
                             placeholder="e.g., The Hampton - Ground Floor"
                         />
+                    </div>
+                    <div className="md:col-span-1">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Collection</label>
+                        <select
+                            name="collection"
+                            value={formData.collection}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        >
+                            <option value="">Select Collection</option>
+                            <option value="V_Collection">V Collection</option>
+                            <option value="M_Collection">M Collection</option>
+                        </select>
                     </div>
                     {/* ... (rest of the inputs) ... */}
 
