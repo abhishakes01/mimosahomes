@@ -15,6 +15,12 @@ module.exports = (sequelize, DataTypes) => {
                 foreignKey: 'floorplan_id',
                 as: 'floorplan'
             });
+
+            // Belongs to ServiceArea (Region)
+            Listing.belongsTo(models.ServiceArea, {
+                foreignKey: 'service_area_id',
+                as: 'region'
+            });
         }
     }
     Listing.init({
@@ -54,6 +60,10 @@ module.exports = (sequelize, DataTypes) => {
             allowNull: true
         },
         floorplan_id: {
+            type: DataTypes.UUID,
+            allowNull: true
+        },
+        service_area_id: {
             type: DataTypes.UUID,
             allowNull: true
         },

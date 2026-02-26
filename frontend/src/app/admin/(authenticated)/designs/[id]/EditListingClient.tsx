@@ -20,6 +20,7 @@ export default function EditListingClient() {
     const [saving, setSaving] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [facades, setFacades] = useState<any[]>([]);
+    const [serviceAreas, setServiceAreas] = useState<any[]>([]);
     const [geocoding, setGeocoding] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -35,6 +36,7 @@ export default function EditListingClient() {
         collection: "V_Collection",
         facade_id: "",
         floorplan_id: "",
+        service_area_id: "",
         images: [] as string[],
         land_size: "",
         building_size: "",
@@ -60,8 +62,10 @@ export default function EditListingClient() {
         try {
             const listing: any = await api.getListing(id);
             const response: any = await api.getFacades({ limit: 1000 }); // Large limit for selector
+            const saResponse: any = await api.getServiceAreas();
 
             setFacades(response.data || []);
+            setServiceAreas(saResponse || []);
 
             setFormData({
                 title: listing.title || "",
@@ -75,6 +79,7 @@ export default function EditListingClient() {
                 collection: listing.collection || "V_Collection",
                 facade_id: listing.facade_id || "",
                 floorplan_id: listing.floorplan_id || "",
+                service_area_id: listing.service_area_id || "",
                 images: listing.images || [],
                 land_size: listing.land_size ? String(listing.land_size) : "",
                 building_size: listing.building_size ? String(listing.building_size) : "",
@@ -452,6 +457,21 @@ export default function EditListingClient() {
                         >
                             <option value="V_Collection">V Collection</option>
                             <option value="M_Collection">M Collection</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Region (Service Area)</label>
+                        <select
+                            name="service_area_id"
+                            value={formData.service_area_id}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        >
+                            <option value="">Select a region...</option>
+                            {serviceAreas.map(area => (
+                                <option key={area.id} value={area.id}>{area.name}</option>
+                            ))}
                         </select>
                     </div>
 

@@ -97,8 +97,8 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                             <button
                                                 onClick={() => setActiveGroupId(isExpanded ? "" : group.id)}
                                                 className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg transition-all ${isExpanded
-                                                        ? 'bg-[#0796b1] text-white shadow-md shadow-cyan-900/10'
-                                                        : 'bg-white text-gray-400 hover:text-gray-600'
+                                                    ? 'bg-[#0796b1] text-white shadow-md shadow-cyan-900/10'
+                                                    : 'bg-white text-gray-400 hover:text-gray-600'
                                                     }`}
                                             >
                                                 <span className="text-[9.5px] font-black uppercase tracking-[0.15em]">{group.name}</span>
@@ -164,8 +164,8 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                 key={upgrade.id}
                                                 onClick={() => handleSelection(activeCategoryId, upgrade)}
                                                 className={`group relative bg-white border-2 rounded-[16px] cursor-pointer overflow-hidden transition-all duration-300 ${isSelected
-                                                        ? 'border-[#0796b1] shadow-[0_15px_35px_-8px_rgba(7,150,177,0.2)]'
-                                                        : 'border-gray-100 hover:border-gray-200 shadow-sm'
+                                                    ? 'border-[#0796b1] shadow-[0_15px_35px_-8px_rgba(7,150,177,0.2)]'
+                                                    : 'border-gray-100 hover:border-gray-200 shadow-sm'
                                                     }`}
                                             >
                                                 {/* Card Image Section - Scaled Up */}

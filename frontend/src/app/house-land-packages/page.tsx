@@ -26,6 +26,8 @@ function HouseLandPackagesContent() {
     const [lotSizeRange, setLotSizeRange] = useState(1000);
     const [houseSizeRange, setHouseSizeRange] = useState(500);
     const [selectedSuburbs, setSelectedSuburbs] = useState<string[]>([]);
+    const [serviceAreas, setServiceAreas] = useState<any[]>([]);
+    const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState("Recently Added");
     const [pageData, setPageData] = useState<any>(null);
 
@@ -39,6 +41,16 @@ function HouseLandPackagesContent() {
             }
         };
         fetchPageData();
+
+        const fetchServiceAreas = async () => {
+            try {
+                const data: any = await api.getServiceAreas();
+                setServiceAreas(data || []);
+            } catch (err) {
+                console.error("Failed to fetch service areas:", err);
+            }
+        };
+        fetchServiceAreas();
     }, []);
 
     const suburbs = Array.from(new Set(listings.map(l => {
@@ -100,6 +112,10 @@ function HouseLandPackagesContent() {
             if (!selectedSuburbs.includes(suburb)) return false;
         }
 
+        if (selectedRegions.length > 0) {
+            if (!selectedRegions.includes(item.service_area_id)) return false;
+        }
+
         return true;
     }).sort((a, b) => {
         if (sortBy === "Price (Low to High)") return (a.price || 0) - (b.price || 0);
@@ -150,21 +166,17 @@ function HouseLandPackagesContent() {
                                 <div className="grid grid-cols-2 gap-3">
                                     <button
                                         onClick={() => setCollection(collection === 'V_Collection' ? null : 'V_Collection')}
-                                        className={`py-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${collection === 'V_Collection' ? 'border-[#0897b1] bg-white shadow-lg' : 'border-gray-200 bg-transparent opacity-50'}`}
+                                        className={`aspect-square flex flex-col items-center justify-center rounded-2xl border-2 transition-all group ${collection === "V_Collection" ? "bg-mimosa-gold border-mimosa-gold shadow-lg" : "bg-white border-gray-100 hover:border-mimosa-gold/30"}`}
                                     >
-                                        <div className="w-8 h-8 relative">
-                                            <Image src="/v-logo.png" alt="V" fill className="object-contain" />
-                                        </div>
-                                        <span className="text-[10px] font-black">V COLLECTION</span>
+                                        <div className={`text-4xl font-black italic ${collection === "V_Collection" ? "text-white" : "text-mimosa-gold"}`}>V</div>
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${collection === "V_Collection" ? "text-white/80" : "text-gray-400"}`}>Collection</span>
                                     </button>
                                     <button
                                         onClick={() => setCollection(collection === 'M_Collection' ? null : 'M_Collection')}
-                                        className={`py-3 rounded-xl border-2 transition-all flex flex-col items-center gap-1 ${collection === 'M_Collection' ? 'border-[#0897b1] bg-white shadow-lg' : 'border-gray-200 bg-transparent opacity-50'}`}
+                                        className={`aspect-square flex flex-col items-center justify-center rounded-2xl border-2 transition-all group ${collection === "M_Collection" ? "bg-gray-400 border-gray-400 shadow-lg" : "bg-white border-gray-100 hover:border-gray-400/30"}`}
                                     >
-                                        <div className="w-8 h-8 relative">
-                                            <Image src="/m-logo.png" alt="M" fill className="object-contain" />
-                                        </div>
-                                        <span className="text-[10px] font-black">M COLLECTION</span>
+                                        <div className={`text-4xl font-black italic ${collection === "M_Collection" ? "text-white" : "text-gray-400"}`}>M</div>
+                                        <span className={`text-[10px] font-bold uppercase tracking-widest ${collection === "M_Collection" ? "text-white/80" : "text-gray-400"}`}>Collection</span>
                                     </button>
                                 </div>
                             </div>
@@ -262,22 +274,21 @@ function HouseLandPackagesContent() {
                                 </div>
                             </div>
 
-                            {/* Region / Suburb */}
                             <div className="space-y-4">
                                 <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Region</label>
                                 <div className="space-y-2 max-h-[200px] overflow-y-auto pr-2 custom-scrollbar">
-                                    {suburbs.map(suburb => (
-                                        <label key={suburb} className="flex items-center gap-3 cursor-pointer group">
+                                    {serviceAreas.map(area => (
+                                        <label key={area.id} className="flex items-center gap-3 cursor-pointer group">
                                             <input
                                                 type="checkbox"
-                                                checked={selectedSuburbs.includes(suburb)}
+                                                checked={selectedRegions.includes(area.id)}
                                                 onChange={(e) => {
-                                                    if (e.target.checked) setSelectedSuburbs([...selectedSuburbs, suburb]);
-                                                    else setSelectedSuburbs(selectedSuburbs.filter(s => s !== suburb));
+                                                    if (e.target.checked) setSelectedRegions([...selectedRegions, area.id]);
+                                                    else setSelectedRegions(selectedRegions.filter(id => id !== area.id));
                                                 }}
                                                 className="w-4 h-4 rounded border-2 border-gray-200 text-[#0897b1] focus:ring-[#0897b1] transition-all"
                                             />
-                                            <span className="text-[11px] font-bold text-gray-500 group-hover:text-[#1a3a4a] transition-all uppercase">{suburb}</span>
+                                            <span className="text-[11px] font-bold text-gray-500 group-hover:text-[#1a3a4a] transition-all uppercase">{area.name}</span>
                                         </label>
                                     ))}
                                 </div>

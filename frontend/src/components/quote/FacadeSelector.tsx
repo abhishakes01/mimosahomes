@@ -61,50 +61,69 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
 
     return (
         <div className="flex flex-col gap-10">
+            <style jsx global>{`
+                .facade-swiper .swiper-slide {
+                    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                    opacity: 0.4;
+                    transform: scale(0.85);
+                }
+                .facade-swiper .swiper-slide-active {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                .facade-swiper .swiper-slide-prev,
+                .facade-swiper .swiper-slide-next {
+                    opacity: 0.6;
+                    transform: scale(0.9);
+                    z-index: 10;
+                }
+            `}</style>
+
             {/* Main Selection Area */}
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
 
                 {/* Left Column: Facades Browser */}
-                <div className="flex-grow lg:w-[68%] bg-white rounded-[40px] border border-gray-100 p-8 lg:p-12 flex flex-col min-h-[750px] shadow-sm overflow-hidden">
-                    <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-4">FACADES</h2>
+                <div className="flex-grow lg:w-[68%] bg-white rounded-[40px] border border-gray-100 p-8 flex flex-col min-h-[700px] shadow-sm overflow-hidden">
+                    <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-8 px-4">FACADES</h2>
 
-                    <div className="relative flex-grow flex items-center justify-center">
+                    <div className="relative flex-grow flex items-center justify-center py-10 overflow-hidden">
                         {loading ? (
                             <div className="flex justify-center items-center h-64">
                                 <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0796b1]"></div>
                             </div>
                         ) : (
-                            <div className="relative w-full flex items-center justify-center">
+                            <div className="relative w-full h-full flex items-center justify-center">
                                 {/* Navigation Arrows */}
                                 <button
                                     onClick={() => swiperRef.current?.slidePrev()}
-                                    className="absolute left-2 z-[30] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                    className="absolute left-4 z-[50] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
                                 >
                                     <ChevronLeft size={24} strokeWidth={3} />
                                 </button>
 
                                 <Swiper
                                     onSwiper={(swiper) => { swiperRef.current = swiper; }}
+                                    onSlideChange={(swiper) => setSelectedFacade(facades[swiper.activeIndex])}
                                     modules={[Navigation, Mousewheel]}
                                     mousewheel={true}
                                     centeredSlides={true}
-                                    slidesPerView={1}
+                                    slidesPerView={1.4}
                                     spaceBetween={20}
-                                    className="w-full py-10"
+                                    className="w-full !overflow-visible facade-swiper"
                                 >
                                     {facades.map(facade => {
                                         const isSelected = selectedFacade?.id === facade.id;
                                         return (
-                                            <SwiperSlide key={facade.id}>
+                                            <SwiperSlide key={facade.id} className="h-full">
                                                 <div
                                                     onClick={() => setSelectedFacade(facade)}
-                                                    className={`relative bg-white border-2 rounded-[32px] transition-all duration-500 cursor-pointer overflow-hidden flex flex-col group ${isSelected
-                                                        ? 'border-[#0796b1] shadow-[0_30px_60px_-12px_rgba(7,150,177,0.25)]'
+                                                    className={`mx-auto bg-white border-2 rounded-[32px] transition-all duration-700 cursor-pointer overflow-hidden flex flex-col h-full min-h-[480px] max-w-[800px] ${isSelected
+                                                        ? 'border-[#0796b1] shadow-[0_35px_60px_-15px_rgba(7,150,177,0.3)]'
                                                         : 'border-gray-100 hover:border-gray-200'
                                                         }`}
                                                 >
                                                     {/* Facade Image Container */}
-                                                    <div className="relative w-full h-[450px]">
+                                                    <div className="relative w-full flex-grow group">
                                                         <Image
                                                             src={getFullUrl(facade.image_url)}
                                                             alt={facade.title}
@@ -134,8 +153,8 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
                                                             </div>
                                                         )}
 
-                                                        {/* Bottom Info Bar */}
-                                                        <div className="absolute bottom-0 left-0 right-0 bg-[#0796b1] text-white flex justify-between items-center px-10 py-7 transform transition-transform group-hover:scale-[1.01]">
+                                                        {/* Bottom Info Bar - Re-styled to match screenshot logic */}
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-[#0796b1] text-white flex justify-between items-center px-10 py-6 transform transition-transform group-hover:scale-[1.01]">
                                                             <h3 className="text-3xl font-black uppercase tracking-tighter leading-none">{facade.title}</h3>
                                                             <span className="text-2xl font-black italic tracking-tighter leading-none opacity-90">
                                                                 {facade.price === 0 || !facade.price ? "Included" : `+$${facade.price.toLocaleString()}`}
@@ -150,7 +169,7 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
 
                                 <button
                                     onClick={() => swiperRef.current?.slideNext()}
-                                    className="absolute right-2 z-[30] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                    className="absolute right-4 z-[50] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
                                 >
                                     <ChevronRight size={24} strokeWidth={3} />
                                 </button>
@@ -159,8 +178,8 @@ export default function FacadeSelector({ selectedFloorPlan, onBack, onSelect }: 
                     </div>
 
                     {/* Design Note Disclaimer */}
-                    <div className="mt-8 px-10 text-center pb-4">
-                        <p className="text-[10px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest px-10 md:px-20">
+                    <div className="mt-4 px-10 text-center pb-4">
+                        <p className="text-[9px] font-bold text-gray-400 leading-relaxed uppercase tracking-widest px-10 md:px-20">
                             This facade render is indicative only. Please note this render may depict upgrades. Driveways, landscaping, blinds and fencing are not included and can be added as an upgrade.
                         </p>
                     </div>

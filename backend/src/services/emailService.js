@@ -160,3 +160,66 @@ exports.sendEbookToUser = async (userData, ebookUrl) => {
 
     return transporter.sendMail(mailOptions);
 };
+
+/**
+ * Sends a shareable quote link to the user
+ */
+exports.sendQuoteShareEmail = async (email, shareUrl) => {
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const logoUrl = `${frontendUrl}/logo-text.png`;
+
+    const htmlContent = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <style>
+            body { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; }
+            .container { max-width: 600px; margin: 20px auto; padding: 40px; border: 1px solid #eee; border-radius: 8px; }
+            .header { text-align: center; margin-bottom: 40px; }
+            .logo { max-width: 150px; }
+            .content { margin-bottom: 30px; text-align: center; }
+            .title { font-size: 24px; font-weight: 900; color: #1a1a1a; text-transform: uppercase; italic; margin-bottom: 10px; }
+            .subtitle { font-size: 14px; font-weight: bold; color: #0897b1; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 30px; }
+            .button { display: inline-block; padding: 16px 32px; background-color: #0897b1; color: #ffffff !important; text-decoration: none; border-radius: 8px; font-weight: 900; text-transform: uppercase; font-size: 14px; letter-spacing: 1px; margin-top: 20px; box-shadow: 0 4px 12px rgba(8, 151, 177, 0.2); }
+            .footer { text-align: center; font-size: 12px; color: #aaa; margin-top: 40px; border-top: 1px solid #eee; padding-top: 20px; }
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <div class="header">
+                <img src="${logoUrl}" alt="Mitra Homes" class="logo">
+            </div>
+            
+            <div class="content">
+                <h1 class="title">Your Dream Home Quote</h1>
+                <p class="subtitle">Shared Summary</p>
+                
+                <p>Hello,</p>
+                <p>Someone has shared a custom Mitra Homes quote with you. You can view the full summary, floorplans, and facades by clicking the button below:</p>
+                
+                <a href="${shareUrl}" class="button" target="_blank">View Quote Summary</a>
+                
+                <p style="margin-top: 30px; font-size: 12px; color: #666;">
+                    If the button doesn't work, copy and paste this link into your browser:<br>
+                    <a href="${shareUrl}" style="color: #0897b1;">${shareUrl}</a>
+                </p>
+            </div>
+            
+            <div class="footer">
+                &copy; ${new Date().getFullYear()} Mitra Homes. All rights reserved.<br>
+                If you have any questions, feel free to visit our website.
+            </div>
+        </div>
+    </body>
+    </html>
+    `;
+
+    const mailOptions = {
+        from: process.env.SMTP_FROM || '"Mitra Homes" <noreply@mitrahomes.com>',
+        to: email,
+        subject: `Mitra Homes: A Shared Quote Summary`,
+        html: htmlContent,
+    };
+
+    return transporter.sendMail(mailOptions);
+};

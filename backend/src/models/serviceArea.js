@@ -4,7 +4,10 @@ const { Model } = require('sequelize');
 module.exports = (sequelize, DataTypes) => {
     class ServiceArea extends Model {
         static associate(models) {
-            // No associations for now
+            ServiceArea.hasMany(models.Listing, {
+                foreignKey: 'service_area_id',
+                as: 'listings'
+            });
         }
     }
     ServiceArea.init({

@@ -49,9 +49,22 @@ export const api = {
     // Auth
     login: (data: any) => fetchAPI('/auth/login', { method: 'POST', body: JSON.stringify(data) }),
 
+    // Helper to remove undefined/null values from query objects
+    cleanParams: (params: any) => {
+        if (!params) return {};
+        const clean: any = {};
+        Object.keys(params).forEach(key => {
+            if (params[key] !== undefined && params[key] !== null) {
+                clean[key] = params[key];
+            }
+        });
+        return clean;
+    },
+
     // Listings
     getListings: (query?: any) => {
-        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        const cleaned = api.cleanParams(query);
+        const queryString = Object.keys(cleaned).length ? '?' + new URLSearchParams(cleaned).toString() : '';
         return fetchAPI(`/listings${queryString}`);
     },
     getListing: (id: string) => fetchAPI(`/listings/${id}`),
@@ -82,7 +95,8 @@ export const api = {
 
     // Floor Plans
     getFloorPlans: (query?: any) => {
-        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        const cleaned = api.cleanParams(query);
+        const queryString = Object.keys(cleaned).length ? '?' + new URLSearchParams(cleaned).toString() : '';
         return fetchAPI(`/floorplans${queryString}`);
     },
     getFloorPlan: (id: string) => fetchAPI(`/floorplans/${id}`),
@@ -92,7 +106,8 @@ export const api = {
 
     // Facades
     getFacades: (query?: any) => {
-        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        const cleaned = api.cleanParams(query);
+        const queryString = Object.keys(cleaned).length ? '?' + new URLSearchParams(cleaned).toString() : '';
         return fetchAPI(`/facades${queryString}`);
     },
     getFacade: (id: string) => fetchAPI(`/facades/${id}`),
@@ -101,7 +116,7 @@ export const api = {
     deleteFacade: (id: string, token: string) => fetchAPI(`/facades/${id}`, { method: 'DELETE', token }),
 
     // Service Areas
-    getServiceAreas: () => fetchAPI('/service-areas'),
+    getServiceAreas: () => fetchAPI<any[]>('/service-areas'),
     getServiceArea: (id: string) => fetchAPI(`/service-areas/${id}`),
     createServiceArea: (data: any, token: string) => fetchAPI('/service-areas', { method: 'POST', body: JSON.stringify(data), token }),
     updateServiceArea: (id: string, data: any, token: string) => fetchAPI(`/service-areas/${id}`, { method: 'PUT', body: JSON.stringify(data), token }),
@@ -113,7 +128,8 @@ export const api = {
 
     // Upgrades
     getUpgradeGroups: (query?: any) => {
-        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        const cleaned = api.cleanParams(query);
+        const queryString = Object.keys(cleaned).length ? '?' + new URLSearchParams(cleaned).toString() : '';
         return fetchAPI(`/upgrades/groups${queryString}`);
     },
     createUpgradeGroup: (data: any, token: string) => fetchAPI('/upgrades/groups', { method: 'POST', body: JSON.stringify(data), token }),
@@ -121,7 +137,8 @@ export const api = {
     deleteUpgradeGroup: (id: string, token: string) => fetchAPI(`/upgrades/groups/${id}`, { method: 'DELETE', token }),
 
     getUpgradeCategories: (query?: any) => {
-        const queryString = query ? '?' + new URLSearchParams(query).toString() : '';
+        const cleaned = api.cleanParams(query);
+        const queryString = Object.keys(cleaned).length ? '?' + new URLSearchParams(cleaned).toString() : '';
         return fetchAPI(`/upgrades/categories${queryString}`);
     },
     createUpgradeCategory: (data: any, token: string) => fetchAPI('/upgrades/categories', { method: 'POST', body: JSON.stringify(data), token }),
@@ -150,4 +167,9 @@ export const api = {
 
     // Captcha
     getCaptchaUrl: () => `${API_URL}/captcha?t=${Date.now()}`,
+
+    // Quotes
+    shareQuote: (data: any) => fetchAPI('/quotes/share', { method: 'POST', body: JSON.stringify({ data }) }),
+    getSharedQuote: (id: string) => fetchAPI(`/quotes/share/${id}`),
+    sendQuoteEmail: (data: { email: string; shareUrl: string }) => fetchAPI('/quotes/share/email', { method: 'POST', body: JSON.stringify(data) }),
 };

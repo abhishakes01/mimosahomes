@@ -27,7 +27,12 @@ export default function PagesIndex() {
         { title: "V Collection Inclusions", slug: "v-collection-standard-inclusions", description: "Manage the standard inclusions list for the V Collection." },
         { title: "M Collection Inclusions", slug: "m-collection-standard-inclusions", description: "Manage the standard inclusions list for the M Collection." },
         { title: "V Collection Offers", slug: "v-collection-offers", description: "Manage current promotional offers for the V Collection." },
-        { title: "M Collection Offers", slug: "m-collection-offers", description: "Manage current promotional offers for the M Collection." }
+        { title: "M Collection Offers", slug: "m-collection-offers", description: "Manage current promotional offers for the M Collection." },
+        { title: "Facades Gallery", slug: "facades", description: "Manage hero image and description for the facades page." },
+        { title: "New Home Designs", slug: "new-home-designs", description: "Manage hero image and description for the home designs gallery." },
+        { title: "House & Land Packages", slug: "house-land-packages", description: "Manage hero image for the house and land packages page." },
+        { title: "Display Homes", slug: "display-homes", description: "Manage hero image and description for the display homes page." },
+        { title: "Display Home For Sale", slug: "display-home-for-sale", description: "Manage hero image for the display homes for sale page." }
     ];
 
     useEffect(() => {

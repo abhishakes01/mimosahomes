@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { api } from "@/services/api";
+import { api, getFullUrl } from "@/services/api";
 import {
     Save,
     Mail,
@@ -11,7 +11,9 @@ import {
     Loader2,
     CheckCircle2,
     AlertCircle,
-    Info
+    Info,
+    FileText,
+    Upload
 } from "lucide-react";
 import { motion } from "framer-motion";
 
@@ -19,6 +21,7 @@ export default function SettingsClient() {
     const [settings, setSettings] = useState<any>({
         admin_email: "",
         autoApproveReviews: false,
+        inclusions_pdf_url: "",
     });
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -33,7 +36,8 @@ export default function SettingsClient() {
             const data: any = await api.getSettings("mock-token");
             setSettings({
                 admin_email: data.admin_email || "",
-                autoApproveReviews: data.autoApproveReviews === true || data.autoApproveReviews === 'true'
+                autoApproveReviews: data.autoApproveReviews === true || data.autoApproveReviews === 'true',
+                inclusions_pdf_url: data.inclusions_pdf_url || ""
             });
         } catch (err) {
             console.error("Failed to load settings", err);
@@ -55,6 +59,21 @@ export default function SettingsClient() {
         } catch (err: any) {
             console.error("Failed to update setting", err);
             setMessage({ type: 'error', text: err.message || 'Failed to update setting' });
+        } finally {
+            setSaving(false);
+        }
+    };
+
+    const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setSaving(true);
+        try {
+            const data = await api.uploadFile(file, "documents");
+            handleSave('inclusions_pdf_url', data.url);
+        } catch (err) {
+            setMessage({ type: 'error', text: 'Failed to upload PDF' });
         } finally {
             setSaving(false);
         }
@@ -132,6 +151,66 @@ export default function SettingsClient() {
                             <div className="flex items-start gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider bg-gray-50/50 p-3 rounded-lg">
                                 <Info size={14} className="mt-0.5 text-blue-400" />
                                 <p>All new enquiries from the website (Contact, Quote, Mporium) will be sent to this address.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Standard Inclusions Card */}
+                <div className="bg-white rounded-[32px] border border-gray-100 shadow-sm overflow-hidden">
+                    <div className="p-8 border-b border-gray-100 bg-gray-50/50 flex items-center gap-4">
+                        <div className="p-3 bg-mimosa-gold/10 text-mimosa-gold rounded-2xl">
+                            <FileText size={24} />
+                        </div>
+                        <div>
+                            <h3 className="font-bold text-gray-900">Build a Quote Resources</h3>
+                            <p className="text-xs text-gray-500 uppercase tracking-widest font-bold">Standard Inclusions Document</p>
+                        </div>
+                    </div>
+                    <div className="p-8 space-y-6">
+                        <div className="space-y-4">
+                            <label className="text-sm font-bold text-gray-700 block">Standard Inclusions PDF</label>
+
+                            <div className="flex flex-col md:flex-row gap-6 items-start">
+                                {settings.inclusions_pdf_url ? (
+                                    <div className="flex-1 w-full bg-gray-50 rounded-2xl p-6 border border-gray-100 flex items-center justify-between group">
+                                        <div className="flex items-center gap-4">
+                                            <div className="p-3 bg-red-50 text-red-500 rounded-xl">
+                                                <FileText size={24} />
+                                            </div>
+                                            <div>
+                                                <p className="text-sm font-bold text-gray-900">standard-inclusions.pdf</p>
+                                                <a
+                                                    href={getFullUrl(settings.inclusions_pdf_url)}
+                                                    target="_blank"
+                                                    className="text-xs text-mimosa-gold font-bold uppercase tracking-wider hover:underline"
+                                                >
+                                                    View Document
+                                                </a>
+                                            </div>
+                                        </div>
+                                        <label className="cursor-pointer bg-white px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest border border-gray-200 hover:border-mimosa-gold transition-all shadow-sm">
+                                            Replace
+                                            <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                                        </label>
+                                    </div>
+                                ) : (
+                                    <label className="w-full bg-gray-50 border-2 border-dashed border-gray-100 hover:border-mimosa-gold hover:bg-white rounded-[28px] p-12 transition-all cursor-pointer flex flex-col items-center justify-center gap-4 group">
+                                        <div className="p-5 bg-white rounded-2xl shadow-sm text-gray-400 group-hover:text-mimosa-gold transition-colors">
+                                            <Upload size={32} />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="font-bold text-gray-900">Upload Standard Inclusions PDF</p>
+                                            <p className="text-xs text-gray-400 font-medium">PDF files only, max 5MB</p>
+                                        </div>
+                                        <input type="file" accept=".pdf" className="hidden" onChange={handleFileChange} />
+                                    </label>
+                                )}
+                            </div>
+
+                            <div className="flex items-start gap-2 text-[10px] text-gray-400 font-bold uppercase tracking-wider bg-gray-50/50 p-3 rounded-lg">
+                                <Info size={14} className="mt-0.5 text-blue-400" />
+                                <p>This document will be displayed in the Step 2 "Inclusions" modal on the Build a Quote page.</p>
                             </div>
                         </div>
                     </div>

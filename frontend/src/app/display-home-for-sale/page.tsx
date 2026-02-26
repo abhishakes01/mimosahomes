@@ -42,7 +42,8 @@ export default function ReadyBuiltPage() {
     const [sizeRange, setSizeRange] = useState<[number, number]>([14, 60]);
     const [lotRange, setLotRange] = useState<[number, number]>([250, 800]);
     const [priceRange, setPriceRange] = useState<[number, number]>([450000, 1200000]);
-    const [regions, setRegions] = useState<string[]>([]);
+    const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
+    const [serviceAreas, setServiceAreas] = useState<any[]>([]);
 
     const fetchListings = async () => {
         try {
@@ -59,6 +60,7 @@ export default function ReadyBuiltPage() {
             if (priceRange[0] > 450000) params.min_price = priceRange[0];
             if (priceRange[1] < 1200000) params.max_price = priceRange[1];
             if (bedrooms.length > 0) params.beds = Math.min(...bedrooms); // Backend uses beds >= min
+            if (selectedRegions.length > 0) params.service_area_id = selectedRegions.join(',');
 
             const response: any = await api.getListings(params);
             setListings(response.data || []);
@@ -75,7 +77,19 @@ export default function ReadyBuiltPage() {
     useEffect(() => {
         setIsMounted(true);
         fetchListings();
-    }, [page, collection, storeys, bedrooms, priceRange]);
+    }, [page, collection, storeys, bedrooms, priceRange, selectedRegions]);
+
+    useEffect(() => {
+        const fetchServiceAreas = async () => {
+            try {
+                const data: any = await api.getServiceAreas();
+                setServiceAreas(data || []);
+            } catch (err) {
+                console.error("Failed to fetch service areas:", err);
+            }
+        };
+        fetchServiceAreas();
+    }, []);
 
     const handleSearch = (e: React.FormEvent) => {
         e.preventDefault();
@@ -88,9 +102,9 @@ export default function ReadyBuiltPage() {
         );
     };
 
-    const toggleRegion = (reg: string) => {
-        setRegions(prev =>
-            prev.includes(reg) ? prev.filter(r => r !== reg) : [...prev, reg]
+    const toggleRegion = (regId: string) => {
+        setSelectedRegions(prev =>
+            prev.includes(regId) ? prev.filter(r => r !== regId) : [...prev, regId]
         );
     };
 
@@ -102,7 +116,7 @@ export default function ReadyBuiltPage() {
         setSizeRange([14, 60]);
         setLotRange([250, 800]);
         setPriceRange([450000, 1200000]);
-        setRegions([]);
+        setSelectedRegions([]);
         setPage(1);
     };
 
@@ -249,15 +263,15 @@ export default function ReadyBuiltPage() {
                             <div className="space-y-4">
                                 <h3 className="text-[10px] font-black uppercase tracking-widest text-gray-900 italic">Region</h3>
                                 <div className="space-y-3">
-                                    {["West", "North", "Geelong", "South East"].map((reg) => (
-                                        <label key={reg} className="flex items-center gap-3 cursor-pointer group">
+                                    {serviceAreas.map((area) => (
+                                        <label key={area.id} className="flex items-center gap-3 cursor-pointer group">
                                             <input
                                                 type="checkbox"
                                                 className="w-4 h-4 accent-mimosa-gold border-gray-200 rounded"
-                                                checked={regions.includes(reg)}
-                                                onChange={() => toggleRegion(reg)}
+                                                checked={selectedRegions.includes(area.id)}
+                                                onChange={() => toggleRegion(area.id)}
                                             />
-                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-mimosa-gold transition-colors">{reg}</span>
+                                            <span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 group-hover:text-mimosa-gold transition-colors">{area.name}</span>
                                         </label>
                                     ))}
                                 </div>

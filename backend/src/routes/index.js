@@ -32,4 +32,7 @@ router.use('/settings', settingsRoutes);
 const captchaRoutes = require('./captchaRoutes');
 router.use('/captcha', captchaRoutes);
 
+const quoteRoutes = require('./quote.routes');
+router.use('/quotes', quoteRoutes);
+
 module.exports = router;

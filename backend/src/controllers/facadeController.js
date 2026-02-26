@@ -2,7 +2,7 @@ const { Facade, FloorPlan, FacadeVariant } = require('../models');
 
 exports.getAllFacades = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, is_active, stories } = req.query;
+        const { page = 1, limit = 10, is_active, stories, collection } = req.query;
         const offset = (page - 1) * limit;
 
         const where = {};
@@ -11,6 +11,9 @@ exports.getAllFacades = async (req, res, next) => {
         }
         if (stories !== undefined) {
             where.stories = parseInt(stories);
+        }
+        if (collection && collection !== 'undefined' && collection !== 'null') {
+            where.collection = collection;
         }
 
         const { count, rows: facades } = await Facade.findAndCountAll({

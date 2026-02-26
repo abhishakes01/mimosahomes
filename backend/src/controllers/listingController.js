@@ -3,12 +3,18 @@ const { Op } = require('sequelize');
 
 exports.getAllListings = async (req, res, next) => {
     try {
-        const { type, collection, min_price, max_price, beds, page = 1, limit = 10 } = req.query;
+        const { type, collection, service_area_id, min_price, max_price, beds, page = 1, limit = 10 } = req.query;
         const where = {};
         const floorPlanWhere = {};
 
         if (type) where.type = type;
-        if (collection) where.collection = collection;
+        if (collection && collection !== 'undefined' && collection !== 'null') {
+            where.collection = collection;
+        }
+        if (service_area_id) {
+            const ids = Array.isArray(service_area_id) ? service_area_id : service_area_id.split(',');
+            where.service_area_id = { [Op.in]: ids };
+        }
 
         if (min_price || max_price) {
             where.price = {};
@@ -41,6 +47,9 @@ exports.getAllListings = async (req, res, next) => {
                     as: 'facades',
                     through: { attributes: [] }
                 }]
+            }, {
+                model: require('../models').ServiceArea,
+                as: 'region'
             }],
             order: [['created_at', 'DESC']],
             limit: parseInt(limit),
@@ -73,6 +82,9 @@ exports.getListingById = async (req, res, next) => {
             }, {
                 model: require('../models').FloorPlan,
                 as: 'floorplan'
+            }, {
+                model: require('../models').ServiceArea,
+                as: 'region'
             }]
         });
         if (!listing) return res.status(404).json({ error: 'Listing not found' });
@@ -95,14 +107,14 @@ exports.createListing = async (req, res, next) => {
         const {
             title, address, price, type, status,
             description, latitude, longitude,
-            collection, facade_id, floorplan_id, images,
+            collection, facade_id, floorplan_id, service_area_id, images,
             land_size, building_size, highlights, builder_name,
             outdoor_features, agent_name, agent_email, agent_phone, agent_image
         } = req.body;
 
         const listingData = {
             title, address, type, status,
-            description, collection, facade_id, floorplan_id, images,
+            description, collection, facade_id, floorplan_id, service_area_id, images,
             highlights, builder_name,
             outdoor_features, agent_name, agent_email, agent_phone, agent_image,
             price: sanitizeNumeric(price),

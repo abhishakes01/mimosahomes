@@ -7,11 +7,16 @@ import { motion } from "framer-motion";
 import {
     Bed, Bath, Car, Maximize, MapPin,
     Download, User, Phone, Mail, ChevronRight,
-    Home, CheckCircle2, ImageIcon
+    Home, CheckCircle2, ImageIcon,
+    Loader2
 } from "lucide-react";
 import Link from "next/link";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import { useRef } from "react";
+import { toPng } from "html-to-image";
+import jsPDF from "jspdf";
+import { toast } from "react-hot-toast";
 
 export default function PackageDetailsPage() {
     const params = useParams();
@@ -20,7 +25,9 @@ export default function PackageDetailsPage() {
 
     const [listing, setListing] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+    const [downloading, setDownloading] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const brochureRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         setIsMounted(true);
@@ -37,6 +44,42 @@ export default function PackageDetailsPage() {
             console.error("Failed to load listing:", err);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const handleDownloadBrochure = async () => {
+        if (!brochureRef.current) return;
+        setDownloading(true);
+        const toastId = toast.loading("Generating brochure PDF...");
+
+        try {
+            const element = brochureRef.current;
+
+            // html-to-image is much better with modern CSS (Tailwind 4)
+            const dataUrl = await toPng(element, {
+                quality: 1.0,
+                pixelRatio: 2,
+                filter: (node) => {
+                    if (node instanceof HTMLElement && node.classList.contains('no-print')) {
+                        return false;
+                    }
+                    return true;
+                }
+            });
+
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const imgProps = (pdf as any).getImageProperties(dataUrl);
+            const pdfWidth = pdf.internal.pageSize.getWidth();
+            const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+
+            pdf.addImage(dataUrl, 'PNG', 0, 0, pdfWidth, pdfHeight);
+            pdf.save(`Mimosa-Brochure-${listing.title.replace(/\s+/g, '-')}.pdf`);
+            toast.success("Brochure downloaded!", { id: toastId });
+        } catch (err) {
+            console.error("PDF Generation error:", err);
+            toast.error("Failed to generate PDF brochure.", { id: toastId });
+        } finally {
+            setDownloading(false);
         }
     };
 
@@ -67,194 +110,205 @@ export default function PackageDetailsPage() {
     return (
         <main className="min-h-screen bg-white pb-20">
             <Header />
-            {/* Hero Section */}
-            <div className="relative w-full h-[50vh] min-h-[400px] overflow-hidden">
-                <img
-                    src={getFullUrl(mainImage)}
-                    alt={listing.title}
-                    className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
 
-                {/* Breadcrumbs */}
-                <div className="absolute bottom-10 left-0 w-full">
-                    <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center gap-2 text-white text-[10px] uppercase tracking-widest font-black italic">
-                        <Link href="/" className="hover:text-mimosa-gold transition-colors">Mimosa</Link>
-                        <ChevronRight size={12} className="text-mimosa-gold" />
-                        <Link href="/display-home-for-sale" className="hover:text-mimosa-gold transition-colors">House and Land Packages</Link>
-                        <ChevronRight size={12} className="text-mimosa-gold" />
-                        <span className="opacity-70">{listing.address}</span>
+            <div ref={brochureRef} className="bg-white">
+                {/* Hero Section */}
+                <div className="relative w-full h-[50vh] min-h-[400px] overflow-hidden">
+                    <img
+                        src={getFullUrl(mainImage)}
+                        alt={listing.title}
+                        className="w-full h-full object-cover"
+                    />
+                    <div
+                        className="absolute inset-0"
+                        style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.6), transparent)' }}
+                    />
+
+                    {/* Breadcrumbs */}
+                    <div className="absolute bottom-10 left-0 w-full no-print">
+                        <div className="max-w-[1400px] mx-auto px-6 md:px-12 flex items-center gap-2 text-white text-[10px] uppercase tracking-widest font-black italic">
+                            <Link href="/" className="hover:text-mimosa-gold transition-colors">Mimosa</Link>
+                            <ChevronRight size={12} className="text-mimosa-gold" />
+                            <Link href="/house-land-packages" className="hover:text-mimosa-gold transition-colors">House and Land Packages</Link>
+                            <ChevronRight size={12} className="text-mimosa-gold" />
+                            <span className="opacity-70">{listing.address}</span>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            {/* Info Bar */}
-            <div className="bg-[#005a8f] text-white">
-                <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-4 flex flex-wrap items-center justify-between gap-6">
-                    <div className="flex items-center gap-8">
-                        <div className="bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded border border-white/20">
-                            <span className="text-[10px] font-black uppercase tracking-widest italic">
-                                {listing.collection === "V_Collection" ? "V COLLECTION" : "M COLLECTION"}
-                            </span>
-                        </div>
+                {/* Info Bar */}
+                <div className="bg-[#005a8f] text-white">
+                    <div className="max-w-[1400px] mx-auto px-6 md:px-12 py-4 flex flex-wrap items-center justify-between gap-6">
                         <div className="flex items-center gap-8">
-                            <div className="flex items-center gap-2 group cursor-pointer">
-                                <ImageIcon size={20} className="text-white/60 group-hover:text-white transition-colors" />
-                                <Bed size={20} className="text-white" />
-                                <span className="text-lg font-black tracking-tighter italic leading-none">{floorplan.bedrooms || 4}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Bath size={20} className="text-white" />
-                                <span className="text-lg font-black tracking-tighter italic leading-none">{floorplan.bathrooms || 2}</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Car size={20} className="text-white" />
-                                <span className="text-lg font-black tracking-tighter italic leading-none">{floorplan.car_spaces || 2}</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {/* Main Content */}
-            <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-16">
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
-
-                    {/* Left Column: Details */}
-                    <div className="lg:col-span-7 space-y-12">
-                        <div>
-                            <h1 className="text-4xl md:text-5xl font-black text-[#005a8f] uppercase italic leading-[0.9] tracking-tighter mb-4">
-                                {listing.title}
-                            </h1>
-                            <div className="flex items-center gap-2 text-gray-500 font-medium italic">
-                                <MapPin size={18} className="text-mimosa-gold" />
-                                <span>{listing.address}</span>
-                            </div>
-                        </div>
-
-                        <div className="prose prose-blue max-w-none">
-                            <p className="text-gray-600 leading-relaxed font-medium">
-                                {listing.description || "No description available for this property."}
-                            </p>
-                        </div>
-
-                        {highlights.length > 0 && (
-                            <div className="space-y-6">
-                                <h3 className="text-lg font-black text-gray-900 uppercase italic tracking-tight">Home Highlights:</h3>
-                                <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
-                                    {highlights.map((item: string, idx: number) => (
-                                        <li key={idx} className="flex items-start gap-3 group">
-                                            <div className="w-1.5 h-1.5 rounded-full bg-mimosa-gold mt-2 group-hover:scale-125 transition-transform" />
-                                            <span className="text-gray-600 text-sm font-medium">{item}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-
-
-                        <div className="space-y-6 pt-8 border-t border-gray-100">
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 text-sm font-medium">
-                                <div className="flex items-center justify-between pr-8 border-r border-gray-100">
-                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Builder:</span>
-                                    <span className="text-gray-900">{listing.builder_name || "Mimosa Homes"} - {listing.title}</span>
-                                </div>
-                                <div className="flex items-center justify-between pl-8">
-                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Bedrooms:</span>
-                                    <span className="text-gray-900">{floorplan.bedrooms || 4} | Living: {floorplan.living_areas || 3} | Bathrooms: {floorplan.bathrooms || 2} | Garage: {floorplan.car_spaces || 2}</span>
-                                </div>
-                                <div className="flex items-center justify-between pr-8 border-r border-gray-100">
-                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Outdoor:</span>
-                                    <span className="text-gray-900">{listing.outdoor_features || "Covered alfresco and landscaped gardens"}</span>
-                                </div>
-                                <div className="flex items-center justify-between pl-8">
-                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Status:</span>
-                                    <span className="text-gray-900 uppercase font-black italic">{listing.status === 'sold' ? 'Sold' : 'Available'}</span>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 pt-10">
-                            <div className="flex items-baseline gap-4">
-                                <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Price:</span>
-                                <span className="text-3xl font-black text-[#005a8f] tracking-tighter italic">
-                                    {listing.status === 'sold' ? 'SOLD' : (listing.price ? `$${Number(listing.price).toLocaleString()}+` : "TBA")}
+                            <div className="bg-white/10 backdrop-blur-sm px-4 py-1.5 rounded border border-white/20">
+                                <span className="text-[10px] font-black uppercase tracking-widest italic">
+                                    {listing.collection === "V_Collection" ? "V COLLECTION" : "M COLLECTION"}
                                 </span>
                             </div>
-                            <div className="grid grid-cols-2 max-w-sm gap-4">
-                                <div>
-                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest block mb-1">Land Size:</span>
-                                    <span className="text-gray-900 font-black tracking-tighter italic">{listing.land_size || 540}m²</span>
+                            <div className="flex items-center gap-8">
+                                <div className="flex items-center gap-2 group cursor-pointer">
+                                    <ImageIcon size={20} className="text-white/60 group-hover:text-white transition-colors" />
+                                    <Bed size={20} className="text-white" />
+                                    <span className="text-lg font-black tracking-tighter italic leading-none">{floorplan.bedrooms || 4}</span>
                                 </div>
-                                <div>
-                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest block mb-1">Building Size:</span>
-                                    <span className="text-gray-900 font-black tracking-tighter italic">{listing.building_size || 207.6}sq</span>
+                                <div className="flex items-center gap-2">
+                                    <Bath size={20} className="text-white" />
+                                    <span className="text-lg font-black tracking-tighter italic leading-none">{floorplan.bathrooms || 2}</span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <Car size={20} className="text-white" />
+                                    <span className="text-lg font-black tracking-tighter italic leading-none">{floorplan.car_spaces || 2}</span>
                                 </div>
                             </div>
                         </div>
-
-                        {/* Sold Banner as in screenshot */}
-                        {listing.status === 'sold' && (
-                            <div className="bg-[#005a8f] py-6 px-12 inline-block -ml-12 md:ml-0 md:rounded-r-full shadow-2xl">
-                                <span className="text-white font-black text-6xl uppercase tracking-widest italic">SOLD</span>
-                            </div>
-                        )}
                     </div>
+                </div>
 
-                    {/* Right Column: Floorplan & Contact */}
-                    <div className="lg:col-span-5 space-y-10">
-                        <div className="flex items-center gap-4">
-                            <button className="flex-1 bg-[#005a8f] text-white py-3.5 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-[#004a75] transition-all shadow-xl">
-                                DOWNLOAD BROCHURE
-                            </button>
-                            <button className="flex-1 bg-[#005a8f] text-white py-3.5 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-[#004a75] transition-all shadow-xl">
-                                CONTACT AGENT
-                            </button>
-                        </div>
-
-                        <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
-                            <div className="relative aspect-[3/4] w-full">
-                                {floorplan.image_url ? (
-                                    <img
-                                        src={getFullUrl(floorplan.image_url)}
-                                        alt="Floorplan"
-                                        className="w-full h-full object-contain"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300 font-bold uppercase tracking-widest italic text-xs">
-                                        Floorplan Coming Soon
-                                    </div>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Agent Card */}
-                        <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex items-center gap-6 max-w-sm ml-auto">
-                            <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
-                                {listing.agent_image ? (
-                                    <img src={getFullUrl(listing.agent_image)} alt={listing.agent_name} className="w-full h-full object-cover" />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center text-gray-300">
-                                        <User size={32} />
-                                    </div>
-                                )}
-                            </div>
+                {/* Main Content */}
+                <div className="max-w-[1400px] mx-auto px-6 md:px-12 pt-16">
+                    <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+                        {/* Left Column: Details */}
+                        <div className="lg:col-span-7 space-y-12">
                             <div>
-                                <h4 className="font-black text-gray-900 uppercase tracking-tight italic leading-none mb-1">
-                                    {listing.agent_name || "Matthew Grant"}
-                                </h4>
-                                <div className="space-y-1">
-                                    <a href={`mailto:${listing.agent_email || 'matthew@mimosahomes.com.au'}`} className="text-[10px] font-bold text-gray-500 hover:text-mimosa-gold block">
-                                        E: {listing.agent_email || "matthew@mimosahomes.com.au"}
-                                    </a>
-                                    <a href={`tel:${listing.agent_phone || '0415915511'}`} className="text-[10px] font-bold text-gray-500 hover:text-mimosa-gold block">
-                                        P: {listing.agent_phone || "0415915511"}
-                                    </a>
+                                <h1 className="text-4xl md:text-5xl font-black text-[#005a8f] uppercase italic leading-[0.9] tracking-tighter mb-4">
+                                    {listing.title}
+                                </h1>
+                                <div className="flex items-center gap-2 text-gray-500 font-medium italic">
+                                    <MapPin size={18} className="text-mimosa-gold" />
+                                    <span>{listing.address}</span>
+                                </div>
+                            </div>
+
+                            <div className="prose prose-blue max-w-none">
+                                <p className="text-gray-600 leading-relaxed font-medium">
+                                    {listing.description || "No description available for this property."}
+                                </p>
+                            </div>
+
+                            {highlights.length > 0 && (
+                                <div className="space-y-6">
+                                    <h3 className="text-lg font-black text-gray-900 uppercase italic tracking-tight">Home Highlights:</h3>
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-3">
+                                        {highlights.map((item: string, idx: number) => (
+                                            <li key={idx} className="flex items-start gap-3 group">
+                                                <div className="w-1.5 h-1.5 rounded-full bg-mimosa-gold mt-2 group-hover:scale-125 transition-transform" />
+                                                <span className="text-gray-600 text-sm font-medium">{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            <div className="space-y-6 pt-8 border-t border-gray-100">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 text-sm font-medium">
+                                    <div className="flex items-center justify-between pr-8 border-r border-gray-100">
+                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Builder:</span>
+                                        <span className="text-gray-900">{listing.builder_name || "Mimosa Homes"} - {listing.title}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between pl-8">
+                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Bedrooms:</span>
+                                        <span className="text-gray-900">{floorplan.bedrooms || 4} | Living: {floorplan.living_areas || 3} | Bathrooms: {floorplan.bathrooms || 2} | Garage: {floorplan.car_spaces || 2}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between pr-8 border-r border-gray-100">
+                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Outdoor:</span>
+                                        <span className="text-gray-900">{listing.outdoor_features || "Covered alfresco and landscaped gardens"}</span>
+                                    </div>
+                                    <div className="flex items-center justify-between pl-8">
+                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Status:</span>
+                                        <span className="text-gray-900 uppercase font-black italic">{listing.status === 'sold' ? 'Sold' : 'Available'}</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="space-y-4 pt-10">
+                                <div className="flex items-baseline gap-4">
+                                    <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest">Price:</span>
+                                    <span className="text-3xl font-black text-[#005a8f] tracking-tighter italic">
+                                        {listing.status === 'sold' ? 'SOLD' : (listing.price ? `$${Number(listing.price).toLocaleString()}+` : "TBA")}
+                                    </span>
+                                </div>
+                                <div className="grid grid-cols-2 max-w-sm gap-4">
+                                    <div>
+                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest block mb-1">Land Size:</span>
+                                        <span className="text-gray-900 font-black tracking-tighter italic">{listing.land_size || 540}m²</span>
+                                    </div>
+                                    <div>
+                                        <span className="text-gray-400 font-bold uppercase text-[10px] tracking-widest block mb-1">Building Size:</span>
+                                        <span className="text-gray-900 font-black tracking-tighter italic">{listing.building_size || 207.6}sq</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Sold Banner */}
+                            {listing.status === 'sold' && (
+                                <div className="bg-[#005a8f] py-6 px-12 inline-block -ml-12 md:ml-0 md:rounded-r-full shadow-2xl">
+                                    <span className="text-white font-black text-6xl uppercase tracking-widest italic">SOLD</span>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Right Column: Floorplan & Contact */}
+                        <div className="lg:col-span-5 space-y-10">
+                            <div className="flex items-center gap-4 no-print">
+                                <button
+                                    onClick={handleDownloadBrochure}
+                                    disabled={downloading}
+                                    className="flex-1 bg-[#005a8f] text-white py-3.5 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-[#004a75] transition-all shadow-xl flex items-center justify-center gap-2"
+                                >
+                                    {downloading ? (
+                                        <><Loader2 size={14} className="animate-spin" /> GENERATING...</>
+                                    ) : (
+                                        <><Download size={14} /> DOWNLOAD BROCHURE</>
+                                    )}
+                                </button>
+                                <button className="flex-1 bg-[#005a8f] text-white py-3.5 rounded-lg font-black uppercase text-[10px] tracking-widest hover:bg-[#004a75] transition-all shadow-xl">
+                                    CONTACT AGENT
+                                </button>
+                            </div>
+
+                            <div className="bg-white border border-gray-100 rounded-3xl p-8 shadow-sm">
+                                <div className="relative aspect-[3/4] w-full">
+                                    {floorplan.image_url ? (
+                                        <img
+                                            src={getFullUrl(floorplan.image_url)}
+                                            alt="Floorplan"
+                                            className="w-full h-full object-contain"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-300 font-bold uppercase tracking-widest italic text-xs">
+                                            Floorplan Coming Soon
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Agent Card */}
+                            <div className="bg-white border border-gray-200 rounded-2xl p-6 shadow-sm flex items-center gap-6 max-w-sm ml-auto">
+                                <div className="w-20 h-20 rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                                    {listing.agent_image ? (
+                                        <img src={getFullUrl(listing.agent_image)} alt={listing.agent_name} className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-gray-300">
+                                            <User size={32} />
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="text-left">
+                                    <h4 className="font-black text-gray-900 uppercase tracking-tight italic leading-none mb-1">
+                                        {listing.agent_name || "Matthew Grant"}
+                                    </h4>
+                                    <div className="space-y-1">
+                                        <a href={`mailto:${listing.agent_email || 'matthew@mimosahomes.com.au'}`} className="text-[10px] font-bold text-gray-500 hover:text-mimosa-gold block">
+                                            E: {listing.agent_email || "matthew@mimosahomes.com.au"}
+                                        </a>
+                                        <a href={`tel:${listing.agent_phone || '0415915511'}`} className="text-[10px] font-bold text-gray-500 hover:text-mimosa-gold block">
+                                            P: {listing.agent_phone || "0415915511"}
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -272,13 +326,10 @@ export default function PackageDetailsPage() {
                             CONTACT US
                         </Link>
                     </div>
-                    {/* Abstract background elements */}
-                    <div className="absolute top-0 right-0 w-1/3 h-full bg-white/5 skew-x-12 transform translate-x-1/2" />
-                    <div className="absolute bottom-0 left-0 w-1/4 h-1/2 bg-white/5 -skew-x-12 transform -translate-x-1/2" />
                 </div>
             </div>
 
             <Footer />
-        </main >
+        </main>
     );
 }

@@ -21,6 +21,7 @@ export default function CreateFacadeClient() {
         image_url: "",
         is_active: false,
         stories: 1,
+        collection: "",
         floorplan_ids: [] as string[]
     });
 
@@ -151,6 +152,20 @@ export default function CreateFacadeClient() {
                         >
                             <option value={1}>Single Story</option>
                             <option value={2}>Double Story</option>
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-2 block">Collection</label>
+                        <select
+                            name="collection"
+                            value={formData.collection}
+                            onChange={handleChange}
+                            className="w-full bg-gray-50 border border-transparent focus:bg-white focus:border-mimosa-dark/30 rounded-2xl px-5 py-4 text-gray-900 transition-all outline-none"
+                        >
+                            <option value="">No Collection</option>
+                            <option value="V_Collection">V Collection</option>
+                            <option value="M_Collection">M Collection</option>
                         </select>
                     </div>
 

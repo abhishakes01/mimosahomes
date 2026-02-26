@@ -39,7 +39,10 @@ export default function FacadesPage() {
         const fetchFacades = async () => {
             try {
                 setLoading(true);
-                const response: any = await api.getFacades({ limit: 100 });
+                const response: any = await api.getFacades({
+                    limit: 100,
+                    collection: collection !== 'All' ? collection : undefined
+                });
                 setFacades(response.data || []);
             } catch (err) {
                 console.error("Failed to fetch facades:", err);
@@ -69,11 +72,9 @@ export default function FacadesPage() {
             if (!selectedWidths.includes(facadeWidth)) return false;
         }
 
-        // Mapping typical collection names to my internal filter
+        // Filtering by collection (V_Collection vs M_Collection)
         if (collection !== 'All') {
-            const isVCollection = facade.title?.toUpperCase().includes('V-') || facade.title?.toUpperCase().includes('V COLLECTION');
-            if (collection === 'V_Collection' && !isVCollection) return false;
-            if (collection === 'M_Collection' && isVCollection) return false;
+            if (facade.collection !== collection) return false;
         }
 
         return true;
@@ -81,12 +82,18 @@ export default function FacadesPage() {
 
     const [lightboxImage, setLightboxImage] = useState<string | null>(null);
 
-    // MJ Badge Component
-    const CollectionBadge = ({ type }: { type: 'V' | 'MJ' }) => (
-        <div className={`w-10 h-10 rounded-xl flex items-center justify-center border border-white/20 shadow-lg ${type === 'V' ? 'bg-[#f47e20]' : 'bg-[#1a3a4a]'}`}>
-            <span className="text-white text-lg font-black leading-none italic">{type}</span>
-        </div>
-    );
+    // Collection Badge Component
+    const CollectionBadge = ({ type }: { type: string | null }) => {
+        if (!type) return null;
+        const char = type === 'V_Collection' ? 'V' : (type === 'M_Collection' ? 'M' : null);
+        if (!char) return null;
+
+        return (
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center border border-white/20 shadow-lg ${char === 'V' ? 'bg-mimosa-gold' : 'bg-[#005a8f]'}`}>
+                <span className="text-white text-lg font-black leading-none italic">{char}</span>
+            </div>
+        );
+    };
 
     const selectedFacade = facades.find(f => f.id === selectedFacadeId);
 
@@ -119,7 +126,7 @@ export default function FacadesPage() {
                     <div className="flex flex-wrap gap-4">
                         {facade?.floorplans?.length > 0 ? (
                             facade.floorplans.map((fp: any) => (
-                                <Link
+                                <Link target="_blank"
                                     key={fp.id}
                                     href={`/new-home-designs/${fp.slug || fp.id}`}
                                     className="px-8 py-4 bg-white border border-gray-200 rounded-xl text-xs font-black text-[#1a3a4a] hover:bg-[#1a3a4a] hover:text-white transition-all uppercase tracking-wider shadow-sm"
@@ -193,27 +200,17 @@ export default function FacadesPage() {
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setCollection(collection === 'V_Collection' ? 'All' : 'V_Collection')}
-                                    className={`flex-1 group relative h-24 rounded-2xl overflow-hidden transition-all ${collection === 'V_Collection' ? 'ring-4 ring-[#f47e20] ring-offset-2' : 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100'}`}
+                                    className={`flex-1 h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center group ${collection === 'V_Collection' ? 'bg-mimosa-gold border-mimosa-gold shadow-lg' : 'bg-white border-gray-100 hover:border-mimosa-gold/30'}`}
                                 >
-                                    <div className="absolute inset-0 bg-[#f47e20]" />
-                                    <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
-                                        <div className="w-10 h-10 mb-1 relative">
-                                            <Image src="/v-logo.png" alt="V" fill className="object-contain brightness-0 invert" />
-                                        </div>
-                                        <span className="text-[10px] font-black tracking-tight leading-none uppercase">V Collection</span>
-                                    </div>
+                                    <div className={`text-4xl font-black italic ${collection === 'V_Collection' ? 'text-white' : 'text-mimosa-gold'}`}>V</div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${collection === 'V_Collection' ? 'text-white/80' : 'text-gray-400'}`}>Collection</span>
                                 </button>
                                 <button
                                     onClick={() => setCollection(collection === 'M_Collection' ? 'All' : 'M_Collection')}
-                                    className={`flex-1 group relative h-24 rounded-2xl overflow-hidden transition-all ${collection === 'M_Collection' ? 'ring-4 ring-[#1a3a4a] ring-offset-2' : 'opacity-60 grayscale hover:grayscale-0 hover:opacity-100'}`}
+                                    className={`flex-1 h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center group ${collection === 'M_Collection' ? 'bg-[#005a8f] border-[#005a8f] shadow-lg' : 'bg-white border-gray-100 hover:border-mimosa-gold/30'}`}
                                 >
-                                    <div className="absolute inset-0 bg-[#1a3a4a]" />
-                                    <div className="relative z-10 flex flex-col items-center justify-center h-full text-white">
-                                        <div className="w-10 h-10 mb-1 relative">
-                                            <Image src="/m-logo.png" alt="M" fill className="object-contain brightness-0 invert" />
-                                        </div>
-                                        <span className="text-[10px] font-black tracking-tight leading-none uppercase">M Collection</span>
-                                    </div>
+                                    <div className={`text-4xl font-black italic ${collection === 'M_Collection' ? 'text-white' : 'text-[#005a8f]'}`}>M</div>
+                                    <span className={`text-[10px] font-bold uppercase tracking-widest ${collection === 'M_Collection' ? 'text-white/80' : 'text-gray-400'}`}>Collection</span>
                                 </button>
                             </div>
                         </div>
@@ -309,7 +306,7 @@ export default function FacadesPage() {
                                                     className="object-cover transition-transform duration-700 group-hover:scale-105"
                                                 />
                                                 <div className="absolute top-4 right-4">
-                                                    <CollectionBadge type={facade.title?.toUpperCase().includes('V-') ? 'V' : 'MJ'} />
+                                                    <CollectionBadge type={facade.collection} />
                                                 </div>
                                                 <button
                                                     onClick={(e) => {

@@ -1364,6 +1364,38 @@ export default function PageEdit() {
                         </div>
                     </div>
                 )}
+                {/* GENERIC GALLERY PAGES SCHEMA (Hero + Description) */}
+                {(slug === 'facades' || slug === 'new-home-designs' || slug === 'house-land-packages' || slug === 'display-home-for-sale') && (
+                    <div className="space-y-12">
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Gallery Hero Section</h2>
+                            <p className="text-xs text-gray-500 font-medium">Update the top banner and summary text for this page.</p>
+
+                            <div className="space-y-6">
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Hero Title (Optional Override)</label>
+                                    <input
+                                        type="text"
+                                        value={content.heroTitle || ''}
+                                        onChange={(e) => setContent({ ...content, heroTitle: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none font-black italic uppercase"
+                                        placeholder={pageTitle.toUpperCase()}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Page Description</label>
+                                    <textarea
+                                        value={content.description || ''}
+                                        onChange={(e) => setContent({ ...content, description: e.target.value })}
+                                        rows={4}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none font-medium"
+                                        placeholder="Enter a brief description to appear below the title..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );

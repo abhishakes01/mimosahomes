@@ -41,6 +41,10 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.DECIMAL(10, 2),
             allowNull: true
         },
+        collection: {
+            type: DataTypes.STRING,
+            allowNull: true
+        },
         image_url: {
             type: DataTypes.STRING,
             allowNull: true

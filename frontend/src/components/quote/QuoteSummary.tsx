@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { getFullUrl } from "@/services/api";
-import { Share2 } from "lucide-react";
+import { api, getFullUrl } from "@/services/api";
+import { Share2, Loader2 } from "lucide-react";
 import EnquiryModal from "@/components/quote/EnquiryModal";
+import ShareModal from "@/components/quote/ShareModal";
 
 interface QuoteSummaryProps {
     selectedRegion: any;
@@ -14,6 +15,7 @@ interface QuoteSummaryProps {
     selectedColours: any;
     selectedUpgrades: any[];
     onBack: () => void;
+    isShared?: boolean;
 }
 
 export default function QuoteSummary({
@@ -23,9 +25,13 @@ export default function QuoteSummary({
     selectedFacade,
     selectedColours,
     selectedUpgrades,
-    onBack
+    onBack,
+    isShared = false
 }: QuoteSummaryProps) {
     const [showEnquiry, setShowEnquiry] = useState(false);
+    const [showShare, setShowShare] = useState(false);
+    const [shareUrl, setShareUrl] = useState("");
+    const [sharing, setSharing] = useState(false);
 
     // Calculate Prices
     const floorPlanPrice = Math.round(selectedFloorPlan?.price || 232596);
@@ -38,8 +44,33 @@ export default function QuoteSummary({
 
     const grandTotal = floorPlanPrice + facadePrice + externalColoursPrice + internalColoursPrice + upgradesSum;
 
+    const handleShare = async () => {
+        try {
+            setSharing(true);
+            const quoteData = {
+                user: landDetails,
+                region: selectedRegion,
+                floorplan: selectedFloorPlan,
+                facade: selectedFacade,
+                colours: selectedColours,
+                upgrades: selectedUpgrades,
+                total: grandTotal
+            };
+
+            const response: any = await api.shareQuote(quoteData);
+            const url = `${window.location.origin}/quote/share/${response.id}`;
+            setShareUrl(url);
+            setShowShare(true);
+        } catch (error) {
+            console.error("Error sharing quote:", error);
+            alert("Failed to generate share link. Please try again.");
+        } finally {
+            setSharing(false);
+        }
+    };
+
     return (
-        <div className="w-full max-w-[1800px] mx-auto animate-in fade-in duration-700 pb-20">
+        <div className={`w-full max-w-[1800px] mx-auto animate-in fade-in duration-700 ${isShared ? "px-6" : "pb-20"}`}>
             <div className="bg-white rounded-[40px] shadow-2xl overflow-hidden border border-gray-100 p-10 lg:p-16 flex flex-col lg:flex-row gap-16">
 
                 {/* Left Column: Data Tables */}
@@ -214,43 +245,53 @@ export default function QuoteSummary({
                     </p>
 
                     {/* Final Action Bar */}
-                    <div className="mt-6 flex flex-col sm:flex-row gap-4 items-stretch">
-                        <div className="flex-grow bg-white border border-gray-100 rounded-3xl p-6 flex items-center justify-center text-center shadow-sm">
-                            <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest leading-none">
-                                Connect now to secure your Site Costs & finalise your new quote!
-                            </p>
-                        </div>
-                        <button
-                            onClick={() => setShowEnquiry(true)}
-                            className="bg-[#0796b1] hover:bg-[#067d94] text-white font-black uppercase italic tracking-tighter px-14 py-6 rounded-2xl shadow-xl shadow-cyan-900/10 transition-all active:scale-95 whitespace-nowrap text-sm"
-                        >
-                            Get In Touch
-                        </button>
-                        <button className="p-6 bg-white border border-gray-100 text-[#0796b1] hover:bg-gray-50 rounded-2xl transition-all shadow-sm">
-                            <Share2 size={24} />
-                        </button>
-                    </div>
+                    {!isShared && (
+                        <>
+                            <div className="mt-6 flex flex-col sm:flex-row gap-4 items-stretch">
+                                <div className="flex-grow bg-white border border-gray-100 rounded-3xl p-6 flex items-center justify-center text-center shadow-sm">
+                                    <p className="text-[11px] font-bold text-gray-500 uppercase tracking-widest leading-none">
+                                        Connect now to secure your Site Costs & finalise your new quote!
+                                    </p>
+                                </div>
+                                <button
+                                    onClick={() => setShowEnquiry(true)}
+                                    className="bg-[#0796b1] hover:bg-[#067d94] text-white font-black uppercase italic tracking-tighter px-14 py-6 rounded-2xl shadow-xl shadow-cyan-900/10 transition-all active:scale-95 whitespace-nowrap text-sm"
+                                >
+                                    Get In Touch
+                                </button>
+                                <button
+                                    onClick={handleShare}
+                                    disabled={sharing}
+                                    className="p-6 bg-white border border-gray-100 text-[#0796b1] hover:bg-gray-50 rounded-2xl transition-all shadow-sm flex items-center justify-center min-w-[80px]"
+                                >
+                                    {sharing ? <Loader2 className="w-6 h-6 animate-spin" /> : <Share2 size={24} />}
+                                </button>
+                            </div>
 
-                    <div className="flex justify-end pr-4 mt-6">
-                        <button
-                            onClick={() => window.location.reload()}
-                            className="bg-[#0796b1] text-white px-10 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-900/10 hover:bg-cyan-700 transition-all"
-                        >
-                            RESTART QUOTE
-                        </button>
-                    </div>
+                            <div className="flex justify-end pr-4 mt-6">
+                                <button
+                                    onClick={() => window.location.reload()}
+                                    className="bg-[#0796b1] text-white px-10 py-4 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-900/10 hover:bg-cyan-700 transition-all"
+                                >
+                                    RESTART QUOTE
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
             </div>
 
             {/* Bottom Back Button */}
-            <div className="flex justify-center mt-12">
-                <button
-                    onClick={onBack}
-                    className="text-[#0796b1] font-black uppercase text-[10px] tracking-[0.4em] hover:opacity-80 transition-all underline underline-offset-8 decoration-2"
-                >
-                    &lt; GO BACK
-                </button>
-            </div>
+            {!isShared && (
+                <div className="flex justify-center mt-12">
+                    <button
+                        onClick={onBack}
+                        className="text-[#0796b1] font-black uppercase text-[10px] tracking-[0.4em] hover:opacity-80 transition-all underline underline-offset-8 decoration-2"
+                    >
+                        &lt; GO BACK
+                    </button>
+                </div>
+            )}
 
             {/* Enquiry Modal */}
             {showEnquiry && (
@@ -267,6 +308,13 @@ export default function QuoteSummary({
                     }}
                 />
             )}
+
+            {/* Share Modal */}
+            <ShareModal
+                isOpen={showShare}
+                onClose={() => setShowShare(false)}
+                shareUrl={shareUrl}
+            />
         </div>
     );
 }

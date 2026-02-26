@@ -3,15 +3,16 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { api, getFullUrl } from "@/services/api";
-import { Bed, Bath, Car, Search, X, ZoomIn, ChevronLeft, ChevronRight, Info } from "lucide-react";
+import { Bed, Bath, Car, Search, X, ZoomIn, ChevronLeft, ChevronRight, Info, FileText } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, Pagination, Mousewheel } from 'swiper/modules';
+import { Navigation, Pagination, Mousewheel, EffectCoverflow } from 'swiper/modules';
 import type { Swiper as SwiperType } from 'swiper';
 
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import 'swiper/css/effect-coverflow';
 
 interface FloorPlanSelectorProps {
     filters: {
@@ -28,6 +29,8 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
     const [loading, setLoading] = useState(true);
     const [selectedPlan, setSelectedPlan] = useState<any>(null);
     const [viewingImage, setViewingImage] = useState<string | null>(null);
+    const [viewingPDF, setViewingPDF] = useState(false);
+    const [inclusionsPdfUrl, setInclusionsPdfUrl] = useState("");
     const swiperRef = useRef<SwiperType>(null);
 
     const [localFilters, setLocalFilters] = useState(filters);
@@ -40,14 +43,16 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
     const loadData = async () => {
         try {
             setLoading(true);
-            const [plansData, filtersData] = await Promise.all([
+            const [plansData, filtersData, settingsData] = await Promise.all([
                 api.getFloorPlans({ limit: 100 }) as Promise<any>,
-                api.getFloorPlanFilters()
+                api.getFloorPlanFilters(),
+                api.getSettings("mock-token") as Promise<any>
             ]);
 
             const data = plansData.data || [];
             setFloorplans(data);
             setAvailableOptions(filtersData as any);
+            setInclusionsPdfUrl(settingsData.inclusions_pdf_url || "");
 
             if (data.length > 0) {
                 setSelectedPlan(data[0]);
@@ -78,6 +83,23 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
 
     return (
         <div className="flex flex-col gap-8 w-full">
+            <style jsx global>{`
+                .floorplan-swiper .swiper-slide {
+                    transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+                    opacity: 0.4;
+                    transform: scale(0.85);
+                }
+                .floorplan-swiper .swiper-slide-active {
+                    opacity: 1;
+                    transform: scale(1);
+                }
+                .floorplan-swiper .swiper-slide-prev,
+                .floorplan-swiper .swiper-slide-next {
+                    opacity: 0.6;
+                    transform: scale(0.9);
+                    z-index: 10;
+                }
+            `}</style>
 
             {/* Top Row: Browser and Summary */}
             <div className="flex flex-col lg:flex-row gap-8 items-stretch">
@@ -145,19 +167,20 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                                 {/* Navigation Arrows */}
                                 <button
                                     onClick={() => swiperRef.current?.slidePrev()}
-                                    className="absolute left-0 z-[20] w-14 h-14 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                    className="absolute left-4 z-[50] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
                                 >
-                                    <ChevronLeft size={28} strokeWidth={3} />
+                                    <ChevronLeft size={24} strokeWidth={3} />
                                 </button>
 
                                 <Swiper
                                     onSwiper={(swiper) => { swiperRef.current = swiper; }}
+                                    onSlideChange={(swiper) => setSelectedPlan(filteredPlans[swiper.activeIndex])}
                                     modules={[Navigation, Mousewheel]}
                                     mousewheel={true}
                                     centeredSlides={true}
-                                    slidesPerView={1}
-                                    spaceBetween={30}
-                                    className="w-full !overflow-visible"
+                                    slidesPerView={1.4}
+                                    spaceBetween={20}
+                                    className="w-full !overflow-visible floorplan-swiper"
                                 >
                                     {filteredPlans.map(plan => {
                                         const isSelected = selectedPlan?.id === plan.id;
@@ -165,7 +188,7 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                                             <SwiperSlide key={plan.id} className="h-full">
                                                 <div
                                                     onClick={() => setSelectedPlan(plan)}
-                                                    className={`mx-auto bg-white border-2 rounded-[32px] transition-all duration-700 cursor-pointer overflow-hidden flex flex-col md:flex-row h-full min-h-[480px] ${isSelected
+                                                    className={`mx-auto bg-white border-2 rounded-[32px] transition-all duration-700 cursor-pointer overflow-hidden flex flex-col md:flex-row h-full min-h-[500px] max-w-[800px] ${isSelected
                                                         ? 'border-[#0796b1] shadow-[0_35px_60px_-15px_rgba(7,150,177,0.3)]'
                                                         : 'border-gray-100 hover:border-gray-200'
                                                         }`}
@@ -180,7 +203,7 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                                                             </div>
                                                         </div>
 
-                                                        <div className="relative w-full h-[350px]">
+                                                        <div className="relative w-full h-[300px]">
                                                             <Image
                                                                 src={getFullUrl(plan.image_url)}
                                                                 alt={plan.title}
@@ -202,7 +225,7 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                                                     </div>
 
                                                     {/* Right Half: Details */}
-                                                    <div className="w-full md:w-[40%] p-10 flex flex-col justify-center gap-10 relative">
+                                                    <div className="w-full md:w-[40%] p-10 flex flex-col justify-center gap-6 relative">
                                                         {isSelected && (
                                                             <button
                                                                 className="absolute top-6 right-8 bg-[#0796b1] text-white px-6 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-cyan-900/10"
@@ -213,38 +236,51 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                                                         )}
 
                                                         <div className="text-center space-y-4">
-                                                            <h3 className="text-4xl font-black text-gray-900 uppercase tracking-tighter leading-none">{plan.title}</h3>
-                                                            <button className="text-[#0796b1] text-[10px] font-black uppercase tracking-widest underline underline-offset-8 decoration-2 hover:text-cyan-700 transition-all">
+                                                            <h3 className="text-3xl font-black text-gray-900 uppercase tracking-tighter leading-none">{plan.title}</h3>
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setViewingImage(getFullUrl(plan.image_url)); }}
+                                                                className="text-[#0796b1] text-[10px] font-black uppercase tracking-widest underline underline-offset-8 decoration-2 hover:text-cyan-700 transition-all"
+                                                            >
                                                                 View Floorplan
                                                             </button>
                                                             <div className="pt-2">
-                                                                <button className="bg-[#0796b1] text-white px-10 py-3.5 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-cyan-900/20 hover:bg-cyan-700 transition-all">
+                                                                <button
+                                                                    onClick={(e) => { e.stopPropagation(); setViewingPDF(true); }}
+                                                                    className="bg-[#0796b1] text-white px-10 py-3 rounded-xl text-[10px] font-black uppercase tracking-[0.2em] shadow-lg shadow-cyan-900/20 hover:bg-cyan-700 transition-all"
+                                                                >
                                                                     INCLUSIONS
                                                                 </button>
                                                             </div>
                                                         </div>
 
                                                         {/* Icons Stack */}
-                                                        <div className="flex flex-col items-center gap-6 py-8 border-t border-b border-gray-100">
-                                                            <div className="flex items-center gap-4">
-                                                                <Bed size={24} className="text-[#0796b1]" strokeWidth={2.5} />
-                                                                <span className="text-3xl font-black text-gray-900 tracking-tighter">4</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-4">
-                                                                <Bath size={24} className="text-[#0796b1]" strokeWidth={2.5} />
-                                                                <span className="text-3xl font-black text-gray-900 tracking-tighter">2</span>
-                                                            </div>
-                                                            <div className="flex items-center gap-4">
-                                                                <Car size={24} className="text-[#0796b1]" strokeWidth={2.5} />
-                                                                <span className="text-3xl font-black text-gray-900 tracking-tighter">2</span>
+                                                        <div className="flex flex-col items-center gap-6 py-6 border-t border-b border-gray-100">
+                                                            <div className="flex items-center gap-6">
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <Bed size={24} className="text-[#0796b1]" strokeWidth={2.5} />
+                                                                    <span className="text-xl font-black text-gray-900 tracking-tighter">{plan.bedrooms}</span>
+                                                                </div>
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <Bath size={24} className="text-[#0796b1]" strokeWidth={2.5} />
+                                                                    <span className="text-xl font-black text-gray-900 tracking-tighter">{plan.bathrooms}</span>
+                                                                </div>
+                                                                <div className="flex flex-col items-center gap-1">
+                                                                    <Car size={24} className="text-[#0796b1]" strokeWidth={2.5} />
+                                                                    <span className="text-xl font-black text-gray-900 tracking-tighter">{plan.car_spaces}</span>
+                                                                </div>
                                                             </div>
                                                         </div>
 
                                                         {/* Footnotes */}
-                                                        <div className="space-y-3 text-center">
-                                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Min Frontage: <span className="text-gray-900">{plan.min_frontage}m</span></p>
-                                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Min Depth: <span className="text-gray-900">{plan.min_depth}m</span></p>
-                                                            <p className="text-[11px] font-black text-gray-400 uppercase tracking-widest">Total Area: <span className="text-gray-900">{plan.total_area}sq</span></p>
+                                                        <div className="space-y-2 text-center">
+                                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Min Frontage: <span className="text-gray-900">{plan.min_frontage}m</span></p>
+                                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Min Depth: <span className="text-gray-900">{plan.min_depth}m</span></p>
+                                                            <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none">Total Area: <span className="text-gray-900">{plan.total_area}sq</span></p>
+                                                        </div>
+
+                                                        {/* Price Tag */}
+                                                        <div className="absolute bottom-0 left-0 right-0 bg-[#0796b1] py-4 text-center">
+                                                            <span className="text-2xl font-black text-white italic tracking-tighter">${Math.round(plan.price).toLocaleString()}</span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -255,9 +291,9 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
 
                                 <button
                                     onClick={() => swiperRef.current?.slideNext()}
-                                    className="absolute right-0 z-[20] w-14 h-14 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
+                                    className="absolute right-4 z-[50] w-12 h-12 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-xl hover:scale-110 active:scale-90 transition-all cursor-pointer"
                                 >
-                                    <ChevronRight size={28} strokeWidth={3} />
+                                    <ChevronRight size={24} strokeWidth={3} />
                                 </button>
                             </div>
                         )}
@@ -370,6 +406,63 @@ export default function FloorPlanSelector({ filters, onBack, onSelect }: FloorPl
                                 priority
                             />
                         </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* PDF Modal */}
+            <AnimatePresence>
+                {viewingPDF && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-[250] bg-black/80 backdrop-blur-xl flex items-center justify-center p-4 md:p-10"
+                    >
+                        <div className="relative w-full h-full max-w-6xl bg-white rounded-[40px] shadow-2xl overflow-hidden flex flex-col">
+                            {/* Modal Header */}
+                            <div className="flex items-center justify-between p-8 border-b border-gray-100 bg-gray-50/50">
+                                <div className="flex items-center gap-4">
+                                    <div className="p-3 bg-[#0796b1]/10 text-[#0796b1] rounded-2xl">
+                                        <FileText size={24} />
+                                    </div>
+                                    <div>
+                                        <h3 className="font-black text-gray-900 uppercase tracking-tight italic">STANDARD <span className="text-[#0796b1]">INCLUSIONS</span></h3>
+                                        <p className="text-xs text-gray-400 font-bold uppercase tracking-widest leading-none mt-1">Mitra Home Premium Specifications</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setViewingPDF(false)}
+                                    className="p-4 bg-white border border-gray-200 rounded-full hover:bg-gray-100 transition-all shadow-sm group"
+                                >
+                                    <X size={24} className="text-gray-400 group-hover:text-gray-900 transition-colors" />
+                                </button>
+                            </div>
+
+                            {/* Viewport */}
+                            <div className="flex-1 bg-gray-100 p-2 md:p-8 relative">
+                                {inclusionsPdfUrl ? (
+                                    <iframe
+                                        src={`${getFullUrl(inclusionsPdfUrl)}#toolbar=0&navpanes=0`}
+                                        className="w-full h-full rounded-2xl border-none bg-white shadow-inner"
+                                        title="Inclusions PDF"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex flex-col items-center justify-center text-center p-20 grayscale opacity-20">
+                                        <FileText size={64} className="mb-4" />
+                                        <p className="font-black uppercase tracking-widest italic tracking-tighter">Inclusions PDF not available</p>
+                                        <p className="text-xs font-bold uppercase tracking-wider mt-2">Please contact our team for more information</p>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Modal Footer */}
+                            <div className="p-6 text-center border-t border-gray-100">
+                                <p className="text-[9px] font-bold text-gray-400 uppercase tracking-[0.2em]">
+                                    &copy; {new Date().getFullYear()} Mitra Homes. All specifications are subject to change without notice. Refer to your building contract for full details.
+                                </p>
+                            </div>
+                        </div>
                     </motion.div>
                 )}
             </AnimatePresence>

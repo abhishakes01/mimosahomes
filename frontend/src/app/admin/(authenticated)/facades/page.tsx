@@ -130,13 +130,18 @@ export default function FacadesPage() {
                                     <div className="p-6">
                                         <div className="flex items-center justify-between mb-2">
                                             <h3 className="text-xl font-bold text-gray-900">{facade.title}</h3>
-                                            <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${facade.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
+                                            {/* <span className={`text-[9px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${facade.is_active ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-400'}`}>
                                                 {facade.is_active ? 'Active' : 'Inactive'}
-                                            </span>
+                                            </span> */}
                                         </div>
-                                        <p className="text-sm text-gray-500 mb-4">
+                                        <p className="text-sm text-gray-500 mb-2">
                                             Width: {facade.width || 'N/A'}m | {facade.floorplans?.length || 0} floor plans
                                         </p>
+                                        {facade.collection && (
+                                            <p className="text-[10px] font-black uppercase text-mimosa-gold mb-4">
+                                                {facade.collection.replace('_', ' ')}
+                                            </p>
+                                        )}
 
                                         <div className="flex gap-2 pt-4 border-t border-gray-100">
                                             <Link
