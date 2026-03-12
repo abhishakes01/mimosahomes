@@ -20,6 +20,7 @@ export default function FacadesPage() {
     const [storeys, setStoreys] = useState<number | null>(null);
     const [selectedWidths, setSelectedWidths] = useState<string[]>([]);
     const [pageData, setPageData] = useState<any>(null);
+    const [cols, setCols] = useState(3);
 
     useEffect(() => {
         const fetchPageData = async () => {
@@ -52,6 +53,17 @@ export default function FacadesPage() {
             }
         };
         fetchFacades();
+    }, []);
+
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 1024) setCols(3);
+            else if (window.innerWidth >= 768) setCols(2);
+            else setCols(1);
+        };
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
     }, []);
 
     const toggleWidth = (width: string) => {
@@ -221,18 +233,17 @@ export default function FacadesPage() {
                             <div className="flex gap-4">
                                 <button
                                     onClick={() => setStoreys(storeys === 1 ? null : 1)}
-                                    className={`flex-1 h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${storeys === 1 ? 'border-[#0897b1] bg-white shadow-lg' : 'border-gray-100 bg-gray-50/50 text-gray-400'}`}
+                                    className={`flex-1 h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${storeys === 1 ? 'border-[#0897b1] bg-white shadow-lg text-[#0897b1]' : 'border-gray-100 bg-gray-50/50 text-gray-400'}`}
                                 >
                                     <Home size={28} className={storeys === 1 ? 'text-[#0897b1]' : ''} />
                                     <span className="text-[10px] font-black uppercase tracking-widest">Single</span>
                                 </button>
                                 <button
                                     onClick={() => setStoreys(storeys === 2 ? null : 2)}
-                                    className={`flex-1 h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${storeys === 2 ? 'border-[#0897b1] bg-white shadow-lg' : 'border-gray-100 bg-gray-50/50 text-gray-400'}`}
+                                    className={`flex-1 h-24 rounded-2xl border-2 transition-all flex flex-col items-center justify-center gap-2 ${storeys === 2 ? 'border-[#0897b1] bg-white shadow-lg text-[#0897b1]' : 'border-gray-100 bg-gray-50/50 text-gray-400'}`}
                                 >
                                     <div className="relative">
-                                        <Home size={28} className={storeys === 2 ? 'text-[#0897b1]' : ''} />
-                                        <Home size={28} className={`absolute -top-1.5 -right-1.5 opacity-40 scale-75 ${storeys === 2 ? 'text-[#0897b1]' : ''}`} />
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8" /><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 5-2 2.5 2 4 2 1 1 1 1" /><path d="M2 21h20" /><path d="M7 8v5" /><path d="M17 8v5" /><path d="M7 4h10" /><path d="m3 11 9-7 9 7" /></svg>
                                     </div>
                                     <span className="text-[10px] font-black uppercase tracking-widest">Double</span>
                                 </button>
@@ -286,16 +297,15 @@ export default function FacadesPage() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-12">
-                            {filteredFacades.reduce((acc: any[], facade, index) => {
+                            {filteredFacades.map((facade, index) => {
                                 const isSelected = selectedFacadeId === facade.id;
+                                const rowEndIndex = Math.floor(index / cols) * cols + cols - 1;
+                                // Handle last row being shorter than full cols
+                                const actualRowEndIndex = Math.min(rowEndIndex, filteredFacades.length - 1);
 
-                                // Group into rows of 3 (for lg screens)
-                                // To make the expansion truly inline, we render the facade card,
-                                // and then if it's selected, we render the details view.
-                                // In CSS grid, col-span-full will span the whole row automatically,
-                                // pushing subsequent items down naturally if we don't use 'contents'
+                                const elements = [];
 
-                                acc.push(
+                                elements.push(
                                     <div key={facade.id} className="flex flex-col">
                                         <div className="group">
                                             <div className="relative aspect-[16/10] rounded-2xl overflow-hidden shadow-lg bg-gray-100 mb-6">
@@ -349,18 +359,22 @@ export default function FacadesPage() {
                                     </div>
                                 );
 
-                                if (isSelected) {
-                                    acc.push(
-                                        <div key={`details-${facade.id}`} className="col-span-1 md:col-span-2 lg:col-span-3 w-full">
+                                // Find if any card in this CURRENT row is selected
+                                const itemsInThisRow = filteredFacades.slice(Math.floor(index / cols) * cols, Math.floor(index / cols) * cols + cols);
+                                const selectedInThisRow = itemsInThisRow.find(f => f.id === selectedFacadeId);
+
+                                if (index === actualRowEndIndex && selectedInThisRow) {
+                                    elements.push(
+                                        <div key={`details-row-${index}`} className="col-span-1 md:col-span-2 lg:col-span-3 w-full">
                                             <AnimatePresence mode="wait">
-                                                <FacadeDetails facade={facade} />
+                                                <FacadeDetails facade={selectedInThisRow} />
                                             </AnimatePresence>
                                         </div>
                                     );
                                 }
 
-                                return acc;
-                            }, [])}
+                                return elements;
+                            })}
                         </div>
                     )}
                 </div>

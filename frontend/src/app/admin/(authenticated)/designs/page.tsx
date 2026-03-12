@@ -21,13 +21,20 @@ export default function ListingsPage() {
     const [limit] = useState(10);
 
     useEffect(() => {
-        loadListings(currentPage);
-    }, [currentPage]);
+        const timer = setTimeout(() => {
+            loadListings(currentPage, searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [currentPage, searchTerm]);
 
-    const loadListings = async (page: number) => {
+    const loadListings = async (page: number, search: string = "") => {
         setLoading(true);
         try {
-            const response: any = await api.getListings({ page, limit });
+            const response: any = await api.getListings({ 
+                page, 
+                limit,
+                searchTerm: search
+            });
             // The response now contains data, total, page, totalPages
             setListings(response.data || []);
             setTotalItems(response.total || 0);
@@ -56,10 +63,8 @@ export default function ListingsPage() {
         });
     };
 
-    const filteredListings = listings.filter(l =>
-        l.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        l.address.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Server-side search now
+    const displayListings = listings;
 
     return (
         <div className="space-y-8 pb-20">
@@ -105,7 +110,7 @@ export default function ListingsPage() {
                             </thead>
                             <tbody className="divide-y divide-gray-50 text-sm">
                                 <AnimatePresence>
-                                    {filteredListings.map((listing, idx) => (
+                                    {displayListings.map((listing, idx) => (
                                         <motion.tr
                                             key={listing.id}
                                             initial={{ opacity: 0, y: 10 }}
@@ -186,7 +191,7 @@ export default function ListingsPage() {
                                             </td>
                                         </motion.tr>
                                     ))}
-                                    {filteredListings.length === 0 && (
+                                    {displayListings.length === 0 && (
                                         <tr>
                                             <td colSpan={6} className="px-8 py-32 text-center">
                                                 <div className="flex flex-col items-center">

@@ -211,7 +211,10 @@ export default function PageEdit() {
     );
 
     const handleGeocode = async () => {
-        const query = locationSearch || content.address;
+        let query = locationSearch;
+        if (!query) {
+            query = slug === 'display-homes' ? content.officeAddress : content.address;
+        }
         if (!query) {
             showToast("Please enter a location name or address first", "error");
             return;
@@ -220,11 +223,19 @@ export default function PageEdit() {
         try {
             const result = await mapService.geocode(query);
             if (result) {
-                setContent({
-                    ...content,
-                    latitude: result.lat.toString(),
-                    longitude: result.lon.toString()
-                });
+                if (slug === 'display-homes') {
+                    setContent({
+                        ...content,
+                        officeLat: result.lat.toString(),
+                        officeLng: result.lon.toString()
+                    });
+                } else {
+                    setContent({
+                        ...content,
+                        latitude: result.lat.toString(),
+                        longitude: result.lon.toString()
+                    });
+                }
                 showToast("Location found!", "success");
             } else {
                 showToast("Could not find location. Please try a more specific address or place name.", "error");
@@ -282,8 +293,10 @@ export default function PageEdit() {
 
             <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8 space-y-12">
 
-                {/* Global Hero Image for all pages */}
-                {renderImageUploader("Hero Background Image", "heroImage", content.heroImage)}
+                {/* Global Hero Image for pages that don't have custom hero sections */}
+                {(slug !== 'about-us' && slug !== '50-year-structural-warranty' && slug !== 'ebook' && slug !== 'display-homes') && (
+                    renderImageUploader("Hero Background Image", "heroImage", content.heroImage)
+                )}
 
                 {/* ABOUT US SCHEMA */}
                 {slug === 'about-us' && (
@@ -1393,6 +1406,136 @@ export default function PageEdit() {
                                     />
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* DISPLAY HOMES SCHEMA */}
+                {slug === 'display-homes' && (
+                    <div className="space-y-12">
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Hero Section</h2>
+                            <div className="space-y-6">
+                                {renderImageUploader("Hero Background Image", "heroImage", content.heroImage)}
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Page Headline</label>
+                                    <textarea
+                                        value={content.heroText || ''}
+                                        onChange={(e) => setContent({ ...content, heroText: e.target.value })}
+                                        rows={3}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none font-medium"
+                                        placeholder="Want to see some of our new homes in real life?..."
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-8 pt-8 border-t border-gray-100 bg-gray-50/50 p-8 rounded-[32px] border border-gray-100">
+                            <div className="flex items-center gap-3">
+                                <div className="w-10 h-10 rounded-xl bg-[#1a3a4a] flex items-center justify-center text-white shadow-lg">
+                                    <MapPin size={20} />
+                                </div>
+                                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Head Office Management</h2>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                                <div className="space-y-4">
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Office Display Title</label>
+                                        <input
+                                            type="text"
+                                            value={content.officeTitle || ''}
+                                            onChange={(e) => setContent({ ...content, officeTitle: e.target.value })}
+                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-bold focus:border-[#1a3a4a] outline-none"
+                                            placeholder="Mitra Homes Head Office"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Office Address</label>
+                                        <textarea
+                                            value={content.officeAddress || ''}
+                                            onChange={(e) => setContent({ ...content, officeAddress: e.target.value })}
+                                            rows={2}
+                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none"
+                                            placeholder="123 Elgar Road, Derrimut, VIC, 3026"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Agent / Office Phone</label>
+                                        <input
+                                            type="text"
+                                            value={content.officePhone || ''}
+                                            onChange={(e) => setContent({ ...content, officePhone: e.target.value })}
+                                            className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none"
+                                            placeholder="1300 646 672"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="space-y-4">
+                                        <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Search Office Location</label>
+                                        <div className="flex gap-2">
+                                            <div className="relative flex-1">
+                                                <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={18} />
+                                                <input
+                                                    type="text"
+                                                    value={locationSearch}
+                                                    onChange={(e) => setLocationSearch(e.target.value)}
+                                                    onKeyDown={(e) => e.key === 'Enter' && handleGeocode()}
+                                                    className="w-full bg-white border border-gray-200 rounded-xl pl-12 pr-4 py-4 text-sm focus:border-[#1a3a4a] outline-none font-medium shadow-sm"
+                                                    placeholder="Search for office address..."
+                                                />
+                                            </div>
+                                            <button
+                                                onClick={handleGeocode}
+                                                disabled={geocoding || (!locationSearch && !content.officeAddress)}
+                                                className="px-6 py-4 bg-[#0897b1] text-white rounded-xl text-xs font-black uppercase tracking-widest hover:bg-[#067a8f] transition-all disabled:opacity-50 flex items-center gap-2 shadow-lg"
+                                            >
+                                                {geocoding ? <Loader2 className="animate-spin" size={16} /> : <Search size={16} />}
+                                                <span>Find</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Latitude</label>
+                                            <input
+                                                type="text"
+                                                value={content.officeLat || ''}
+                                                onChange={(e) => setContent({ ...content, officeLat: e.target.value })}
+                                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono text-gray-600 focus:border-[#1a3a4a] outline-none"
+                                                placeholder="-37.8483"
+                                            />
+                                        </div>
+                                        <div>
+                                            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Longitude</label>
+                                            <input
+                                                type="text"
+                                                value={content.officeLng || ''}
+                                                onChange={(e) => setContent({ ...content, officeLng: e.target.value })}
+                                                className="w-full bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-mono text-gray-600 focus:border-[#1a3a4a] outline-none"
+                                                placeholder="144.7794"
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {content.officeLat && content.officeLng && (
+                                <div className="mt-8 rounded-[32px] overflow-hidden border border-gray-200 shadow-2xl h-[400px] relative z-0">
+                                    <MapPicker
+                                        initialLat={parseFloat(content.officeLat)}
+                                        initialLng={parseFloat(content.officeLng)}
+                                        onSelect={(lat, lng) => setContent({ ...content, officeLat: lat.toString(), officeLng: lng.toString() })}
+                                    />
+                                    <div className="absolute top-6 right-6 z-10 bg-[#1a3a4a]/90 backdrop-blur-md px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest text-white shadow-2xl border border-white/10 flex items-center gap-2">
+                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                                        Drag marker to fine-tune office position
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 )}

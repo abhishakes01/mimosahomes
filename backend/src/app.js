@@ -10,7 +10,16 @@ const PORT = process.env.PORT || 5000;
 
 // Security Middleware
 app.use(helmet({
-    crossOriginResourcePolicy: { policy: "cross-origin" }
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "http:", "https:"],
+            "frame-src": ["'self'", "http://localhost:3000", "http://localhost:5000", "blob:"],
+            "frame-ancestors": ["'self'", "http://localhost:3000"]
+        }
+    },
+    frameguard: false // Allow framing for PDF viewing
 }));
 
 // CORS Configuration

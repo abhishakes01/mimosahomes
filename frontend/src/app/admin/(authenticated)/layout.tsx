@@ -217,10 +217,10 @@ export default function AdminLayout({
                     </div>
 
                     <div className="flex items-center gap-4 lg:gap-6">
-                        <button className="relative p-2 text-gray-400 hover:text-mimosa-dark transition-colors">
+                        {/* <button className="relative p-2 text-gray-400 hover:text-mimosa-dark transition-colors">
                             <Bell size={20} />
                             <span className="absolute top-2 right-2 w-2 h-2 bg-black rounded-full border-2 border-white" />
-                        </button>
+                        </button> */}
                         <Link href="/admin/designs/create" className="px-4 lg:px-6 py-2.5 bg-mimosa-dark text-white text-[10px] lg:text-sm font-bold rounded-full hover:bg-black transition-all shadow-lg shadow-black/10 transform hover:scale-[1.02] whitespace-nowrap">
                             + New Design
                         </Link>

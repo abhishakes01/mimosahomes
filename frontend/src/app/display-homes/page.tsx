@@ -21,15 +21,6 @@ const REGIONS = ["Any", "North", "South", "East", "West", "Melbourne North", "Me
 const STOREYS = ["Any", "Single", "Double"];
 const BEDS = ["Any", "3", "4", "5+"];
 
-const OFFICE_DATA = {
-    id: 'office',
-    title: 'Mitra Homes Head Office',
-    address: '123 Elgar Road, Derrimut, VIC, 3026',
-    agent_phone: '1300 646 672',
-    latitude: -37.8483, // Approximate for Derrimut
-    longitude: 144.7794,
-};
-
 export default function DisplayHomesPage() {
     const [listings, setListings] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
@@ -43,6 +34,15 @@ export default function DisplayHomesPage() {
     const [houseDesign, setHouseDesign] = useState("Any");
     const [designs, setDesigns] = useState<any[]>([]);
     const [pageData, setPageData] = useState<any>(null);
+
+    const OFFICE_DATA = pageData?.content?.officeAddress ? {
+        id: 'office',
+        title: pageData.content.officeTitle || 'Mitra Homes Head Office',
+        address: pageData.content.officeAddress,
+        agent_phone: pageData.content.officePhone || '1300 646 672',
+        latitude: parseFloat(pageData.content.officeLat) || -37.8483,
+        longitude: parseFloat(pageData.content.officeLng) || 144.7794,
+    } : null;
 
     useEffect(() => {
         const fetchPageData = async () => {
@@ -106,7 +106,7 @@ export default function DisplayHomesPage() {
         return true;
     });
 
-    const allItems = [OFFICE_DATA, ...filteredListings];
+    const allItems = OFFICE_DATA ? [OFFICE_DATA, ...filteredListings] : filteredListings;
 
     return (
         <main className="min-h-screen bg-white">
@@ -136,8 +136,12 @@ export default function DisplayHomesPage() {
                             transition={{ delay: 0.1 }}
                             className="text-xl text-white/80 font-medium max-w-xl italic mx-auto mt-6"
                         >
-                            Want to see some of our <span className="text-[#0897b1] border-b-2 border-[#0897b1]">new homes</span> in real life?
-                            Then why not come and visit us at one of our display homes around Melbourne.
+                            {pageData?.content?.heroText || (
+                                <>
+                                    Want to see some of our <span className="text-[#0897b1] border-b-2 border-[#0897b1]">new homes</span> in real life?
+                                    Then why not come and visit us at one of our display homes around Melbourne.
+                                </>
+                            )}
                         </motion.p>
                     </motion.div>
                 </div>
@@ -309,22 +313,6 @@ export default function DisplayHomesPage() {
             </section>
 
             <Footer />
-
-            <style jsx global>{`
-                .custom-scrollbar::-webkit-scrollbar {
-                    width: 6px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-track {
-                    background: transparent;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb {
-                    background: #e2e8f0;
-                    border-radius: 10px;
-                }
-                .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-                    background: #cbd5e1;
-                }
-            `}</style>
         </main>
     );
 }

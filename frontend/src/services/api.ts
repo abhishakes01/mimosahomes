@@ -20,7 +20,6 @@ async function fetchAPI<T>(endpoint: string, options: RequestOptions = {}): Prom
         credentials: 'include' as const,
     };
 
-    console.log(`[API] ${config.method || 'GET'} ${endpoint}`, options.body ? JSON.parse(options.body as string) : '');
 
     const response = await fetch(`${API_URL}${endpoint}`, config);
 
@@ -35,9 +34,19 @@ async function fetchAPI<T>(endpoint: string, options: RequestOptions = {}): Prom
 export const getFullUrl = (url: string) => {
     if (!url) return '';
     if (url.startsWith('http')) return url;
+    if (url.startsWith('data:')) return url;
+    
+    // Don't prefix local placeholder images
+    if (url.startsWith('/') && (
+        url.includes('placeholder') || 
+        url.includes('assets') || 
+        url.includes('images/') && !url.includes('uploads')
+    )) {
+        return url;
+    }
 
     // Remove trailing slash from server root if exists
-    const serverRoot = API_URL.replace(/\/api\/?$/, '');
+    const serverRoot = API_URL.replace(/\/api\/?$/, '').replace(/\/+$/, '');
 
     // Ensure url has leading slash
     const cleanUrl = url.startsWith('/') ? url : `/${url}`;
@@ -81,8 +90,15 @@ export const api = {
             body: formData,
         });
         if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Upload failed: ${errorText}`);
+            let errorMessage = `Upload failed: ${response.statusText}`;
+            try {
+                const errorData = await response.json();
+                errorMessage = errorData.details || errorData.error || errorMessage;
+            } catch (e) {
+                const errorText = await response.text().catch(() => "");
+                if (errorText) errorMessage = errorText;
+            }
+            throw new Error(errorMessage);
         }
         return response.json();
     },

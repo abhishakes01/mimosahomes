@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Search, Menu, X, Phone, Calculator, ChevronDown, DollarSign } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { api } from "@/services/api";
 
 const NAV_ITEMS = [
     {
@@ -59,6 +60,7 @@ export default function Header() {
     const [isScrolled, setIsScrolled] = useState(false);
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [activeDropdown, setActiveDropdown] = useState<string | null>(null);
+    const [settings, setSettings] = useState<any>({});
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
@@ -66,6 +68,18 @@ export default function Header() {
             setIsScrolled(window.scrollY > 50);
         };
         window.addEventListener("scroll", handleScroll);
+        
+        // Fetch settings
+        const fetchSettings = async () => {
+            try {
+                const data = await api.getSettings(""); // Empty token for public access or handled by interceptor
+                setSettings(data);
+            } catch (err) {
+                console.error("Failed to fetch settings in Header", err);
+            }
+        };
+        fetchSettings();
+
         return () => window.removeEventListener("scroll", handleScroll);
     }, []);
 
@@ -91,8 +105,8 @@ export default function Header() {
                     <Link href="/quote/create" className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
                         <Calculator size={14} /> Build a Quote
                     </Link>
-                    <a href="tel:1300646672" className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
-                        <Phone size={14} /> 1300 646 672
+                    <a href={`tel:${(settings.contact_phone || "1300 646 672").replace(/\s/g, '')}`} className="hover:text-mimosa-gold transition-colors flex items-center gap-2">
+                        <Phone size={14} /> {settings.contact_phone || "1300 646 672"}
                     </a>
                 </div>
 
@@ -416,14 +430,14 @@ export default function Header() {
                                 <Search size={20} />
                             </button>
                             <a
-                                href="tel:1300646672"
+                                href={`tel:${(settings.contact_phone || "1300 646 672").replace(/\s/g, '')}`}
                                 className={`flex items-center gap-2 px-5 py-2 font-bold rounded-full transition-all tracking-tight uppercase text-xs ${isScrolled
                                     ? "bg-mimosa-dark text-white hover:bg-black shadow-lg"
                                     : "bg-white/10 backdrop-blur-md text-white border border-white/20 hover:bg-white/20"
                                     }`}
                             >
                                 <Phone size={14} />
-                                <span>1300 MITRA</span>
+                                <span>{settings.contact_phone || "1300 646 672"}</span>
                             </a>
                         </div>
                     </div>
@@ -483,11 +497,11 @@ export default function Header() {
                             ))}
                             <div className="mt-8">
                                 <a
-                                    href="tel:1300646672"
+                                    href={`tel:${(settings.contact_phone || "1300 646 672").replace(/\s/g, '')}`}
                                     className="flex items-center justify-center gap-2 w-full py-3 bg-mimosa-gold text-white font-semibold rounded-lg"
                                 >
                                     <Phone size={20} />
-                                    <span>1300 646 672</span>
+                                    <span>{settings.contact_phone || "1300 646 672"}</span>
                                 </a>
                             </div>
                         </nav>

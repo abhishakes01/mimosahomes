@@ -9,7 +9,7 @@ const floorplanRoutes = require('./floorplans');
 const facadeRoutes = require('./facades');
 
 router.get('/', (req, res) => {
-    res.json({ message: 'Welcome to the Mimosa Homes API' });
+    res.json({ message: 'Welcome to the Mitra Homes API' });
 });
 
 router.use('/auth', authRoutes);

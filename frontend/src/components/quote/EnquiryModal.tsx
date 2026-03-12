@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { X, Send, CheckCircle2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { api } from "@/services/api";
+import { api, getFullUrl } from "@/services/api";
 import Captcha from "@/components/Captcha";
 import PhoneInput from 'react-phone-number-input';
 import 'react-phone-number-input/style.css';
@@ -28,13 +28,46 @@ export default function EnquiryModal({ onClose, quoteData }: EnquiryModalProps) 
         e.preventDefault();
         setLoading(true);
         try {
-            // Include full quote summary in the enquiry
+            // Format land files links for the message
+            const landLinks = (quoteData.user?.landFiles || []).map((url: string, i: number) => {
+                return `Land Doc ${i + 1}: ${getFullUrl(url)}`;
+            }).join('\n');
+
+            // Format a readable message for the admin dashboard
+            const summaryMessage = `
+Name: ${formData.firstName} ${formData.lastName}
+Email: ${formData.email}
+Phone: ${formData.phone}
+
+--- QUOTE DETAILS ---
+Floorplan: ${quoteData.floorplan?.title} ($${quoteData.floorplan?.price?.toLocaleString()})
+Facade: ${quoteData.facade?.title} (Included)
+Internal Colours: ${quoteData.colours?.interiorScheme?.name}
+External Colours: ${quoteData.colours?.facadeScheme?.name}
+Upgrades: ${(quoteData.upgrades || []).length} items selected
+
+TOTAL: $${quoteData.total?.toLocaleString()}
+
+--- LAND DETAILS ---
+Estate: ${quoteData.user?.estateName || 'N/A'}
+Lot: ${quoteData.user?.lotNumber || 'N/A'}
+Suburb: ${quoteData.user?.suburb || 'N/A'}
+${quoteData.user?.preferredLocation ? `Preferred Location: ${quoteData.user.preferredLocation}` : ''}
+
+--- LAND DOCUMENTATION ---
+${landLinks || 'No files uploaded'}
+            `.trim();
+
             const payload = {
                 ...formData,
+                name: `${formData.firstName} ${formData.lastName}`, // Fix validation error
                 type: "QUOTE_BUILDER",
-                subject: `New Build Quote Request: ${quoteData.floorplan?.name} - ${quoteData.facade?.name}`,
-                message: JSON.stringify(quoteData, null, 2), // Send as JSON for parsing or text for viewing
-                metadata: quoteData
+                subject: `New Build Quote Request: ${quoteData.floorplan?.title} - ${quoteData.facade?.title}`,
+                message: summaryMessage,
+                metadata: {
+                    ...quoteData,
+                    landFiles: quoteData.user?.landFiles || []
+                }
             };
 
             await api.createEnquiry(payload);
@@ -135,8 +168,15 @@ export default function EnquiryModal({ onClose, quoteData }: EnquiryModalProps) 
                                 />
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-end pb-2">
-                                <Captcha />
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start pb-2">
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Security Verification</label>
+                                    <Captcha 
+                                        hideLabel 
+                                        hideHelp 
+                                        className="pt-0"
+                                    />
+                                </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Enter Code</label>
                                     <input
@@ -144,11 +184,14 @@ export default function EnquiryModal({ onClose, quoteData }: EnquiryModalProps) 
                                         required
                                         value={formData.captcha}
                                         onChange={e => setFormData({ ...formData, captcha: e.target.value })}
-                                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors placeholder:text-gray-300"
+                                        className="w-full p-4 bg-gray-50 border border-gray-100 rounded-2xl focus:outline-none focus:border-black transition-colors placeholder:text-gray-300 h-[66px]"
                                         placeholder="Type code..."
                                     />
                                 </div>
                             </div>
+                            <p className="text-[10px] text-gray-400 font-medium px-1 -mt-2">
+                                Click image or refresh button to get a new code.
+                            </p>
 
                             <button
                                 type="submit"

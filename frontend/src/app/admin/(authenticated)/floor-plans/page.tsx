@@ -19,13 +19,20 @@ export default function FloorPlansPage() {
     const [limit] = useState(9);
 
     useEffect(() => {
-        loadFloorPlans(currentPage);
-    }, [currentPage]);
+        const timer = setTimeout(() => {
+            loadFloorPlans(currentPage, searchTerm);
+        }, 500); // Debounce search
+        return () => clearTimeout(timer);
+    }, [currentPage, searchTerm]);
 
-    const loadFloorPlans = async (page: number) => {
+    const loadFloorPlans = async (page: number, search: string = "") => {
         setLoading(true);
         try {
-            const response: any = await api.getFloorPlans({ page, limit });
+            const response: any = await api.getFloorPlans({ 
+                page, 
+                limit,
+                searchTerm: search
+            });
             setFloorplans(response.data || []);
             setTotalItems(response.total || 0);
             setTotalPages(response.totalPages || 1);
@@ -47,9 +54,8 @@ export default function FloorPlansPage() {
         }
     };
 
-    const filteredFloorPlans = floorplans.filter(fp =>
-        fp.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Handled on server side now
+    const displayFloorPlans = floorplans;
 
     return (
         <div className="space-y-8 pb-20">
@@ -97,7 +103,7 @@ export default function FloorPlansPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence mode="popLayout">
-                            {filteredFloorPlans.map((fp, idx) => (
+                            {displayFloorPlans.map((fp, idx) => (
                                 <motion.div
                                     key={fp.id}
                                     layout
@@ -164,7 +170,7 @@ export default function FloorPlansPage() {
                             ))}
                         </AnimatePresence>
 
-                        {filteredFloorPlans.length === 0 && (
+                        {displayFloorPlans.length === 0 && (
                             <div className="col-span-full flex flex-col items-center py-20">
                                 <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                                     <Search size={32} className="text-gray-200" />

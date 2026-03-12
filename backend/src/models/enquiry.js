@@ -54,6 +54,10 @@ module.exports = (sequelize, DataTypes) => {
         status: {
             type: DataTypes.ENUM('new', 'contacted', 'qualified', 'closed'),
             defaultValue: 'new'
+        },
+        metadata: {
+            type: DataTypes.JSONB,
+            allowNull: true
         }
     }, {
         sequelize,

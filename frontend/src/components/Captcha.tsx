@@ -7,9 +7,18 @@ import { api } from "@/services/api";
 interface CaptchaProps {
     onRefresh?: () => void;
     className?: string;
+    hideLabel?: boolean;
+    hideHelp?: boolean;
+    labelClassName?: string;
 }
 
-export default function Captcha({ onRefresh, className = "" }: CaptchaProps) {
+export default function Captcha({
+    onRefresh,
+    className = "",
+    hideLabel = false,
+    hideHelp = false,
+    labelClassName = "block text-xs font-black text-gray-500 uppercase tracking-widest"
+}: CaptchaProps) {
     const [captchaUrl, setCaptchaUrl] = useState("");
 
     const refreshCaptcha = () => {
@@ -23,7 +32,11 @@ export default function Captcha({ onRefresh, className = "" }: CaptchaProps) {
 
     return (
         <div className={`flex flex-col gap-2 ${className}`}>
-            <label className="block text-xs font-black text-gray-500 uppercase tracking-widest">Security Verification</label>
+            {!hideLabel && (
+                <label className={labelClassName}>
+                    Security Verification
+                </label>
+            )}
             <div className="flex items-center gap-4 bg-gray-50 p-2 rounded-xl border border-gray-100">
                 <div
                     className="flex-1 h-12 bg-white rounded-lg overflow-hidden flex items-center justify-center cursor-pointer"
@@ -47,7 +60,9 @@ export default function Captcha({ onRefresh, className = "" }: CaptchaProps) {
                     <RefreshCcw size={18} />
                 </button>
             </div>
-            <p className="text-[10px] text-gray-400 font-medium">Click image or refresh button to get a new code.</p>
+            {!hideHelp && (
+                <p className="text-[10px] text-gray-400 font-medium">Click image or refresh button to get a new code.</p>
+            )}
         </div>
     );
 }

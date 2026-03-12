@@ -1,8 +1,9 @@
 const { Facade, FloorPlan, FacadeVariant } = require('../models');
+const { Op } = require('sequelize');
 
 exports.getAllFacades = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10, is_active, stories, collection } = req.query;
+        const { page = 1, limit = 10, is_active, stories, collection, searchTerm } = req.query;
         const offset = (page - 1) * limit;
 
         const where = {};
@@ -14,6 +15,9 @@ exports.getAllFacades = async (req, res, next) => {
         }
         if (collection && collection !== 'undefined' && collection !== 'null') {
             where.collection = collection;
+        }
+        if (searchTerm) {
+            where.title = { [Op.iLike]: `%${searchTerm}%` };
         }
 
         const { count, rows: facades } = await Facade.findAndCountAll({

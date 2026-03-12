@@ -7,14 +7,15 @@ import Link from "next/link";
 import { api, getFullUrl } from "../../../services/api";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
-import { Loader2, Bed, Bath, Car, ArrowRight, Home, ZoomIn, ZoomOut, RefreshCcw, ArrowLeftRight, Check, FileText, ChevronLeft, ChevronRight } from "lucide-react";
+import { Loader2, Bed, Bath, Car, ArrowRight, Home, ZoomIn, ZoomOut, RefreshCcw, ArrowLeftRight, Check, FileText, ChevronLeft, ChevronRight, Image as ImageIcon, MapPin } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 // Swiper imports
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Navigation, EffectFade, Autoplay } from 'swiper/modules';
+import { Navigation, EffectFade, Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/navigation';
+import 'swiper/css/pagination';
 import 'swiper/css/effect-fade';
 
 interface FloorPlan {
@@ -34,7 +35,8 @@ interface FloorPlan {
     porch_area?: string | number;
     alfresco_area?: string | number;
     facades?: Facade[];
-    description?: string; // Assuming description might be added or used from title
+    listings?: Listing[];
+    description?: string;
 }
 
 interface Facade {
@@ -43,27 +45,51 @@ interface Facade {
     image_url: string;
 }
 
+interface Listing {
+    id: string;
+    title: string;
+    address: string;
+    type: string;
+    price: number | string;
+    images: string[];
+    highlights?: string[];
+    facade?: Facade;
+}
+
 export default function DisplayHomeDetails() {
     const params = useParams();
     const id = params.id as string;
 
     const [floorplan, setFloorplan] = useState<FloorPlan | null>(null);
+    const [standardInclusions, setStandardInclusions] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [activeTab, setActiveTab] = useState<"facades" | "inclusions">("facades");
+    const [activeTab, setActiveTab] = useState<"gallery" | "facades" | "display-homes" | "inclusions">("facades");
+    const [activeInclusionSection, setActiveInclusionSection] = useState<string>("");
     const [zoomLevel, setZoomLevel] = useState(1);
     const [isFlipped, setIsFlipped] = useState(false);
 
     const PRIMARY_COLOR = "#0897b1";
 
     useEffect(() => {
-        const fetchFloorPlan = async () => {
+        const fetchData = async () => {
             try {
                 setLoading(true);
-                const data: any = await api.getFloorPlan(id);
-                setFloorplan(data);
+                const [fpData, settingsData]: [any, any] = await Promise.all([
+                    api.getFloorPlan(id),
+                    api.getSettings("mock-token").catch(() => ({}))
+                ]);
+
+                setFloorplan(fpData);
+                if (settingsData && settingsData.standard_inclusions) {
+                    const inclusions = settingsData.standard_inclusions;
+                    setStandardInclusions(inclusions);
+                    if (inclusions.categories && inclusions.categories.length > 0) {
+                        setActiveInclusionSection(inclusions.categories[0].id || inclusions.categories[0].title);
+                    }
+                }
             } catch (err: any) {
-                console.error("Failed to fetch floor plan:", err);
+                console.error("Failed to fetch data:", err);
                 setError("Failed to load home details.");
             } finally {
                 setLoading(false);
@@ -71,7 +97,7 @@ export default function DisplayHomeDetails() {
         };
 
         if (id) {
-            fetchFloorPlan();
+            fetchData();
         }
     }, [id]);
 
@@ -315,13 +341,25 @@ export default function DisplayHomeDetails() {
                 </div>
             </section>
 
-            {/* TABS SECTION (Facades / Inclusions) */}
+            {/* TABS SECTION (Gallery / Facades / Display Homes / Inclusions) */}
             <section className="py-16 bg-gray-50">
                 <div className="container mx-auto px-4">
-                    <div className="flex justify-center gap-6 mb-12">
+                    <div className="flex flex-wrap justify-center gap-4 md:gap-6 mb-12">
+                        {floorplan.listings && floorplan.listings.length > 0 && (
+                            <button
+                                onClick={() => setActiveTab("gallery")}
+                                className={`w-40 md:w-48 py-6 md:py-8 px-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 border-b-4`}
+                                style={{
+                                    borderColor: activeTab === "gallery" ? PRIMARY_COLOR : "transparent"
+                                }}
+                            >
+                                <ImageIcon size={32} style={{ color: activeTab === "gallery" ? PRIMARY_COLOR : "#9CA3AF" }} />
+                                <span className={`font-medium ${activeTab === "gallery" ? "text-gray-900" : "text-gray-500"}`}>Image Gallery</span>
+                            </button>
+                        )}
                         <button
                             onClick={() => setActiveTab("facades")}
-                            className={`w-48 py-8 px-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 border-b-4 bg-white`}
+                            className={`w-40 md:w-48 py-6 md:py-8 px-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 border-b-4`}
                             style={{
                                 borderColor: activeTab === "facades" ? PRIMARY_COLOR : "transparent"
                             }}
@@ -329,9 +367,21 @@ export default function DisplayHomeDetails() {
                             <Home size={32} style={{ color: activeTab === "facades" ? PRIMARY_COLOR : "#9CA3AF" }} />
                             <span className={`font-medium ${activeTab === "facades" ? "text-gray-900" : "text-gray-500"}`}>Facade Options</span>
                         </button>
+                        {floorplan.listings && floorplan.listings.some(l => l.type === 'display_home') && (
+                            <button
+                                onClick={() => setActiveTab("display-homes")}
+                                className={`w-40 md:w-48 py-6 md:py-8 px-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 border-b-4`}
+                                style={{
+                                    borderColor: activeTab === "display-homes" ? PRIMARY_COLOR : "transparent"
+                                }}
+                            >
+                                <MapPin size={32} style={{ color: activeTab === "display-homes" ? PRIMARY_COLOR : "#9CA3AF" }} />
+                                <span className={`font-medium ${activeTab === "display-homes" ? "text-gray-900" : "text-gray-500"}`}>Display Homes</span>
+                            </button>
+                        )}
                         <button
                             onClick={() => setActiveTab("inclusions")}
-                            className={`w-48 py-8 px-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 border-b-4`}
+                            className={`w-40 md:w-48 py-6 md:py-8 px-4 rounded-lg bg-white shadow-sm hover:shadow-md transition-all flex flex-col items-center gap-3 border-b-4`}
                             style={{
                                 borderColor: activeTab === "inclusions" ? PRIMARY_COLOR : "transparent"
                             }}
@@ -341,9 +391,56 @@ export default function DisplayHomeDetails() {
                         </button>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-lg p-8 min-h-[400px]">
-                        {activeTab === "facades" ? (
-                            <div className="w-full">
+                    <div className="bg-white rounded-xl shadow-lg p-0 md:p-8 min-h-[400px] overflow-hidden">
+                        {/* IMAGE GALLERY TAB */}
+                        {activeTab === "gallery" && floorplan.listings && floorplan.listings.length > 0 && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="space-y-8 p-4 md:p-0"
+                            >
+                                <div className="bg-white rounded-2xl overflow-hidden relative group">
+                                    <button className="gallery-prev absolute left-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-900 shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white">
+                                        <ChevronLeft size={24} />
+                                    </button>
+                                    <button className="gallery-next absolute right-4 top-1/2 -translate-y-1/2 z-10 w-12 h-12 rounded-full bg-white/90 backdrop-blur-md flex items-center justify-center text-gray-900 shadow-xl opacity-0 group-hover:opacity-100 transition-all hover:bg-white">
+                                        <ChevronRight size={24} />
+                                    </button>
+
+                                    <Swiper
+                                        modules={[Navigation, Pagination, Autoplay, EffectFade]}
+                                        spaceBetween={30}
+                                        slidesPerView={1}
+                                        effect="fade"
+                                        navigation={{
+                                            prevEl: '.gallery-prev',
+                                            nextEl: '.gallery-next'
+                                        }}
+                                        pagination={{ clickable: true }}
+                                        autoplay={{ delay: 5000 }}
+                                        className="rounded-xl aspect-[16/9] lg:aspect-[21/9]"
+                                    >
+                                        {floorplan.listings.flatMap(listing => listing.images).map((image, index) => (
+                                            <SwiperSlide key={index}>
+                                                <div className="relative w-full h-full">
+                                                    <Image
+                                                        src={getFullUrl(image)}
+                                                        alt={`Gallery image ${index + 1}`}
+                                                        fill
+                                                        className="object-cover"
+                                                        unoptimized
+                                                    />
+                                                </div>
+                                            </SwiperSlide>
+                                        ))}
+                                    </Swiper>
+                                </div>
+                            </motion.div>
+                        )}
+
+                        {/* FACADES TAB */}
+                        {activeTab === "facades" && (
+                            <div className="w-full p-4 md:p-0">
                                 {floorplan.facades && floorplan.facades.length > 0 ? (
                                     <div className="relative max-w-5xl mx-auto px-4 md:px-12">
                                         <button className="custom-prev absolute left-0 top-1/2 -translate-y-1/2 z-10 p-2 hover:opacity-75 transition-opacity disabled:opacity-30" style={{ color: PRIMARY_COLOR }}>
@@ -388,32 +485,106 @@ export default function DisplayHomeDetails() {
                                     </div>
                                 )}
                             </div>
-                        ) : (
-                            <div className="w-full max-w-2xl mx-auto text-left">
-                                <h3 className="text-2xl font-bold mb-6">Standard Inclusions</h3>
-                                <ul className="space-y-3">
-                                    {[
-                                        "Fixed site costs",
-                                        "Developer requirements",
-                                        "Quality floor coverings throughout",
-                                        "Stainless steel appliances",
-                                        "Ducted heating",
-                                        "Remote control garage door",
-                                        "Solar hot water system",
-                                        "6-star energy rating"
-                                    ].map((item, i) => (
-                                        <li key={i} className="flex items-center gap-3 text-gray-700">
-                                            <div className="w-5 h-5 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                                                <Check size={12} className="text-green-600" />
+                        )}
+
+                        {/* DISPLAY HOMES TAB */}
+                        {activeTab === "display-homes" && floorplan.listings && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-4 md:p-0"
+                            >
+                                {floorplan.listings.filter(l => l.type === 'display_home').map((listing) => (
+                                    <Link
+                                        key={listing.id}
+                                        href={`/display-homes/${listing.id}`}
+                                        className="group bg-white rounded-2xl shadow-sm hover:shadow-xl transition-all overflow-hidden border border-gray-100"
+                                    >
+                                        <div className="relative aspect-[4/3] overflow-hidden">
+                                            <Image
+                                                src={getFullUrl(listing.images?.[0] || listing.facade?.image_url || "/placeholder-home.jpg")}
+                                                alt={listing.title}
+                                                fill
+                                                className="object-cover group-hover:scale-110 transition-transform duration-700"
+                                                unoptimized
+                                            />
+                                            <div className="absolute top-4 left-4">
+                                                <span className="bg-[#1a3a4a] text-white text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full shadow-lg">
+                                                    {listing.type}
+                                                </span>
                                             </div>
-                                            {item}
-                                        </li>
-                                    ))}
-                                </ul>
-                                <div className="mt-8 p-4 bg-gray-50 rounded text-sm text-gray-500">
-                                    * Standard inclusions may vary. Please contact us for a detailed specification list.
+                                        </div>
+                                        <div className="p-6">
+                                            <h3 className="text-lg font-bold text-gray-900 group-hover:text-[#0897b1] transition-colors line-clamp-1">{listing.title}</h3>
+                                            <div className="flex items-center gap-2 mt-2 text-gray-500 text-sm">
+                                                <MapPin size={14} className="text-[#0897b1]" />
+                                                <span className="line-clamp-1">{listing.address}</span>
+                                            </div>
+                                            <div className="mt-4 pt-4 border-t border-gray-50 flex items-center justify-between">
+                                                <span className="text-[#0897b1] font-black text-lg">
+                                                    {typeof listing.price === 'number' ? `$${listing.price.toLocaleString()}` : listing.price}
+                                                </span>
+                                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest group-hover:text-[#1a3a4a] transition-colors">View Details</span>
+                                            </div>
+                                        </div>
+                                    </Link>
+                                ))}
+                            </motion.div>
+                        )}
+
+                        {/* INCLUSIONS TAB */}
+                        {activeTab === "inclusions" && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                className="flex flex-col md:flex-row min-h-[500px]"
+                            >
+                                {/* Sidebar Categories */}
+                                <div className="w-full md:w-64 bg-gray-50/50 border-r border-gray-100 p-6">
+                                    <div className="flex flex-col gap-2">
+                                        {standardInclusions?.categories?.map((category: any) => (
+                                            <button
+                                                key={category.id || category.title}
+                                                onClick={() => setActiveInclusionSection(category.id || category.title)}
+                                                className={`text-left px-4 py-3 rounded-lg text-sm font-bold uppercase tracking-wider transition-all ${activeInclusionSection === (category.id || category.title)
+                                                    ? "bg-[#1a3a4a] text-white shadow-md translate-x-1"
+                                                    : "text-gray-400 hover:text-gray-900 hover:bg-white"
+                                                    }`}
+                                            >
+                                                {category.title}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+
+                                {/* Content Items */}
+                                <div className="flex-1 p-6 md:p-10">
+                                    <AnimatePresence mode="wait">
+                                        {standardInclusions?.categories?.filter((c: any) => (c.id || c.title) === activeInclusionSection).map((category: any) => (
+                                            <motion.div
+                                                key={category.id || category.title}
+                                                initial={{ opacity: 0, x: 20 }}
+                                                animate={{ opacity: 1, x: 0 }}
+                                                exit={{ opacity: 0, x: -20 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="space-y-6"
+                                            >
+                                                <h3 className="text-xl font-black text-gray-900 uppercase italic tracking-tight border-b border-gray-100 pb-4">
+                                                    {category.title}
+                                                </h3>
+                                                <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-8 gap-y-3">
+                                                    {category.items?.map((item: string, idx: number) => (
+                                                        <div key={idx} className="flex items-start gap-3 py-2 border-b border-gray-50 last:border-0">
+                                                            <div className="w-1.5 h-1.5 mt-2 rounded-full bg-[#0897b1]" />
+                                                            <span className="text-gray-600 font-medium text-sm">{item}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            </motion.div>
                         )}
                     </div>
                 </div>

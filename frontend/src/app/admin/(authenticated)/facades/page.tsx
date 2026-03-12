@@ -21,13 +21,20 @@ export default function FacadesPage() {
     const [limit] = useState(9); // Using 9 for a 3x3 grid
 
     useEffect(() => {
-        loadFacades(currentPage);
-    }, [currentPage]);
+        const timer = setTimeout(() => {
+            loadFacades(currentPage, searchTerm);
+        }, 500);
+        return () => clearTimeout(timer);
+    }, [currentPage, searchTerm]);
 
-    const loadFacades = async (page: number) => {
+    const loadFacades = async (page: number, search: string = "") => {
         setLoading(true);
         try {
-            const response: any = await api.getFacades({ page, limit });
+            const response: any = await api.getFacades({ 
+                page, 
+                limit,
+                searchTerm: search
+            });
             setFacades(response.data || []);
             setTotalItems(response.total || 0);
             setTotalPages(response.totalPages || 1);
@@ -56,9 +63,8 @@ export default function FacadesPage() {
         });
     };
 
-    const filteredFacades = facades.filter(f =>
-        f.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    // Server-side search now
+    const displayFacades = facades;
 
     return (
         <div className="space-y-8 pb-20">
@@ -103,7 +109,7 @@ export default function FacadesPage() {
                 <>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <AnimatePresence mode="popLayout">
-                            {filteredFacades.map((facade, idx) => (
+                            {displayFacades.map((facade, idx) => (
                                 <motion.div
                                     key={facade.id}
                                     layout
@@ -163,7 +169,7 @@ export default function FacadesPage() {
                             ))}
                         </AnimatePresence>
 
-                        {filteredFacades.length === 0 && (
+                        {displayFacades.length === 0 && (
                             <div className="col-span-full flex flex-col items-center py-20">
                                 <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
                                     <Search size={32} className="text-gray-200" />

@@ -1,13 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { api } from "@/services/api";
-import { Search, Filter, Mail, Phone, Calendar, CheckCircle, Clock } from "lucide-react";
+import { api, getFullUrl } from "@/services/api";
+import { Search, Filter, Mail, Phone, Calendar, CheckCircle, Clock, FileText, Image as ImageIcon, ExternalLink, X, Download } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function EnquiriesClient() {
     const [enquiries, setEnquiries] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [filterStatus, setFilterStatus] = useState("all");
+    const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
     useEffect(() => {
         loadEnquiries();
@@ -38,6 +40,19 @@ export default function EnquiriesClient() {
     const filteredEnquiries = enquiries.filter(e =>
         filterStatus === "all" ? true : e.status === filterStatus
     );
+
+    const getFileIcon = (url: string) => {
+        const ext = url.split('.').pop()?.toLowerCase();
+        if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'].includes(ext || '')) {
+            return <ImageIcon size={18} />;
+        }
+        return <FileText size={18} />;
+    };
+
+    const isImage = (url: string) => {
+        const ext = url.split('.').pop()?.toLowerCase();
+        return ['jpg', 'jpeg', 'png', 'gif', 'webp', 'avif'].includes(ext || '');
+    };
 
     return (
         <div className="space-y-6">
@@ -105,6 +120,32 @@ export default function EnquiriesClient() {
                                     {/* Little triangle arrow */}
                                     <div className="absolute top-0 left-8 -mt-2 w-4 h-4 bg-gray-50 transform rotate-45 border-l border-t border-gray-50/50" />
                                     <p>"{enquiry.message}"</p>
+                                    
+                                    {/* Attachments Section */}
+                                    {(enquiry.metadata?.landFiles?.length > 0) && (
+                                        <div className="mt-4 pt-4 border-t border-gray-200">
+                                            <div className="flex items-center gap-2 mb-2">
+                                                <span className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Attachments</span>
+                                                <span className="h-px flex-1 bg-gray-100"></span>
+                                            </div>
+                                            <div className="flex flex-wrap gap-2">
+                                                {enquiry.metadata.landFiles.map((file: string, idx: number) => (
+                                                    <button
+                                                        key={idx}
+                                                        onClick={() => setSelectedFile(getFullUrl(file))}
+                                                        className="flex items-center gap-2 px-3 py-1.5 bg-white border border-gray-200 rounded-lg text-xs font-bold text-gray-700 hover:border-mimosa-gold hover:text-mimosa-gold transition-all shadow-sm group"
+                                                    >
+                                                        <span className="text-gray-400 group-hover:text-mimosa-gold transition-colors">
+                                                            {getFileIcon(file)}
+                                                        </span>
+                                                        <span>Document {idx + 1}</span>
+                                                        <ExternalLink size={12} className="opacity-0 group-hover:opacity-100 transition-opacity" />
+                                                    </button>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    )}
+
                                     {enquiry.listing && (
                                         <div className="mt-2 pt-2 border-t border-gray-200 text-xs font-bold text-mimosa-dark">
                                             Regarding: {enquiry.listing.title} ({enquiry.listing.address})
@@ -140,6 +181,76 @@ export default function EnquiriesClient() {
                     ))
                 )}
             </div>
+
+            {/* File Preview Modal */}
+            <AnimatePresence>
+                {selectedFile && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedFile(null)}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.9, opacity: 0 }}
+                            className="relative bg-white w-full max-w-5xl h-[85vh] rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-4 border-b border-gray-100 flex items-center justify-between">
+                                <div className="flex items-center gap-3">
+                                    <div className="p-2 bg-gray-50 rounded-lg text-gray-400">
+                                        {getFileIcon(selectedFile)}
+                                    </div>
+                                    <span className="text-sm font-bold text-gray-900 truncate max-w-xs md:max-w-md">
+                                        {selectedFile.split('/').pop()}
+                                    </span>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <a 
+                                        href={selectedFile} 
+                                        download 
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 text-gray-500 hover:text-mimosa-dark hover:bg-gray-50 rounded-lg transition-all flex items-center gap-2 text-xs font-bold"
+                                    >
+                                        <Download size={18} />
+                                        <span className="hidden sm:inline">Download</span>
+                                    </a>
+                                    <button
+                                        onClick={() => setSelectedFile(null)}
+                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                                    >
+                                        <X size={24} />
+                                    </button>
+                                </div>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="flex-1 overflow-auto bg-gray-100 p-4 md:p-8 flex items-center justify-center">
+                                {isImage(selectedFile) ? (
+                                    <div className="relative w-full h-full flex items-center justify-center">
+                                        <img 
+                                            src={selectedFile} 
+                                            alt="Preview" 
+                                            className="max-w-full max-h-full object-contain rounded-lg shadow-lg"
+                                        />
+                                    </div>
+                                ) : (
+                                    <iframe 
+                                        src={`${selectedFile}#toolbar=0`} 
+                                        className="w-full h-full border-none rounded-lg shadow-lg bg-white"
+                                        title="PDF Preview"
+                                    />
+                                )}
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

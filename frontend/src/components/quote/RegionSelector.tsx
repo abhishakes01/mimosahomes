@@ -111,23 +111,23 @@ export default function RegionSelector({ onSelect }: RegionSelectorProps) {
     const defaultCenter: [number, number] = [-37.8136, 144.9631];
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[600px] relative">
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+            <div className="bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-[600px] relative">
 
-                <div className="w-full md:w-1/3 p-8 md:p-14 flex flex-col justify-center bg-white z-10 relative">
+                <div className="w-full md:w-1/3 p-8 md:p-14 flex flex-col justify-center bg-white z-10 relative overflow-y-auto">
                     <h2 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em] mb-4 italic">Welcome</h2>
-                    <h1 className="text-4xl lg:text-5xl font-black text-gray-900 leading-tight uppercase italic mb-8">
+                    <h1 className="text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 leading-tight uppercase italic mb-6 md:mb-8">
                         Select <span className="text-gray-300">Your</span> <br />
                         Build Region
                     </h1>
-                    <p className="text-gray-500 font-medium mb-8 leading-relaxed text-sm">
+                    <p className="text-gray-500 font-medium mb-6 md:mb-8 leading-relaxed text-xs md:text-sm">
                         Start building your dream home with Mitra Homes today. Explore our collection and customize your house to suit your needs.
                     </p>
-                    <div className="w-12 h-1 bg-black mb-6" />
+                    <div className="hidden md:block w-12 h-1 bg-black mb-6" />
                 </div>
 
                 {/* Right Panel: Map */}
-                <div className="w-full md:w-2/3 relative h-full bg-gray-100">
+                <div className="w-full md:w-2/3 relative flex-grow bg-gray-100 min-h-[300px] md:h-full">
                     <MapContainer
                         center={defaultCenter}
                         zoom={9}

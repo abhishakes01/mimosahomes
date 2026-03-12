@@ -24,7 +24,7 @@ exports.sendEnquiryNotification = async (enquiryData) => {
 
     // Logo is served from frontend public folder. 
     // In production, this should be the live URL.
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
     const logoUrl = `${frontendUrl}/logo-text.png`;
 
     const displayType = type || interest || 'General';
@@ -77,9 +77,47 @@ exports.sendEnquiryNotification = async (enquiryData) => {
                 </div>
                 
                 <div class="field" style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #fafafa;">
-                    <div class="label">Message</div>
-                    <div class="value">${message || 'No message provided.'}</div>
+                    <div class="label">Message / Details</div>
+                    <div class="value" style="white-space: pre-wrap;">${message || 'No message provided.'}</div>
                 </div>
+
+                ${enquiryData.metadata && type === 'QUOTE_BUILDER' ? `
+                <div class="field" style="margin-top: 20px; padding: 20px; background: #f9f9f9; border-radius: 12px;">
+                    <div class="label" style="margin-bottom: 10px; color: #0897b1;">Quote Summary</div>
+                    <table style="width: 100%; font-size: 14px; border-collapse: collapse;">
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #888;">Floorplan</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${enquiryData.metadata.floorplan?.title || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #888;">Facade</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${enquiryData.metadata.facade?.title || 'N/A'}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #888;">Colours</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${enquiryData.metadata.colours?.interiorScheme?.name} / ${enquiryData.metadata.colours?.facadeScheme?.name}</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; color: #888;">Upgrades</td>
+                            <td style="padding: 8px 0; border-bottom: 1px solid #eee; text-align: right; font-weight: bold;">${(enquiryData.metadata.upgrades || []).length} items</td>
+                        </tr>
+                        <tr>
+                            <td style="padding: 12px 0; color: #1a1a1a; font-weight: 900;">TOTAL</td>
+                            <td style="padding: 12px 0; text-align: right; font-weight: 900; color: #0897b1; font-size: 18px;">$${(enquiryData.metadata.total || 0).toLocaleString()}</td>
+                        </tr>
+                    </table>
+                </div>
+
+                ${enquiryData.metadata.landFiles && enquiryData.metadata.landFiles.length > 0 ? `
+                <div class="field" style="margin-top: 20px;">
+                    <div class="label">Land Documentation</div>
+                    <div class="value">
+                        ${enquiryData.metadata.landFiles.map((url, i) => `
+                            <a href="${frontendUrl}${url.startsWith('/') ? url : '/' + url}" style="display: block; color: #0897b1; margin-bottom: 4px; font-size: 12px;">View Document ${i + 1}</a>
+                        `).join('')}
+                    </div>
+                </div>` : ''}
+                ` : ''}
             </div>
             
             <div class="footer">
@@ -106,7 +144,7 @@ exports.sendEnquiryNotification = async (enquiryData) => {
  */
 exports.sendEbookToUser = async (userData, ebookUrl) => {
     const { name, email, collection } = userData;
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
     const logoUrl = `${frontendUrl}/logo-text.png`;
 
     const htmlContent = `
@@ -165,7 +203,7 @@ exports.sendEbookToUser = async (userData, ebookUrl) => {
  * Sends a shareable quote link to the user
  */
 exports.sendQuoteShareEmail = async (email, shareUrl) => {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000';
+    const frontendUrl = (process.env.FRONTEND_URL || 'http://localhost:3000').replace(/\/$/, '');
     const logoUrl = `${frontendUrl}/logo-text.png`;
 
     const htmlContent = `

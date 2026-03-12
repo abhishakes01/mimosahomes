@@ -3,7 +3,7 @@ const { Op } = require('sequelize');
 
 exports.getAllListings = async (req, res, next) => {
     try {
-        const { type, collection, service_area_id, min_price, max_price, beds, page = 1, limit = 10 } = req.query;
+        const { type, collection, service_area_id, min_price, max_price, beds, page = 1, limit = 10, searchTerm } = req.query;
         const where = {};
         const floorPlanWhere = {};
 
@@ -14,6 +14,13 @@ exports.getAllListings = async (req, res, next) => {
         if (service_area_id) {
             const ids = Array.isArray(service_area_id) ? service_area_id : service_area_id.split(',');
             where.service_area_id = { [Op.in]: ids };
+        }
+
+        if (searchTerm) {
+            where[Op.or] = [
+                { title: { [Op.iLike]: `%${searchTerm}%` } },
+                { address: { [Op.iLike]: `%${searchTerm}%` } }
+            ];
         }
 
         if (min_price || max_price) {

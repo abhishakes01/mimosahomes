@@ -2,8 +2,31 @@
 
 import Link from "next/link";
 import { Facebook, Instagram, Linkedin, Twitter, MapPin, Phone, Mail, ArrowRight } from "lucide-react";
+import { useState, useEffect } from "react";
+import { api } from "@/services/api";
 
 export default function Footer() {
+    const [settings, setSettings] = useState<any>({});
+
+    useEffect(() => {
+        const fetchSettings = async () => {
+            try {
+                const data = await api.getSettings("");
+                setSettings(data);
+            } catch (err) {
+                console.error("Failed to fetch settings in Footer", err);
+            }
+        };
+        fetchSettings();
+    }, []);
+
+    const socialLinks = [
+        { Icon: Facebook, link: settings.social_facebook },
+        { Icon: Instagram, link: settings.social_instagram },
+        { Icon: Linkedin, link: settings.social_linkedin },
+        { Icon: Twitter, link: settings.social_twitter },
+    ].filter(s => s.link && s.link !== "#" && s.link !== "");
+
     return (
         <footer className="bg-black text-white pt-20 pb-10">
             <div className="container mx-auto px-6">
@@ -17,11 +40,19 @@ export default function Footer() {
                             Building quality homes for Australian families. We pride ourselves on craftsmanship, design excellence, and customer satisfaction.
                         </p>
                         <div className="flex gap-4">
-                            {[Facebook, Instagram, Linkedin, Twitter].map((Icon, i) => (
-                                <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all text-gray-400">
-                                    <Icon size={18} />
-                                </a>
-                            ))}
+                            {socialLinks.length > 0 ? (
+                                socialLinks.map(({ Icon, link }, i) => (
+                                    <a key={i} href={link} target="_blank" rel="noopener noreferrer" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all text-gray-400">
+                                        <Icon size={18} />
+                                    </a>
+                                ))
+                            ) : (
+                                [Facebook, Instagram, Linkedin, Twitter].map((Icon, i) => (
+                                    <a key={i} href="#" className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center hover:bg-white hover:text-black transition-all text-gray-400">
+                                        <Icon size={18} />
+                                    </a>
+                                ))
+                            )}
                         </div>
                     </div>
 
@@ -51,15 +82,19 @@ export default function Footer() {
                         <ul className="space-y-4 text-sm">
                             <li className="flex items-start gap-3">
                                 <MapPin className="text-mimosa-gold shrink-0 mt-0.5" size={18} />
-                                <span className="text-gray-400">123 Example Street,<br />Melbourne VIC 3000</span>
+                                <span className="text-gray-400 whitespace-pre-line">{settings.contact_address || "123 Example Street,\nMelbourne VIC 3000"}</span>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Phone className="text-mimosa-gold shrink-0" size={18} />
-                                <a href="tel:1300646672" className="text-gray-400 hover:text-white transition-colors">1300 646 672</a>
+                                <a href={`tel:${(settings.contact_phone || "1300 646 672").replace(/\s/g, '')}`} className="text-gray-400 hover:text-white transition-colors">
+                                    {settings.contact_phone || "1300 646 672"}
+                                </a>
                             </li>
                             <li className="flex items-center gap-3">
                                 <Mail className="text-mimosa-gold shrink-0" size={18} />
-                                <a href="mailto:info@mitrahomes.com.au" className="text-gray-400 hover:text-white transition-colors">info@mitrahomes.com.au</a>
+                                <a href={`mailto:${settings.contact_email || "info@mitrahomes.com.au"}`} className="text-gray-400 hover:text-white transition-colors">
+                                    {settings.contact_email || "info@mitrahomes.com.au"}
+                                </a>
                             </li>
                         </ul>
                     </div>

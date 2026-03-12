@@ -57,7 +57,8 @@ export default function CreateQuotePage() {
             lotNumber: data.lotNumber,
             estateName: data.estateName,
             suburb: data.suburb,
-            preferredLocation: data.preferredLocation
+            preferredLocation: data.preferredLocation,
+            landFiles: data.landFiles || []
         });
         setStep("FLOORPLAN");
     };

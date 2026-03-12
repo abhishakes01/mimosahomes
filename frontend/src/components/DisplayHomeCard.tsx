@@ -129,10 +129,11 @@ export default function DisplayHomeCard({ home, index, isOffice }: { home: any, 
                     >
                         {uniqueImages.length > 0 ? (
                             <Image
-                                src={getFullUrl(uniqueImages[currentImageIndex])}
+                                src={getFullUrl(uniqueImages[currentImageIndex] || "/placeholder-home.jpg")}
                                 alt={home.title}
                                 fill
                                 className="object-cover transition-transform duration-700 group-hover:scale-105"
+                                unoptimized
                             />
                         ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-300">No Image</div>

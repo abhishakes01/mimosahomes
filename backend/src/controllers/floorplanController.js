@@ -1,9 +1,15 @@
 const { FloorPlan } = require('../models');
+const { Op } = require('sequelize');
 
 exports.getAllFloorPlans = async (req, res, next) => {
     try {
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, searchTerm } = req.query;
         const offset = (page - 1) * limit;
+
+        const where = {};
+        if (searchTerm) {
+            where.title = { [Op.iLike]: `%${searchTerm}%` };
+        }
 
         const { Facade } = require('../models');
         const { count, rows: floorplans } = await FloorPlan.findAndCountAll({
@@ -13,6 +19,7 @@ exports.getAllFloorPlans = async (req, res, next) => {
                 as: 'facades',
                 through: { attributes: [] }
             }],
+            where,
             distinct: true, // Important for correct count with includes
             limit: parseInt(limit),
             offset: parseInt(offset)
@@ -31,13 +38,25 @@ exports.getAllFloorPlans = async (req, res, next) => {
 
 exports.getFloorPlanById = async (req, res, next) => {
     try {
-        const { Facade } = require('../models');
+        const { Facade, Listing } = require('../models');
         const floorplan = await FloorPlan.findByPk(req.params.id, {
-            include: [{
-                model: Facade,
-                as: 'facades',
-                through: { attributes: [] }
-            }]
+            include: [
+                {
+                    model: Facade,
+                    as: 'facades',
+                    through: { attributes: [] }
+                },
+                {
+                    model: Listing,
+                    as: 'listings',
+                    include: [
+                        {
+                            model: Facade,
+                            as: 'facade'
+                        }
+                    ]
+                }
+            ]
         });
         if (!floorplan) return res.status(404).json({ error: 'Floor plan not found' });
         res.json(floorplan);

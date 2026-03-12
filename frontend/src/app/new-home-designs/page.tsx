@@ -327,7 +327,7 @@ function NewHomeDesignsContent() {
                                                 key={type}
                                                 onClick={() => toggleStorey(type)}
                                                 className={`py-3 px-4 bg-white rounded-lg border transition-all flex flex-col items-center justify-center gap-2 ${selectedStorey.includes(type)
-                                                    ? `border-[${PRIMARY_COLOR}] shadow-[0_0_0_2px_#0897b1]`
+                                                    ? `border-[${PRIMARY_COLOR}] shadow-[0_0_0_2px_#0897b1] text-[#0897b1]`
                                                     : "border-gray-200 text-gray-600 hover:border-gray-300"
                                                     }`}
                                                 style={{

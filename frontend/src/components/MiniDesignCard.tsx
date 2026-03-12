@@ -31,10 +31,11 @@ export default function MiniDesignCard({ design }: MiniDesignCardProps) {
 
             <div className="relative aspect-[16/10] overflow-hidden">
                 <Image
-                    src={getFullUrl(mainImage)}
+                    src={getFullUrl(facade.image_url || design.images?.[0] || "/placeholder-home.jpg")}
                     alt={design.title}
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    unoptimized
                 />
             </div>
 

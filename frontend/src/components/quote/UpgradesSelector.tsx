@@ -77,15 +77,15 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
         <div className="flex flex-col gap-8 w-full">
 
             {/* Top Row: Browser and Summary */}
-            <div className="flex flex-col lg:flex-row gap-8 items-stretch">
+            <div className="flex flex-col lg:flex-row gap-6 md:gap-8 items-stretch">
 
                 {/* Left: Upgrades Browser */}
-                <div className="flex-grow lg:w-[68%] bg-white rounded-[40px] border border-gray-100 p-8 lg:p-12 flex flex-col min-h-[750px] shadow-sm">
-                    <h2 className="text-3xl font-black text-gray-900 uppercase tracking-tighter mb-8">UPGRADES</h2>
+                <div className="flex-grow w-full lg:w-[68%] bg-white rounded-[24px] md:rounded-[32px] border border-gray-100 p-4 md:p-8 flex flex-col min-h-[500px] md:min-h-[750px] shadow-sm">
+                    <h2 className="text-xl md:text-3xl font-black text-gray-900 uppercase tracking-tighter mb-4 md:mb-8">UPGRADES</h2>
 
-                    <div className="flex flex-grow gap-8">
+                    <div className="flex flex-col md:flex-row flex-grow gap-4 md:gap-8 overflow-hidden">
                         {/* Sidebar: Hierarchical Navigation (Groups > Categories) */}
-                        <div className="w-[22%] flex-shrink-0 border-r border-gray-100 pr-4 overflow-y-auto max-h-[660px] custom-scrollbar">
+                        <div className="w-full md:w-[28%] flex-shrink-0 border-b md:border-b-0 md:border-r border-gray-100 pb-4 md:pb-0 md:pr-4 overflow-y-auto max-h-[300px] md:max-h-[660px] custom-scrollbar">
                             <div className="flex flex-col gap-1.5">
                                 {groups.map(group => {
                                     const isExpanded = activeGroupId === group.id;
@@ -96,12 +96,12 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                             {/* Group Header */}
                                             <button
                                                 onClick={() => setActiveGroupId(isExpanded ? "" : group.id)}
-                                                className={`w-full flex items-center justify-between px-3.5 py-3 rounded-lg transition-all ${isExpanded
+                                                className={`w-full flex items-center justify-between px-3 md:px-3.5 py-2.5 md:py-3 rounded-lg transition-all ${isExpanded
                                                     ? 'bg-[#0796b1] text-white shadow-md shadow-cyan-900/10'
-                                                    : 'bg-white text-gray-400 hover:text-gray-600'
+                                                    : 'bg-white text-gray-400 hover:text-gray-600 border border-gray-50 md:border-0'
                                                     }`}
                                             >
-                                                <span className="text-[9.5px] font-black uppercase tracking-[0.15em]">{group.name}</span>
+                                                <span className="text-[9px] md:text-[9.5px] font-black uppercase tracking-[0.15em]">{group.name}</span>
                                                 {isExpanded ? <ChevronDown size={12} /> : <ChevronRight size={12} />}
                                             </button>
 
@@ -112,9 +112,9 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                         initial={{ height: 0, opacity: 0 }}
                                                         animate={{ height: 'auto', opacity: 1 }}
                                                         exit={{ height: 0, opacity: 0 }}
-                                                        className="overflow-hidden bg-gray-50/50"
+                                                        className="overflow-hidden bg-gray-50/30 md:bg-gray-50/50 rounded-lg mt-1"
                                                     >
-                                                        <div className="flex flex-col py-1 pl-4">
+                                                        <div className="flex flex-col py-1 pl-2 md:pl-4">
                                                             {groupCategories.map(cat => {
                                                                 const isActive = activeCategoryId === cat.id;
                                                                 const isSelected = selections[cat.id] && !selections[cat.id].is_standard;
@@ -123,7 +123,7 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                                     <button
                                                                         key={cat.id}
                                                                         onClick={() => setActiveCategoryId(cat.id)}
-                                                                        className={`group flex items-center justify-between px-5 py-2.5 rounded-lg transition-all text-left ${isActive
+                                                                        className={`group flex items-center justify-between px-4 py-2 md:px-5 md:py-2.5 rounded-lg transition-all text-left ${isActive
                                                                             ? 'text-gray-900 font-black'
                                                                             : 'text-gray-400 hover:text-gray-600'
                                                                             }`}
@@ -132,7 +132,7 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                                             {selections[cat.id] && (
                                                                                 <Check size={12} className={isSelected ? 'text-[#0796b1]' : 'text-gray-300'} strokeWidth={4} />
                                                                             )}
-                                                                            <span className={`text-[10px] uppercase tracking-widest ${isActive ? 'underline decoration-2 underline-offset-4' : ''}`}>
+                                                                            <span className={`text-[9px] md:text-[10px] uppercase tracking-widest ${isActive ? 'underline decoration-2 underline-offset-4' : ''}`}>
                                                                                 {cat.name}
                                                                             </span>
                                                                         </div>
@@ -150,13 +150,13 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                         </div>
 
                         {/* Upgrade Selection Grid */}
-                        <div className="w-[78%] flex-grow">
+                        <div className="w-full md:w-[72%] flex-grow overflow-y-auto max-h-[500px] md:max-h-none pt-4 md:pt-0">
                             {loading ? (
-                                <div className="flex justify-center items-center h-64">
-                                    <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-[#0796b1]"></div>
+                                <div className="flex justify-center items-center h-48 md:h-64">
+                                    <div className="animate-spin rounded-full h-8 w-8 md:h-10 md:w-10 border-b-2 border-[#0796b1]"></div>
                                 </div>
                             ) : (
-                                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 px-1">
                                     {activeCategory?.upgrades?.map((upgrade: any) => {
                                         const isSelected = selections[activeCategoryId]?.id === upgrade.id;
                                         return (
@@ -165,11 +165,11 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                 onClick={() => handleSelection(activeCategoryId, upgrade)}
                                                 className={`group relative bg-white border-2 rounded-[16px] cursor-pointer overflow-hidden transition-all duration-300 ${isSelected
                                                     ? 'border-[#0796b1] shadow-[0_15px_35px_-8px_rgba(7,150,177,0.2)]'
-                                                    : 'border-gray-100 hover:border-gray-200 shadow-sm'
+                                                    : 'border-gray-50 hover:border-gray-100 shadow-sm'
                                                     }`}
                                             >
-                                                {/* Card Image Section - Scaled Up */}
-                                                <div className="relative h-48 w-full overflow-hidden bg-gray-50">
+                                                {/* Card Image Section */}
+                                                <div className="relative h-40 md:h-48 w-full overflow-hidden bg-gray-50">
                                                     {upgrade.image_url ? (
                                                         <Image
                                                             src={getFullUrl(upgrade.image_url)}
@@ -182,10 +182,10 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                             <Settings2 size={40} />
                                                         </div>
                                                     )}
-                                                    <div className="absolute top-3 left-3 z-10">
+                                                    <div className="absolute top-2.5 left-2.5 md:top-3 md:left-3 z-10">
                                                         <button
                                                             onClick={(e) => { e.stopPropagation(); setViewingImage(getFullUrl(upgrade.image_url)); }}
-                                                            className="w-7 h-7 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
+                                                            className="w-6 h-6 md:w-7 md:h-7 bg-[#0796b1] text-white rounded-full flex items-center justify-center shadow-lg hover:scale-110 transition-all"
                                                         >
                                                             <ZoomIn size={14} />
                                                         </button>
@@ -193,17 +193,16 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                                                 </div>
 
                                                 {/* Card Bottom Label */}
-                                                <div className={`px-4 py-3 min-h-[60px] flex items-center justify-between gap-3 border-t border-gray-50 transition-colors ${isSelected ? 'bg-[#0796b1] text-white' : 'bg-white'}`}>
+                                                <div className={`px-4 py-3 min-h-[50px] md:min-h-[60px] flex items-center justify-between gap-3 border-t border-gray-50 transition-colors ${isSelected ? 'bg-[#0796b1] text-white' : 'bg-white'}`}>
                                                     <div className="flex flex-col gap-0.5">
-                                                        <span className="text-[10px] font-black uppercase tracking-tight leading-tight line-clamp-2">
+                                                        <span className="text-[9px] md:text-[10px] font-black uppercase tracking-tight leading-tight line-clamp-2">
                                                             {upgrade.name}
                                                         </span>
-                                                        <div className="flex items-center gap-1 opacity-70">
-                                                            <Info size={10} className={isSelected ? 'text-white' : 'text-[#0796b1]'} />
-                                                        </div>
                                                     </div>
-                                                    <div className={`px-2.5 py-1 rounded-md text-[9px] font-black italic whitespace-nowrap ${isSelected ? 'bg-white/20' : 'bg-[#0796b1]/5 text-[#0796b1]'}`}>
-                                                        {upgrade.price === 0 || !upgrade.price ? "Included" : `+$${upgrade.price.toLocaleString()}`}
+                                                    <div className="flex flex-col items-end flex-shrink-0">
+                                                        <span className={`text-[10px] md:text-[11px] font-black italic ${isSelected ? 'text-white' : 'text-[#0796b1]'}`}>
+                                                            {upgrade.price === 0 || !upgrade.price ? "Incl." : `+$${upgrade.price.toLocaleString()}`}
+                                                        </span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -215,86 +214,55 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                     </div>
                 </div>
 
-                {/* Right Column: High Fidelity Quote Summary Hub */}
-                <div className="lg:w-[32%] flex flex-col gap-6">
-                    <div className="bg-white rounded-[32px] border border-gray-100 p-10 shadow-2xl space-y-10 min-h-[600px] overflow-y-auto max-h-[750px] custom-scrollbar">
-                        <h2 className="text-2xl font-black text-gray-900 uppercase tracking-tighter">QUOTE SUMMARY</h2>
+                {/* Right Column: Quote Summary Hub */}
+                <div className="w-full lg:w-[32%] flex flex-col gap-6">
+                    <div className="bg-white rounded-[24px] md:rounded-[32px] border border-gray-100 p-6 md:p-10 shadow-lg space-y-8 md:space-y-12 min-h-0 lg:min-h-[600px] flex flex-col">
+                        <h2 className="text-xl md:text-2xl font-black text-gray-900 uppercase tracking-tighter">SUMMARY</h2>
 
-                        <div className="space-y-12">
-                            {/* FLOORPLAN */}
-                            <div className="space-y-4">
-                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">FLOORPLAN</h3>
-                                <div className="space-y-3 px-1">
-                                    <div className="flex justify-between items-center text-[11px]">
-                                        <span className="font-bold text-gray-500 uppercase tracking-widest leading-tight">Floorplan Name: <span className="text-gray-900">{selectedFloorPlan.title}</span></span>
-                                        <span className="font-bold text-gray-900">${Math.round(selectedFloorPlan.price || 232596).toLocaleString()}</span>
+                        <div className="flex-grow space-y-8 md:space-y-10 overflow-y-auto pr-2 custom-scrollbar">
+                            {/* Base Structure */}
+                            <div className="space-y-3">
+                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">CORE CONFIG</h3>
+                                <div className="space-y-2">
+                                    <div className="flex justify-between items-center text-[10px] md:text-[11px]">
+                                        <span className="font-bold text-gray-500 uppercase tracking-widest">{selectedFloorPlan.title}</span>
+                                        <span className="font-bold text-gray-900">${(selectedFloorPlan.price || 0).toLocaleString()}</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[11px] pt-1">
-                                        <span className="font-bold text-gray-900 uppercase tracking-widest leading-none">Subtotal:</span>
-                                        <span className="font-black text-[#0796b1]">${Math.round(selectedFloorPlan.price || 232596).toLocaleString()}</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* FACADE */}
-                            <div className="space-y-4">
-                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">FACADE</h3>
-                                <div className="space-y-3 px-1">
-                                    <div className="flex justify-between items-center text-[11px]">
-                                        <span className="font-bold text-gray-500 uppercase tracking-widest leading-tight">Facade Name: <span className="text-gray-900">{selectedFacade.title}</span></span>
+                                    <div className="flex justify-between items-center text-[10px] md:text-[11px]">
+                                        <span className="font-bold text-gray-500 uppercase tracking-widest">{selectedFacade.title}</span>
                                         <span className="font-bold text-[#0796b1]">Included</span>
                                     </div>
-                                    <div className="flex justify-between items-center text-[11px] pt-1">
-                                        <span className="font-bold text-gray-900 uppercase tracking-widest leading-none">Subtotal:</span>
-                                        <span className="font-black text-[#0796b1]">Included</span>
-                                    </div>
                                 </div>
                             </div>
 
-                            {/* COLOUR SCHEMES */}
+                            {/* Upgrades List */}
                             <div className="space-y-4">
-                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">COLOUR SCHEMES</h3>
-                                <div className="space-y-3 px-1 font-bold text-[11px]">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500 uppercase tracking-widest">External: <span className="text-gray-900">{selectedColours?.facadeScheme?.name || "Dawn"}</span></span>
-                                        <span>${(selectedColours?.facadeScheme?.price || 500).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500 uppercase tracking-widest">Internal: <span className="text-gray-900">{selectedColours?.interiorScheme?.name || "Raven"}</span></span>
-                                        <span>${(selectedColours?.interiorScheme?.price || 395).toLocaleString()}</span>
-                                    </div>
-                                    <div className="flex justify-between pt-1 border-t border-gray-50 mt-1 pt-2">
-                                        <span className="text-gray-900 uppercase tracking-widest">Subtotal:</span>
-                                        <span className="text-[#0796b1]">${((selectedColours?.facadeScheme?.price || 500) + (selectedColours?.interiorScheme?.price || 395)).toLocaleString()}</span>
-                                    </div>
+                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">SELECTED UPGRADES</h3>
+                                <div className="space-y-3">
+                                    {Object.values(selections).filter(u => u.price > 0).length === 0 ? (
+                                        <span className="text-[10px] md:text-[11px] font-bold text-gray-300 uppercase tracking-widest italic">No upgrades added yet</span>
+                                    ) : (
+                                        Object.values(selections).filter(u => u.price > 0).map((u: any) => (
+                                            <div key={u.id} className="flex justify-between items-center text-[10px] md:text-[11px]">
+                                                <span className="font-bold text-gray-500 uppercase tracking-widest truncate pr-4">{u.name}</span>
+                                                <span className="font-bold text-gray-900 flex-shrink-0">${u.price.toLocaleString()}</span>
+                                            </div>
+                                        ))
+                                    )}
+                                </div>
+                                <div className="flex justify-between items-center text-[10px] md:text-[11px] pt-3 border-t border-gray-50">
+                                    <span className="font-bold text-gray-900 uppercase tracking-widest">Upgrade Total:</span>
+                                    <span className="font-black text-[#0796b1]">${upgradeTotal.toLocaleString()}</span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* PROMOTION */}
-                            <div className="space-y-4">
-                                <h3 className="text-[10px] font-black text-[#0796b1] uppercase tracking-[0.4em] border-b border-gray-50 pb-2">PROMOTION</h3>
-                                <div className="space-y-3 px-1 font-bold text-[11px]">
-                                    <div className="flex justify-between">
-                                        <span className="text-gray-500 uppercase tracking-widest leading-relaxed">50% Off Fixed Site Costs! T & C's Apply</span>
-                                        <span className="text-[#0796b1]">Included</span>
-                                    </div>
-                                    <div className="flex justify-between pt-1 border-t border-gray-50 mt-1 pt-2">
-                                        <span className="text-gray-900 uppercase tracking-widest">Subtotal:</span>
-                                        <span className="text-[#0796b1]">Included</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            {/* TOTAL */}
-                            <div className="pt-10 flex justify-end items-center gap-6 border-t-2 border-gray-100">
-                                <span className="text-xl font-black text-gray-900 uppercase tracking-tighter italic">TOTAL:</span>
-                                <span className="text-5xl font-black text-[#0796b1] tracking-tighter italic leading-none">
-                                    ${Math.round(
-                                        (selectedFloorPlan.price || 0) +
-                                        (selectedColours?.facadeScheme?.price || 500) +
-                                        (selectedColours?.interiorScheme?.price || 395) +
-                                        upgradeTotal
-                                    ).toLocaleString('en-AU', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        {/* Grand Total Area */}
+                        <div className="pt-8 md:pt-12 mt-auto">
+                            <div className="flex justify-end items-center gap-4 md:gap-6 border-t border-gray-100 pt-6">
+                                <span className="text-lg md:text-xl font-black text-gray-900 uppercase tracking-tighter italic">TOTAL:</span>
+                                <span className="text-3xl md:text-5xl font-black text-[#0796b1] tracking-tighter italic">
+                                    ${Math.round((selectedFloorPlan.price || 0) + (selectedColours.facadeScheme?.price || 0) + (selectedColours.interiorScheme?.price || 0) + upgradeTotal).toLocaleString()}
                                 </span>
                             </div>
                         </div>
@@ -303,7 +271,7 @@ export default function UpgradesSelector({ onBack, onSelect, selectedFloorPlan, 
                     <div className="flex justify-end pr-4">
                         <button
                             onClick={() => window.location.reload()}
-                            className="bg-[#0796b1] text-white px-8 py-3.5 rounded-xl font-black uppercase text-[10px] tracking-widest shadow-lg shadow-cyan-900/10 hover:bg-cyan-700 transition-all"
+                            className="bg-[#0796b1] text-white px-6 md:px-8 py-2 md:py-3.5 rounded-xl font-black uppercase text-[9px] md:text-[10px] tracking-widest shadow-lg shadow-cyan-900/10 hover:bg-cyan-700 transition-all"
                         >
                             RESTART QUOTE
                         </button>

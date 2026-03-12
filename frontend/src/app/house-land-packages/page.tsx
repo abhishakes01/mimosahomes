@@ -30,6 +30,11 @@ function HouseLandPackagesContent() {
     const [selectedRegions, setSelectedRegions] = useState<string[]>([]);
     const [sortBy, setSortBy] = useState("Recently Added");
     const [pageData, setPageData] = useState<any>(null);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
 
     useEffect(() => {
         const fetchPageData = async () => {
@@ -257,7 +262,7 @@ function HouseLandPackagesContent() {
                             <div className="space-y-4 mb-8">
                                 <div className="flex justify-between items-center">
                                     <label className="text-[10px] font-black uppercase tracking-widest text-gray-400">Price</label>
-                                    <span className="text-xs font-bold text-[#1a3a4a]">Max ${priceRange.toLocaleString()}</span>
+                                    <span className="text-xs font-bold text-[#1a3a4a]">Max ${isMounted ? priceRange.toLocaleString() : priceRange}</span>
                                 </div>
                                 <input
                                     type="range"

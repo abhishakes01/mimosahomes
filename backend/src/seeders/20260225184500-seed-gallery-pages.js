@@ -26,7 +26,12 @@ module.exports = {
                 title: 'Display Homes',
                 content: {
                     heroImage: 'uploads/display-homes.jpg',
-                    description: 'Visit our stunning display homes across the region.'
+                    heroText: 'Want to see some of our new homes in real life? Then why not come and visit us at one of our display homes around Melbourne.',
+                    officeTitle: 'Mitra Homes Head Office',
+                    officeAddress: '123 Elgar Road, Derrimut, VIC, 3026',
+                    officePhone: '1300 646 672',
+                    officeLat: '-37.8483',
+                    officeLng: '144.7794'
                 }
             },
             {
@@ -55,6 +60,12 @@ module.exports = {
                         updatedAt: new Date()
                     }
                 ], {});
+            } else {
+                await queryInterface.bulkUpdate('Pages', {
+                    title: page.title,
+                    content: JSON.stringify(page.content),
+                    updatedAt: new Date()
+                }, { slug: page.slug });
             }
         }
     },
