@@ -7,6 +7,7 @@ import ImageNav from "@/components/ImageNav";
 import Testimonials from "@/components/Testimonials";
 import CTABanner from "@/components/CTABanner";
 import Footer from "@/components/Footer";
+import HomeLeadModal from "@/components/HomeLeadModal";
 
 export default function Home() {
   return (
@@ -20,6 +21,7 @@ export default function Home() {
       <Testimonials />
       <CTABanner />
       <Footer />
+      <HomeLeadModal />
     </main>
   );
 }

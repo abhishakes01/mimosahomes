@@ -59,7 +59,8 @@ export default function PageEdit() {
                     'new-home-designs': 'New Home Designs',
                     'house-land-packages': 'House & Land Packages',
                     'display-home-for-sale': 'Display Home For Sale',
-                    'facades': 'Facades'
+                    'facades': 'Facades',
+                    'privacy-policy': 'Privacy Policy'
                 };
                 setPageTitle(defaultTitles[slug] || slug);
                 setContent({});
@@ -294,8 +295,64 @@ export default function PageEdit() {
             <div className="bg-white rounded-[32px] shadow-sm border border-gray-100 p-8 space-y-12">
 
                 {/* Global Hero Image for pages that don't have custom hero sections */}
-                {(slug !== 'about-us' && slug !== '50-year-structural-warranty' && slug !== 'ebook' && slug !== 'display-homes') && (
+                {(slug !== 'about-us' && slug !== '50-year-structural-warranty' && slug !== 'ebook' && slug !== 'display-homes' && slug !== 'privacy-policy') && (
                     renderImageUploader("Hero Background Image", "heroImage", content.heroImage)
+                )}
+
+                {/* LEGAL PAGES SCHEMA (Privacy Policy) */}
+                {(slug === 'privacy-policy') && (
+                    <div className="space-y-12">
+                        <div className="space-y-6">
+                            <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Hero Section</h2>
+                            <div className="grid grid-cols-1 gap-6">
+                                {renderImageUploader("Hero Background Image", "heroImage", content.heroImage)}
+                                <div>
+                                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Hero Title</label>
+                                    <input
+                                        type="text"
+                                        value={content.heroTitle || ''}
+                                        onChange={(e) => setContent({ ...content, heroTitle: e.target.value })}
+                                        className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm focus:border-[#1a3a4a] outline-none font-black italic uppercase"
+                                        placeholder={'PRIVACY POLICY'}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="space-y-6 pt-8 border-t border-gray-100">
+                            <div className="flex items-center justify-between">
+                                <h2 className="text-xl font-black text-gray-900 uppercase tracking-tight">Page Content</h2>
+                                <button onClick={() => addNestedItem('sections', { title: '', content: '' })} className="flex items-center gap-2 text-xs font-bold text-[#0897b1] hover:text-[#067a8f] uppercase tracking-widest">
+                                    <Plus size={14} /> Add Section
+                                </button>
+                            </div>
+                            <div className="space-y-6">
+                                {(content.sections || []).map((section: any, index: number) => (
+                                    <div key={index} className="bg-gray-50 p-6 rounded-2xl relative border border-gray-100 group space-y-4">
+                                        <button onClick={() => removeNestedItem('sections', index)} className="absolute top-4 right-4 p-2 text-gray-300 hover:text-red-500 bg-white rounded-full shadow-sm">
+                                            <Trash2 size={16} />
+                                        </button>
+                                        <div className="space-y-4">
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Section Title</label>
+                                                <input type="text" value={section.title || ''} onChange={(e) => updateNestedContent('sections', index, 'title', e.target.value)} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm font-bold focus:border-[#1a3a4a] outline-none" />
+                                            </div>
+                                            <div>
+                                                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Section Content</label>
+                                                <textarea value={section.content || ''} onChange={(e) => updateNestedContent('sections', index, 'content', e.target.value)} rows={6} className="w-full bg-white border border-gray-200 rounded-lg px-4 py-2 text-sm focus:border-[#1a3a4a] outline-none" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                                {(!content.sections || content.sections.length === 0) && (
+                                    <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200">
+                                        <p className="text-sm text-gray-500 font-medium">No content sections added yet.</p>
+                                        <button onClick={() => addNestedItem('sections', { title: '', content: '' })} className="mt-4 text-[#0897b1] font-bold uppercase text-xs tracking-widest hover:underline">Click here to add your first section</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
                 )}
 
                 {/* ABOUT US SCHEMA */}

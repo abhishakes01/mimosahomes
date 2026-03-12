@@ -31,7 +31,8 @@ export default function PagesIndex() {
         { title: "Facades Gallery", slug: "facades", description: "Manage hero image and description for the facades page." },
         { title: "New Home Designs", slug: "new-home-designs", description: "Manage hero image and description for the home designs gallery." },
         { title: "House & Land Packages", slug: "house-land-packages", description: "Manage hero image for the house and land packages page." },
-        { title: "Display Homes", slug: "display-homes", description: "Manage hero image and description for the display homes page." }
+        { title: "Display Homes", slug: "display-homes", description: "Manage hero image and description for the display homes page." },
+        { title: "Privacy Policy", slug: "privacy-policy", description: "Manage the content for the website's privacy policy page." }
     ];
 
     useEffect(() => {
